@@ -2,8 +2,6 @@ package com.blackwhitesoftware.pandalight;
 
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 

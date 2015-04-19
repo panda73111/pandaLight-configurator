@@ -1,42 +1,25 @@
 package com.blackwhitesoftware.pandalight.gui;
 
-import java.awt.BorderLayout;
+import com.blackwhitesoftware.pandalight.ConfigurationFile;
+import com.blackwhitesoftware.pandalight.LedFrameFactory;
+import com.blackwhitesoftware.pandalight.LedString;
+import com.blackwhitesoftware.pandalight.Main;
+import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.DevicePanel;
+import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.ImageProcessPanel;
+import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.LedFramePanel;
+import com.blackwhitesoftware.pandalight.gui.LedSimulation.LedSimulationComponent;
+import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshColorPickingPanel;
+import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshCommandSenderPanel;
+import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshConnectionPanel;
+import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-
-import com.blackwhitesoftware.pandalight.ConfigurationFile;
-import com.blackwhitesoftware.pandalight.Main;
-import com.blackwhitesoftware.pandalight.gui.External_Tab.InterfacePanel;
-import com.blackwhitesoftware.pandalight.gui.External_Tab.XbmcPanel;
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.LedFramePanel;
-import com.blackwhitesoftware.pandalight.gui.Process_Tab.ColorsPanel;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshColorPickingPanel;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshCommandSenderPanel;
-import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
-import com.blackwhitesoftware.pandalight.LedFrameFactory;
-import com.blackwhitesoftware.pandalight.LedString;
-import com.blackwhitesoftware.pandalight.gui.External_Tab.EffectEnginePanel;
-import com.blackwhitesoftware.pandalight.gui.Grabber_Tab.FrameGrabberPanel;
-import com.blackwhitesoftware.pandalight.gui.Grabber_Tab.Grabberv4l2Panel;
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.DevicePanel;
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.ImageProcessPanel;
-import com.blackwhitesoftware.pandalight.gui.LedSimulation.LedSimulationComponent;
-import com.blackwhitesoftware.pandalight.gui.Process_Tab.ColorSmoothingPanel;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshConnectionPanel;
 
 /**
  * The main-config panel of HyperCon. Includes the configuration and the panels to edit and 
@@ -151,9 +134,6 @@ public class ConfigPanel extends JPanel {
 			mSpecificationTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 			
 			mSpecificationTabs.addTab("Hardware", new JScrollPane(getHardwarePanel()));
-			mSpecificationTabs.addTab("Process",  new JScrollPane(getProcessPanel()));
-			mSpecificationTabs.addTab("Grabber",  new JScrollPane(getGrabberPanel()));
-			mSpecificationTabs.addTab("External", new JScrollPane(getExternalPanel()));
 			mSpecificationTabs.addTab("SSH",      new JScrollPane(getTestingPanel()));
 		}
 		return mSpecificationTabs;
@@ -187,33 +167,7 @@ public class ConfigPanel extends JPanel {
 		}
 		return mHardwarePanel;
 	}
-	
-	private JPanel getProcessPanel() {
-		if (mProcessPanel == null) {
-			mProcessPanel = new JPanel();
-			mProcessPanel.setLayout(new BoxLayout(mProcessPanel, BoxLayout.Y_AXIS));
-			
 
-			mProcessPanel.add(new ColorSmoothingPanel(ledString.mColorConfig));
-			mProcessPanel.add(new ColorsPanel(ledString.mColorConfig));
-			mProcessPanel.add(Box.createVerticalGlue());
-		}
-		return mProcessPanel;
-	}
-	
-	private JPanel getExternalPanel() {
-		if (mExternalPanel == null) {
-			mExternalPanel = new JPanel();
-			mExternalPanel.setLayout(new BoxLayout(mExternalPanel, BoxLayout.Y_AXIS));
-			
-			mExternalPanel.add(new XbmcPanel(ledString.mMiscConfig));
-			mExternalPanel.add(new InterfacePanel(ledString.mMiscConfig));
-			mExternalPanel.add(new EffectEnginePanel(ledString.mMiscConfig));
-			mExternalPanel.add(Box.createVerticalGlue());
-		}
-		return mExternalPanel;
-	}
-	
 	private JPanel getTestingPanel(){
 		if( mTestingPanel == null){
 			mTestingPanel = new JPanel();
@@ -227,20 +181,6 @@ public class ConfigPanel extends JPanel {
 		}
 		
 		return mTestingPanel;
-	}
-
-	private JPanel getGrabberPanel(){
-		if( mGrabberPanel == null){
-			mGrabberPanel = new JPanel();
-			mGrabberPanel.setLayout(new BoxLayout(mGrabberPanel, BoxLayout.Y_AXIS));
-
-			mGrabberPanel.add(new FrameGrabberPanel(ledString.mMiscConfig));
-			mGrabberPanel.add(new Grabberv4l2Panel(ledString.mGrabberv4l2Config));
-			mGrabberPanel.add(Box.createVerticalGlue());
-
-		}
-
-		return mGrabberPanel;
 	}
 
 
