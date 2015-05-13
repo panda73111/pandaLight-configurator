@@ -1,20 +1,14 @@
 package com.blackwhitesoftware.pandalight.gui.LedSimulation;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Rectangle;
+import com.blackwhitesoftware.pandalight.spec.Led;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Vector;
-
-import javax.swing.JComponent;
-
-import com.blackwhitesoftware.pandalight.spec.Led;
 
 public class LedTvComponent extends JComponent {
 
@@ -22,9 +16,6 @@ public class LedTvComponent extends JComponent {
 	private final Graphics2D mImageG2d = mDisplayedImage.createGraphics();
 	
 	private final int mBorderWidth = 12;
-
-
-
 	private Vector<Led> mLeds;
 
 	private Led mSelectedLed;
@@ -51,10 +42,10 @@ public class LedTvComponent extends JComponent {
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g.create();
-		
-		g2d.setColor(Color.DARK_GRAY.darker());
-		g2d.fillRect(0,0, getWidth()-1, getHeight()-1);
-		
+
+		g2d.setBackground(Color.DARK_GRAY.darker());
+		g2d.clearRect(0, 0, getWidth(), getHeight());
+
 		g2d.drawImage(mDisplayedImage, mBorderWidth, mBorderWidth, getWidth()-2*mBorderWidth, getHeight()-2*mBorderWidth, null);
 		if (mLeds == null) {
 			return;

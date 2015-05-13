@@ -18,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.Vector;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 
@@ -45,7 +46,6 @@ public class LedSimulationComponent extends JPanel {
 	private ImageComponent mBottomLeftImage;
 	private ImageComponent mBottomImage;
 	private ImageComponent mBottomRightImage;
-	private JProgressBar mProgressBar;
 	
 	LedTvComponent mTvComponent;
 	private int mLedCnt = 0;
@@ -113,19 +113,16 @@ public class LedSimulationComponent extends JPanel {
 		mBottomRightImage.setPreferredSize(new Dimension(100,100));
 		mBottomPanel.add(mBottomRightImage, BorderLayout.EAST);
 		
-		mProgressBar = new JProgressBar(0, 100);
-		mBottomPanel.add(mProgressBar, BorderLayout.SOUTH);
-		
 		return mBottomPanel;
 	}
 	
 	
 
 	public void setLeds(Vector<Led> pLeds) {
-		mLedCnt = pLeds == null? 0 : pLeds.size();
+		mLedCnt = pLeds == null ? 0 : pLeds.size();
 		mTvComponent.setLeds(pLeds);
 
-		updateLedSimulation(mTvComponent.getLeds());
+        updateLedSimulation(mTvComponent.getLeds());
 	}
 
 	LedSimulationWorker mWorker = null;
@@ -138,20 +135,18 @@ public class LedSimulationComponent extends JPanel {
 			mWorker = null;
 		}
 		mWorker = new LedSimulationWorker(mTvImage, pLeds);
-		mProgressBar.setValue(0);
 		mWorker.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName() == "state") {
-					if (evt.getNewValue() == SwingWorker.StateValue.STARTED) {
-						mProgressBar.setVisible(true);
-					} else if (evt.getNewValue() == SwingWorker.StateValue.DONE) {
-						handleWorkerDone();
-						mProgressBar.setVisible(false);
-					}
-				} else if (evt.getPropertyName() == "progress") {
-					mProgressBar.setValue(mWorker.getProgress());
-				}
+				if (evt.getPropertyName() == "state" &&
+                        evt.getNewValue() == SwingWorker.StateValue.DONE)
+                {
+                    try {
+                        handleWorkerDone();
+                    }
+                    catch (CancellationException ex)
+                    { }
+                }
 			}
 
 			private void handleWorkerDone() {
@@ -173,6 +168,15 @@ public class LedSimulationComponent extends JPanel {
 					return;
 				}
 
+                /*
+                try {
+                    File outFile = new File("R:\\saved.png");
+                    ImageIO.write(backgroundImage, "png", outFile);
+                }
+                catch (IOException ex)
+                { }
+                */
+
 				int width  = backgroundImage.getWidth();
 				int height = backgroundImage.getHeight();
 				int borderWidth  = (int) (backgroundImage.getWidth() * 0.1);
@@ -189,8 +193,6 @@ public class LedSimulationComponent extends JPanel {
 				mBottomImage.setImage(backgroundImage.getSubimage(borderWidth, height-borderHeight, width-2*borderWidth, borderHeight));
 				mBottomRightImage.setImage(backgroundImage.getSubimage(width-borderWidth, height-borderHeight, borderWidth, borderHeight));
 
-				mProgressBar.setValue(100);
-				mProgressBar.setVisible(false);
 				mWorker = null;
 
 				LedSimulationComponent.this.repaint();

@@ -24,7 +24,7 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 	}
 	
 	class LedPaint {
-		Color color;
+		int rgb;
 		Point point;
 		double angle_rad;
 	}
@@ -43,8 +43,6 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 
 		ledPaints.clear();
 		
-		setProgress(5);
-		
 		int imageWidth  = tvImage.getWidth();
 		int imageHeight = tvImage.getHeight();
 		for (Led led : mLeds) {
@@ -52,24 +50,19 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 			
 			// Determine the location and orientation of the led on the image
 			ledPaint.point = tv2image(imageDim, led.mLocation);
-			ledPaint.angle_rad = 0.5*Math.PI - led.mSide.getAngle_rad();
+			ledPaint.angle_rad = led.mSide.getAngle_rad();
 			
 			// Determine the color of the led
 			int xMin = (int)(led.mImageRectangle.getMinX() * (imageWidth-1));
 			int xMax = (int)(led.mImageRectangle.getMaxX() * (imageWidth-1));
 			int yMin = (int)(led.mImageRectangle.getMinY() * (imageHeight-1));
 			int yMax = (int)(led.mImageRectangle.getMaxY() * (imageHeight-1));
-			ledPaint.color = determineColor(xMin, xMax, yMin, yMax);
+			ledPaint.rgb = determineRGB(xMin, xMax, yMin, yMax);
 			
 			ledPaints.add(ledPaint);
 		}
 		
-		setProgress(10);
-		
 		Graphics2D g2d = backgroundImage.createGraphics();
-		// Clear the image with a black rectangle
-		g2d.setColor(Color.BLACK);
-		g2d.drawRect(0, 0, backgroundImage.getWidth(), backgroundImage.getHeight());
 		paintAllLeds(g2d);
 
 		return backgroundImage;
@@ -90,7 +83,7 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 		return new Point((int)imageXIndex, (int)imageYIndex);
 	}
 	
-	private Color determineColor(int xMin, int xMax, int yMin, int yMax) {
+	private int determineRGB(int xMin, int xMax, int yMin, int yMax) {
 		int red = 0;
 		int green = 0;
 		int blue = 0;
@@ -109,13 +102,17 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 			}
 		}
 		
-		return new Color(red, green, blue);
+		return (red << 16) | (green << 8) | blue;
 	}
 	
 	private void paintAllLeds(Graphics2D g2d) {
-        int ledsDrawn = 0;
-        final float ledSize = 500;
-        final Color transparent = new Color(0, 0, 0, 0);
+        final int ledSize = 200;
+        // pixels of space between the LED and its beam, outwards
+        // (negative = move beam inside)
+        final int ledOffset = -20;
+        // 0 = ambient light, LED directed at the wall
+        // ledSize/2 = beam follows the wall at 90 degrees
+        final int directionDistance = 80;
 
         g2d.setComposite(new LightingComposite());
 
@@ -124,30 +121,41 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
                 return;
             }
 
-            int rgb = 0xFFFFFF & led.color.getRGB();
+            double xFactor = Math.sin(led.angle_rad);
+            double yFactor = Math.cos(led.angle_rad);
+
+            Point directionPoint = new Point(led.point);
+            directionPoint.translate(
+                    (int) (-1.0 * xFactor * (directionDistance + ledOffset)),
+                    (int) (-1.0 * yFactor * (directionDistance + ledOffset)));
+
+            Point virtualLedPoint = new Point(led.point);
+            virtualLedPoint.translate(
+                    (int) (-1.0 * xFactor * ledOffset),
+                    (int) (-1.0 * yFactor * ledOffset));
+
+            Color Color1 = new Color(0xFF000000 | led.rgb, true);
+            Color Color2 = new Color(0xBB000000 | led.rgb, true);
+
             RadialGradientPaint paint = new RadialGradientPaint(
-                    led.point, ledSize / 2.0f,
+                    directionPoint, ledSize / 2.0f, virtualLedPoint,
                     new float[] {
-                            0.3f,
+                            0.0f,
                             0.5f,
                             1.0f
                     },
                     new Color[] {
-                            new Color(0xB0000000 | rgb, true),
-                            new Color(0x50000000 | rgb, true),
-                            transparent
+                            Color1,
+                            Color2,
+                            Color.BLACK
                     },
                     MultipleGradientPaint.CycleMethod.NO_CYCLE
             );
             g2d.setPaint(paint);
             g2d.fillRect(
-                    (int) (led.point.getX() - ledSize / 2),
-                    (int) (led.point.getY() - ledSize / 2),
-                    (int) ledSize, (int) ledSize);
-
-            ledsDrawn++;
-            int progress = 10 + (int)(ledsDrawn*90.0/ ledPaints.size());
-            setProgress(progress);
+                    directionPoint.x - ledSize / 2,
+                    directionPoint.y - ledSize / 2,
+                    ledSize, ledSize);
         }
 	}
 }
