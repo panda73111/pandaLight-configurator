@@ -1,14 +1,13 @@
 package com.blackwhitesoftware.pandalight;
 
+import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
+import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
+import com.blackwhitesoftware.pandalight.spec.TransformConfig;
+
+import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-
-import javax.swing.*;
-
-import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
-import com.blackwhitesoftware.pandalight.spec.TransformConfig;
-import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
 
 /**
  * (static) Main-class for starting HyperCon (the Hyperion configuration file builder) as a standard 
@@ -28,7 +27,8 @@ public class Main {
 	public static void main(String[] pArgs) {
 		final String versionStr = Main.class.getPackage().getImplementationVersion();
 		final LedString ledString = new LedString();
-		final SshAndColorPickerConfig sshConfig = new SshAndColorPickerConfig();
+		final SerialAndColorPickerConfig serialConfig = new SerialAndColorPickerConfig();
+		final PandaLightSerialConnection serialConnection = new PandaLightSerialConnection();
 		
 		try {
 			// Configure swing to use the system default look and feel
@@ -54,13 +54,13 @@ public class Main {
 					configFile.store(ledString.mProcessConfig);
 					configFile.store(ledString.mColorConfig);
 					configFile.store(ledString.mMiscConfig);
-					configFile.store(sshConfig);
+					configFile.store(serialConfig);
 					configFile.store(ledString.mGrabberv4l2Config);
 					configFile.save(configFilename);
 				} catch (Throwable t) {
 					System.err.println("Failed to save " + configFilename);
 				}
-				SshConnectionModel.getInstance().disconnect();
+				serialConnection.disconnect();
 			}
 		});
 		
@@ -74,7 +74,7 @@ public class Main {
 				configFile.restore(ledString.mProcessConfig);
 				configFile.restore(ledString.mColorConfig);
 				configFile.restore(ledString.mMiscConfig);
-				configFile.restore(sshConfig);
+				configFile.restore(serialConfig);
 				configFile.restore(ledString.mGrabberv4l2Config);
 			} catch (Throwable t) {
 				System.err.println("Failed to load " + configFilename);
@@ -85,7 +85,7 @@ public class Main {
 		}
 		
 		// Add the HyperCon configuration panel
-		frame.setContentPane(new ConfigPanel(ledString, sshConfig));
+		frame.setContentPane(new ConfigPanel(ledString, serialConfig, serialConnection));
 		
 		// Show the frame
 		frame.setVisible(true);

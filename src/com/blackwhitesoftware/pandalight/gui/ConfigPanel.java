@@ -1,15 +1,12 @@
 package com.blackwhitesoftware.pandalight.gui;
 
-import com.blackwhitesoftware.pandalight.ConfigurationFile;
-import com.blackwhitesoftware.pandalight.LedFrameFactory;
-import com.blackwhitesoftware.pandalight.LedString;
-import com.blackwhitesoftware.pandalight.Main;
+import com.blackwhitesoftware.pandalight.*;
 import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.LedSimulation.LedSimulationComponent;
 import com.blackwhitesoftware.pandalight.gui.SSH_Tab.ManualColorPickingPanel;
-import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
+import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,10 +24,11 @@ public class ConfigPanel extends JPanel {
 
 	/** The LED configuration information*/
 	private final LedString ledString;
-	private final SshAndColorPickerConfig sshConfig;
+	private final SerialAndColorPickerConfig serialConfig;
+	private final PandaLightSerialConnection serialConnection;
 	
 	/** Action for write the Hyperion deamon configuration file */
-	private final Action mSaveConfigAction = new AbstractAction("Create Hyperion Configuration") {
+	private final Action saveConfigAction = new AbstractAction("Create Hyperion Configuration") {
 		JFileChooser fileChooser = new JFileChooser();
 		{
 			fileChooser.setSelectedFile(new File("hyperion.config.json"));
@@ -66,23 +64,21 @@ public class ConfigPanel extends JPanel {
 	private JTabbedPane mSpecificationTabs = null;
 	/** The left (WEST) side panel containing the different configuration panels */
 	private JPanel mHardwarePanel = null;
-	private JPanel mProcessPanel = null;
-	private JPanel mExternalPanel = null;
 	private JPanel mTestingPanel = null;
-	private JPanel mGrabberPanel = null;
 
 
-	/** The button connected to mSaveConfigAction */
-	private JButton mSaveConfigButton;
+	/** The button connected to saveConfigAction */
+	private JButton saveConfigButton;
 	
 	/**
 	 * Constructs the configuration panel with a default initialised led-frame and configuration
 	 */
-	public ConfigPanel(final LedString pLedString, final SshAndColorPickerConfig pSshConfig) {
+	public ConfigPanel(final LedString pLedString, final SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
 		super();
 		
 		ledString = pLedString;
-		sshConfig = pSshConfig;
+		this.serialConfig = serialConfig;
+		this.serialConnection = serialConnection;
 		initialise();
 		
 		// Compute the individual leds for the current configuration
@@ -120,8 +116,8 @@ public class ConfigPanel extends JPanel {
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-		mSaveConfigButton = new JButton(mSaveConfigAction);
-		panel.add(mSaveConfigButton, BorderLayout.SOUTH);
+		saveConfigButton = new JButton(saveConfigAction);
+		panel.add(saveConfigButton, BorderLayout.SOUTH);
 		mWestPanel.add(panel, BorderLayout.SOUTH);
 
 		return mWestPanel;
@@ -170,7 +166,7 @@ public class ConfigPanel extends JPanel {
 		if( mTestingPanel == null){
 			mTestingPanel = new JPanel();
 			mTestingPanel.setLayout(new BoxLayout(mTestingPanel, BoxLayout.Y_AXIS));
-			mTestingPanel.add(new ManualColorPickingPanel(sshConfig));
+			mTestingPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
 
 			mTestingPanel.add(Box.createVerticalGlue());
 

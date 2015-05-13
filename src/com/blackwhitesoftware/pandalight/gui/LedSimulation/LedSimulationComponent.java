@@ -2,8 +2,10 @@ package com.blackwhitesoftware.pandalight.gui.LedSimulation;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.LedFrameFactory;
-import com.blackwhitesoftware.pandalight.SshConnectionModel;
-import com.blackwhitesoftware.pandalight.spec.*;
+import com.blackwhitesoftware.pandalight.spec.Grabberv4l2Config;
+import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
+import com.blackwhitesoftware.pandalight.spec.Led;
+import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -280,67 +282,10 @@ public class LedSimulationComponent extends JPanel {
 		}
 	};
 
-	private final Action mTakeGrabberScreenshotAction = new AbstractAction("Take grabber screenshot..."){
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				if(mGrabberConfig != null){
-                    StringBuffer args = new StringBuffer();
-                    args.append("--device " + mGrabberConfig.mDevice);
-                    args.append(" --video-standard " + mGrabberConfig.mStandard.toString());
-                    args.append(" --input " + mGrabberConfig.mInput);
-                    args.append(" --width " + mGrabberConfig.mWidth);
-                    args.append(" --height " + mGrabberConfig.mHeight);
-                    args.append(" --crop-left " + mGrabberConfig.mCropLeft);
-                    args.append(" --crop-right " + mGrabberConfig.mCropRight);
-                    args.append(" --crop-top " + mGrabberConfig.mCropTop);
-                    args.append(" --crop-bottom " + mGrabberConfig.mCropBottom);
-                    args.append(" --size-decimator " + mGrabberConfig.mSizeDecimation);
-                    args.append(" --frame-decimator " + mGrabberConfig.mFrameDecimation);
-                    args.append(" --red-threshold " + mGrabberConfig.mRedSignalThreshold);
-                    args.append(" --green-threshold " + mGrabberConfig.mGreenSignalThreshold);
-                    args.append(" --blue-threshold " + mGrabberConfig.mBlueSignalThreshold);
-                    if(mGrabberConfig.mMode == DimensionModes.ThreeDSBS){
-                        args.append(" --3DSBS ");
-                    }else if(mGrabberConfig.mMode == DimensionModes.ThreeDTAB){
-                        args.append(" --3DTAB ");
-                    }
-
-                    SshConnectionModel.getInstance().sendTakeScreenshot(args.toString());
-                }else{
-                    SshConnectionModel.getInstance().sendTakeScreenshot();
-                }
-
-				Image img = SshConnectionModel.getInstance().getScreenshotImage();
-
-
-				try {
-
-
-					mTvComponent.setImage(img);
-					setImage(img);
-					updateLedSimulation(mTvComponent.getLeds());
-				} catch (Exception ex) {
-					ErrorHandling.ShowException(ex);
-				}
-			} catch (Exception e1) {
-				ErrorHandling.ShowException(e1);
-			}
-
-
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
-		}
-	};
-	
 	private synchronized JPopupMenu getPopupMenu() {
 		if (mPopupMenu == null) {
 			mPopupMenu = new JPopupMenu();
 			mPopupMenu.add(mLoadAction);
-
-			mPopupMenu.add(mTakeGrabberScreenshotAction);
 			
 			JMenu selectMenu = new JMenu("Select Image");
 			selectMenu.add(new SelectImageAction("TestImage_01"));
@@ -352,12 +297,6 @@ public class LedSimulationComponent extends JPanel {
 			selectMenu.add(new SelectImageAction("TestImageBBB_02"));
 			selectMenu.add(new SelectImageAction("TestImageBBB_03"));
 			mPopupMenu.add(selectMenu);
-		}
-		if(SshConnectionModel.getInstance().isConnected()){
-			mTakeGrabberScreenshotAction.setEnabled(true);
-
-		}else{
-			mTakeGrabberScreenshotAction.setEnabled(false);
 		}
 
 		return mPopupMenu;

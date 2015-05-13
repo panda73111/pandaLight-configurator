@@ -1,7 +1,11 @@
 package com.blackwhitesoftware.pandalight.gui.SSH_Tab;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import com.blackwhitesoftware.pandalight.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
+import com.bric.swing.ColorPicker;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -10,41 +14,32 @@ import java.beans.Transient;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.*;
-
-import com.blackwhitesoftware.pandalight.SshConnectionModel;
-import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
-import com.jcraft.jsch.JSchException;
-import com.blackwhitesoftware.pandalight.ErrorHandling;
-
-import com.bric.swing.ColorPicker;
-
 /**
  * @author Fabian Hertwig
+ * @author Sebastian Hüther
  *
  */
 public class ManualColorPickingPanel extends JPanel implements Observer, PropertyChangeListener{
 
-
+	private PandaLightSerialConnection serialConnection;
 	private ColorPicker colorPicker;
-	private JButton setLedColor;
-	private JButton clearLedColor;
-	private JCheckBox autoUpdateCB;
-	private JCheckBox expertView;
-	private JCheckBox showColorWheel;
-	private SshAndColorPickerConfig sshConfig;
+	private JButton setLedColorButton;
+	private JCheckBox autoUpdateCheckbox;
+	private JCheckBox expertViewCheckBox;
+	private JCheckBox showColorWheelCheckbox;
+	private SerialAndColorPickerConfig serialConfig;
 	
 	
 	/**Constructor
-	 * @param psshConfig 
-	 * 
+	 * @param serialConfig
+	 * @param serialConnection
+	 *
 	 */
-	public ManualColorPickingPanel(SshAndColorPickerConfig psshConfig) {
+	public ManualColorPickingPanel(SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
 		super();
-		sshConfig = psshConfig;
-		
-		SshConnectionModel.getInstance().addObserver(this);
-				
+		this.serialConfig = serialConfig;
+		this.serialConnection = serialConnection;
+		this.serialConnection.addObserver(this);
 		initialise();
 	}
 	
@@ -67,15 +62,15 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 		//All the Gui elements
 		setBorder(BorderFactory.createTitledBorder("Set Led Color"));
 		
-		expertView = new JCheckBox("Expertview");
-		expertView.setSelected(sshConfig.colorPickerInExpertmode);
-		expertView.addActionListener(mActionListener);
-		add(expertView);
+		expertViewCheckBox = new JCheckBox("Expertview");
+		expertViewCheckBox.setSelected(serialConfig.colorPickerInExpertmode);
+		expertViewCheckBox.addActionListener(mActionListener);
+		add(expertViewCheckBox);
 		
-		showColorWheel = new JCheckBox("Colorwheel");
-		showColorWheel.setSelected(sshConfig.colorPickerShowColorWheel);
-		showColorWheel.addActionListener(mActionListener);
-		add(showColorWheel);
+		showColorWheelCheckbox = new JCheckBox("Colorwheel");
+		showColorWheelCheckbox.setSelected(serialConfig.colorPickerShowColorWheel);
+		showColorWheelCheckbox.addActionListener(mActionListener);
+		add(showColorWheelCheckbox);
 		
 		colorPicker = new ColorPicker(false, false);
 		colorPicker.setRGBControlsVisible(true);
@@ -84,29 +79,25 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 		colorPicker.setHSBControlsVisible(false);
 
 		colorPicker.setMode(ColorPicker.HUE);
-		colorPicker.setMinimumSize(new Dimension(150,150));
+		colorPicker.setMinimumSize(new Dimension(150, 150));
 		colorPicker.addPropertyChangeListener(this);
 		//TODO: make the color picker size less static
 		colorPicker.setPreferredSize(new Dimension(200, 200));
 		colorPicker.setRGB(255, 255, 255);
-		if(!showColorWheel.isSelected()){
+		if(!showColorWheelCheckbox.isSelected()){
 			colorPicker.setMode(ColorPicker.HUE);
 		}else{
 			colorPicker.setMode(ColorPicker.BRI);
 		}
 		add(colorPicker, BorderLayout.CENTER);
 		
-		autoUpdateCB = new JCheckBox("Auto Update");
-		autoUpdateCB.setToolTipText("Automatically send new color selections, this may be a bit slow and laggy!");
-		add(autoUpdateCB);
+		autoUpdateCheckbox = new JCheckBox("Auto Update");
+		autoUpdateCheckbox.setToolTipText("Automatically send new color selections, this may be a bit slow and laggy!");
+		add(autoUpdateCheckbox);
 		
-		setLedColor = new JButton("Set Led Color");
-		setLedColor.addActionListener(mActionListener);
-		add(setLedColor);
-		
-		clearLedColor = new JButton("Clear");
-		clearLedColor.addActionListener(mActionListener);
-		add(clearLedColor);
+		setLedColorButton = new JButton("Set Led Color");
+		setLedColorButton.addActionListener(mActionListener);
+		add(setLedColorButton);
 		
 		setGuiElementsEnabled(false);
 
@@ -118,31 +109,29 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 				.addGroup(layout.createSequentialGroup()
-						.addComponent(showColorWheel)
-						.addComponent(expertView)
+						.addComponent(showColorWheelCheckbox)
+						.addComponent(expertViewCheckBox)
 						)
 				.addGroup(layout.createParallelGroup()
 						.addComponent(colorPicker))
 		.addGroup(layout.createSequentialGroup()
-					.addComponent(autoUpdateCB))
+					.addComponent(autoUpdateCheckbox))
 			.addGroup(layout.createSequentialGroup()
-					.addComponent(setLedColor)
-					.addComponent(clearLedColor)
+					.addComponent(setLedColorButton)
 		));
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup()
-						.addComponent(showColorWheel)
-						.addComponent(expertView)
+						.addComponent(showColorWheelCheckbox)
+						.addComponent(expertViewCheckBox)
 						)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(colorPicker)
-						.addComponent(autoUpdateCB)
+						.addComponent(autoUpdateCheckbox)
 						
 				)
 			
 				.addGroup(layout.createParallelGroup()
-						.addComponent(setLedColor)
-						.addComponent(clearLedColor)));
+						.addComponent(setLedColorButton)));
 	}
 	
 	/**
@@ -151,26 +140,16 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 	private final ActionListener mActionListener = new ActionListener() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == setLedColor){
+			if(e.getSource() == setLedColorButton){
 				int[] chosenColor = colorPicker.getRGB();
-				try {
-					SshConnectionModel.getInstance().sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
-				} catch (JSchException e1) {
-					ErrorHandling.ShowException(e1);
-				}
-			}else if(e.getSource() == clearLedColor){
-				try {
-					SshConnectionModel.getInstance().sendClear();
-				} catch (JSchException e1) {
-					ErrorHandling.ShowException(e1);
-				}
-			}else if(e.getSource() == expertView){
-				colorPicker.setExpertControlsVisible(expertView.isSelected());
-				sshConfig.colorPickerInExpertmode = expertView.isSelected();
+				serialConnection.sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
+			}else if(e.getSource() == expertViewCheckBox){
+				colorPicker.setExpertControlsVisible(expertViewCheckBox.isSelected());
+				serialConfig.colorPickerInExpertmode = expertViewCheckBox.isSelected();
 				
-			}else if(e.getSource() == showColorWheel){
-				sshConfig.colorPickerShowColorWheel = showColorWheel.isSelected();
-				if(!showColorWheel.isSelected()){
+			}else if(e.getSource() == showColorWheelCheckbox){
+				serialConfig.colorPickerShowColorWheel = showColorWheelCheckbox.isSelected();
+				if(!showColorWheelCheckbox.isSelected()){
 					colorPicker.setMode(ColorPicker.HUE);
 				}else{
 					colorPicker.setMode(ColorPicker.BRI);
@@ -187,7 +166,7 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 	 */
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		if(SshConnectionModel.getInstance().isConnected()){
+		if(serialConnection.isConnected()){
 			setGuiElementsEnabled(true);
 
 		}else{
@@ -201,13 +180,9 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(autoUpdateCB != null && autoUpdateCB.isSelected() && evt.getPropertyName().equals("selected color")){
+		if(autoUpdateCheckbox != null && autoUpdateCheckbox.isSelected() && evt.getPropertyName().equals("selected color")){
 			int[] chosenColor = colorPicker.getRGB();
-			try {
-				SshConnectionModel.getInstance().sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
-			} catch (JSchException e) {
-				ErrorHandling.ShowException(e);
-			}
+			serialConnection.sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
 		}
 		
 	}
@@ -217,9 +192,8 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 	 * @param enabled
 	 */
 	private void setGuiElementsEnabled(boolean enabled){
-		setLedColor.setEnabled(enabled);
-		clearLedColor.setEnabled(enabled);
-		autoUpdateCB.setEnabled(enabled);
+		setLedColorButton.setEnabled(enabled);
+		autoUpdateCheckbox.setEnabled(enabled);
 		
 	}
 	

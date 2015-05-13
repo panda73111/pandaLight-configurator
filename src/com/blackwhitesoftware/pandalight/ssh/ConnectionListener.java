@@ -2,19 +2,11 @@ package com.blackwhitesoftware.pandalight.ssh;
 
 public interface ConnectionListener {
 
-	public void connected();
+	void connected();
 	
-	public void disconnected();
-	
-	public void commandExec(String pCommand);
+	void disconnected();
 
-	public void getFile(String src, String dst);
+	void addLine(String pLine);
 	
-	public void commandFinished(String pCommand);
-
-	public void getFileFinished(String src, String dst);
-
-	public void addLine(String pLine);
-	
-	public void addError(String pLine);
+	void addError(String pLine);
 }
