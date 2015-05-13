@@ -1,39 +1,35 @@
 package com.blackwhitesoftware.pandalight.gui.LedSimulation;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Point;
+import com.blackwhitesoftware.pandalight.spec.Led;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.SwingWorker;
-
-import com.blackwhitesoftware.pandalight.spec.Led;
-
 public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 
-	private final BufferedImage mTvImage;
+	private final BufferedImage tvImage;
 	
 	private final Vector<Led> mLeds;
 	
 	public LedSimulationWorker(BufferedImage pTvImage, Vector<Led> pLeds) {
 		super();
 		
-		mTvImage = pTvImage;
+		tvImage = pTvImage;
 		mLeds    = pLeds;
 	}
 	
 	class LedPaint {
-		int color; 
-		
+		Color color;
 		Point point;
 		double angle_rad;
 	}
 	
-	private final List<LedPaint> mLedPaints = new Vector<>();
+	private final List<LedPaint> ledPaints = new Vector<>();
 	
 
 	@Override
@@ -45,12 +41,12 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 			return backgroundImage;
 		}
 
-		mLedPaints.clear();
+		ledPaints.clear();
 		
 		setProgress(5);
 		
-		int imageWidth  = mTvImage.getWidth();
-		int imageHeight = mTvImage.getHeight();
+		int imageWidth  = tvImage.getWidth();
+		int imageHeight = tvImage.getHeight();
 		for (Led led : mLeds) {
 			LedPaint ledPaint = new LedPaint();
 			
@@ -65,7 +61,7 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 			int yMax = (int)(led.mImageRectangle.getMaxY() * (imageHeight-1));
 			ledPaint.color = determineColor(xMin, xMax, yMin, yMax);
 			
-			mLedPaints.add(ledPaint);
+			ledPaints.add(ledPaint);
 		}
 		
 		setProgress(10);
@@ -94,45 +90,64 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 		return new Point((int)imageXIndex, (int)imageYIndex);
 	}
 	
-	private int determineColor(int xMin, int xMax, int yMin, int yMax) {
+	private Color determineColor(int xMin, int xMax, int yMin, int yMax) {
 		int red = 0;
 		int green = 0;
 		int blue = 0;
-		int count = 0;
+        int[] color = new int[4];
+
+        int w = xMax - xMin + 1;
+        int h = yMax - yMin + 1;
+        Raster raster = tvImage.getData(new Rectangle(xMin, yMin, w, h));
 		
-		for (int y = yMin; y <= yMax; ++y) {
-			for (int x = xMin; x <= xMax; ++x) {
-				int color = mTvImage.getRGB(x, y);
-				red += (color >> 16) & 0xFF;
-				green += (color >> 8) & 0xFF;
-				blue += color & 0xFF;
-				++count;
+		for (int y = yMin; y <= yMax; y++) {
+			for (int x = xMin; x <= xMax; x++) {
+				raster.getPixel(x, y, color);
+				red = (red + color[0]) / 2;
+				green = (green + color[1]) / 2;
+				blue = (blue + color[2]) / 2;
 			}
 		}
 		
-		return count > 0 ? new Color(red / count, green/count, blue/count).getRGB() : 0;
+		return new Color(red, green, blue);
 	}
 	
 	private void paintAllLeds(Graphics2D g2d) {
+        int ledsDrawn = 0;
+        final float ledSize = 500;
+        final Color transparent = new Color(0, 0, 0, 0);
 
-		for (int i=2; i<=180; i+=4) {
-			if (isCancelled()) {
-				return;
-			}
-			int arcSize = 24 + (int)((i/12.0)*(i/12.0));
+        g2d.setComposite(new LightingComposite());
 
-			for(LedPaint led : mLedPaints) {
-				int argb = 0x05000000 | (0x00ffffff & led.color);
-				g2d.setColor(new Color(argb , true));
+        for(LedPaint led : ledPaints) {
+            if (isCancelled()) {
+                return;
+            }
 
-				g2d.translate(led.point.getX(), led.point.getY());
-				g2d.rotate(led.angle_rad);
-				g2d.fillArc(-arcSize, -arcSize, 2*arcSize, 2*arcSize, 90-(i/2), i);
-				g2d.rotate(-led.angle_rad);
-				g2d.translate(-led.point.getX(), -led.point.getY());
+            int rgb = 0xFFFFFF & led.color.getRGB();
+            RadialGradientPaint paint = new RadialGradientPaint(
+                    led.point, ledSize / 2.0f,
+                    new float[] {
+                            0.3f,
+                            0.5f,
+                            1.0f
+                    },
+                    new Color[] {
+                            new Color(0xB0000000 | rgb, true),
+                            new Color(0x50000000 | rgb, true),
+                            transparent
+                    },
+                    MultipleGradientPaint.CycleMethod.NO_CYCLE
+            );
+            g2d.setPaint(paint);
+            g2d.fillRect(
+                    (int) (led.point.getX() - ledSize / 2),
+                    (int) (led.point.getY() - ledSize / 2),
+                    (int) ledSize, (int) ledSize);
 
-				setProgress(10+i/3);
-			}
-		}
+            ledsDrawn++;
+            int progress = 10 + (int)(ledsDrawn*90.0/ ledPaints.size());
+            setProgress(progress);
+        }
 	}
 }
