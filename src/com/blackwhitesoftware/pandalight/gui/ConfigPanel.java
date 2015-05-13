@@ -23,7 +23,7 @@ import java.util.Observer;
 public class ConfigPanel extends JPanel {
 
 	/** The LED configuration information*/
-	private final LedString ledString;
+	private final PandaLightConfigurationContainer pandaLightConfig;
 	private final SerialAndColorPickerConfig serialConfig;
 	private final PandaLightSerialConnection serialConnection;
 	
@@ -40,14 +40,14 @@ public class ConfigPanel extends JPanel {
 			}
 
 			try {
-				ledString.saveConfigFile(fileChooser.getSelectedFile().getAbsolutePath());
+				pandaLightConfig.saveConfigFile(fileChooser.getSelectedFile().getAbsolutePath());
 				
 				ConfigurationFile configFile = new ConfigurationFile();
-				configFile.store(ledString.mDeviceConfig);
-				configFile.store(ledString.mLedFrameConfig);
-				configFile.store(ledString.mProcessConfig);
-				configFile.store(ledString.mColorConfig);
-				configFile.store(ledString.mMiscConfig);
+				configFile.store(pandaLightConfig.mDeviceConfig);
+				configFile.store(pandaLightConfig.mLedFrameConfig);
+				configFile.store(pandaLightConfig.mProcessConfig);
+				configFile.store(pandaLightConfig.mColorConfig);
+				configFile.store(pandaLightConfig.mMiscConfig);
 				configFile.save(Main.configFilename);
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
@@ -73,29 +73,29 @@ public class ConfigPanel extends JPanel {
 	/**
 	 * Constructs the configuration panel with a default initialised led-frame and configuration
 	 */
-	public ConfigPanel(final LedString pLedString, final SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
+	public ConfigPanel(final PandaLightConfigurationContainer pandaLightConfig, final SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
 		super();
 		
-		ledString = pLedString;
+		this.pandaLightConfig = pandaLightConfig;
 		this.serialConfig = serialConfig;
 		this.serialConnection = serialConnection;
 		initialise();
 		
 		// Compute the individual leds for the current configuration
-		ledString.leds = LedFrameFactory.construct(ledString.mLedFrameConfig, ledString.mProcessConfig);
-		mHyperionTv.setLeds(ledString.leds);
+		this.pandaLightConfig.leds = LedFrameFactory.construct(this.pandaLightConfig.mLedFrameConfig, this.pandaLightConfig.mProcessConfig);
+		mHyperionTv.setLeds(this.pandaLightConfig.leds);
 		
 		// Add Observer to update the individual leds if the configuration changes
 		final Observer observer = new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				ledString.leds = LedFrameFactory.construct(ledString.mLedFrameConfig, ledString.mProcessConfig);
-				mHyperionTv.setLeds(ledString.leds);
+				ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(ConfigPanel.this.pandaLightConfig.mLedFrameConfig, ConfigPanel.this.pandaLightConfig.mProcessConfig);
+				mHyperionTv.setLeds(ConfigPanel.this.pandaLightConfig.leds);
 				mHyperionTv.repaint();
 			}
 		};
-		ledString.mLedFrameConfig.addObserver(observer);
-		ledString.mProcessConfig.addObserver(observer);
+		this.pandaLightConfig.mLedFrameConfig.addObserver(observer);
+		this.pandaLightConfig.mProcessConfig.addObserver(observer);
 	}
 	
 	/**
@@ -143,7 +143,7 @@ public class ConfigPanel extends JPanel {
 			mTvPanel = new JPanel();
 			mTvPanel.setLayout(new BorderLayout());
 				
-			mHyperionTv = new LedSimulationComponent(ledString.leds, ledString.mGrabberv4l2Config);
+			mHyperionTv = new LedSimulationComponent(pandaLightConfig.leds);
 			mTvPanel.add(mHyperionTv, BorderLayout.CENTER);
 		}
 		return mTvPanel;
@@ -154,9 +154,9 @@ public class ConfigPanel extends JPanel {
 			mHardwarePanel = new JPanel();
 			mHardwarePanel.setLayout(new BoxLayout(mHardwarePanel, BoxLayout.Y_AXIS));
 			
-			mHardwarePanel.add(new DevicePanel(ledString.mDeviceConfig));
-			mHardwarePanel.add(new LedFramePanel(ledString.mLedFrameConfig));
-			mHardwarePanel.add(new ImageProcessPanel(ledString.mProcessConfig));
+			mHardwarePanel.add(new DevicePanel(pandaLightConfig.mDeviceConfig));
+			mHardwarePanel.add(new LedFramePanel(pandaLightConfig.mLedFrameConfig));
+			mHardwarePanel.add(new ImageProcessPanel(pandaLightConfig.mProcessConfig));
 			mHardwarePanel.add(Box.createVerticalGlue());
 		}
 		return mHardwarePanel;

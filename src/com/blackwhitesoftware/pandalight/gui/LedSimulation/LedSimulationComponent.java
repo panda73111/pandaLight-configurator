@@ -2,7 +2,6 @@ package com.blackwhitesoftware.pandalight.gui.LedSimulation;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.LedFrameFactory;
-import com.blackwhitesoftware.pandalight.spec.Grabberv4l2Config;
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
 import com.blackwhitesoftware.pandalight.spec.Led;
 import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction;
@@ -25,18 +24,6 @@ import java.util.concurrent.ExecutionException;
 public class LedSimulationComponent extends JPanel {
 
 	private BufferedImage mTvImage = new BufferedImage(640, 480, BufferedImage.TYPE_INT_ARGB);
-	private Grabberv4l2Config mGrabberConfig;
-
-	public LedSimulationComponent(Vector<Led> leds, Grabberv4l2Config mGrabberv4l2Config) {
-
-		super();
-
-		mGrabberConfig = mGrabberv4l2Config;
-
-		initialise(leds);
-
-		setLeds(leds);
-	}
 
 	private void setImage(Image pImage) {
 		mTvImage.createGraphics().drawImage(pImage, 0, 0, mTvImage.getWidth(), mTvImage.getHeight(), null);

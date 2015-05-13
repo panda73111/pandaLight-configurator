@@ -15,9 +15,6 @@ import java.io.File;
  */
 public class Main {
 	public static final String configFilename = "hypercon.dat";
-	
-	/** Some application settings (for easy/dirty access) */
-	public static final HyperConConfig HyperConConfig = new HyperConConfig();
 
 	/**
 	 * Entry point to start HyperCon 
@@ -26,7 +23,7 @@ public class Main {
 	 */
 	public static void main(String[] pArgs) {
 		final String versionStr = Main.class.getPackage().getImplementationVersion();
-		final LedString ledString = new LedString();
+		final PandaLightConfigurationContainer pandaLightConfig = new PandaLightConfigurationContainer();
 		final SerialAndColorPickerConfig serialConfig = new SerialAndColorPickerConfig();
 		final PandaLightSerialConnection serialConnection = new PandaLightSerialConnection();
 		
@@ -48,14 +45,12 @@ public class Main {
 			public void windowClosing(WindowEvent e) {
 				try {
 					ConfigurationFile configFile = new ConfigurationFile();
-					configFile.store(Main.HyperConConfig);
-					configFile.store(ledString.mDeviceConfig);
-					configFile.store(ledString.mLedFrameConfig);
-					configFile.store(ledString.mProcessConfig);
-					configFile.store(ledString.mColorConfig);
-					configFile.store(ledString.mMiscConfig);
+					configFile.store(pandaLightConfig.mDeviceConfig);
+					configFile.store(pandaLightConfig.mLedFrameConfig);
+					configFile.store(pandaLightConfig.mProcessConfig);
+					configFile.store(pandaLightConfig.mColorConfig);
+					configFile.store(pandaLightConfig.mMiscConfig);
 					configFile.store(serialConfig);
-					configFile.store(ledString.mGrabberv4l2Config);
 					configFile.save(configFilename);
 				} catch (Throwable t) {
 					System.err.println("Failed to save " + configFilename);
@@ -68,24 +63,22 @@ public class Main {
 			try {
 				ConfigurationFile configFile = new ConfigurationFile();
 				configFile.load(configFilename);
-				configFile.restore(Main.HyperConConfig);
-				configFile.restore(ledString.mDeviceConfig);
-				configFile.restore(ledString.mLedFrameConfig);
-				configFile.restore(ledString.mProcessConfig);
-				configFile.restore(ledString.mColorConfig);
-				configFile.restore(ledString.mMiscConfig);
+				configFile.restore(pandaLightConfig.mDeviceConfig);
+				configFile.restore(pandaLightConfig.mLedFrameConfig);
+				configFile.restore(pandaLightConfig.mProcessConfig);
+				configFile.restore(pandaLightConfig.mColorConfig);
+				configFile.restore(pandaLightConfig.mMiscConfig);
 				configFile.restore(serialConfig);
-				configFile.restore(ledString.mGrabberv4l2Config);
 			} catch (Throwable t) {
 				System.err.println("Failed to load " + configFilename);
 			}
-			if (ledString.mColorConfig.mTransforms.isEmpty()) {
-				ledString.mColorConfig.mTransforms.add(new TransformConfig());
+			if (pandaLightConfig.mColorConfig.mTransforms.isEmpty()) {
+				pandaLightConfig.mColorConfig.mTransforms.add(new TransformConfig());
 			}
 		}
 		
 		// Add the HyperCon configuration panel
-		frame.setContentPane(new ConfigPanel(ledString, serialConfig, serialConnection));
+		frame.setContentPane(new ConfigPanel(pandaLightConfig, serialConfig, serialConnection));
 		
 		// Show the frame
 		frame.setVisible(true);
