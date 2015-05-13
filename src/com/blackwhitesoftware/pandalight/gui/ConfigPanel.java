@@ -8,9 +8,7 @@ import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.LedSimulation.LedSimulationComponent;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshColorPickingPanel;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshCommandSenderPanel;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SshConnectionPanel;
+import com.blackwhitesoftware.pandalight.gui.SSH_Tab.ManualColorPickingPanel;
 import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
 
 import javax.swing.*;
@@ -172,9 +170,7 @@ public class ConfigPanel extends JPanel {
 		if( mTestingPanel == null){
 			mTestingPanel = new JPanel();
 			mTestingPanel.setLayout(new BoxLayout(mTestingPanel, BoxLayout.Y_AXIS));
-			mTestingPanel.add(new SshConnectionPanel(sshConfig));
-			mTestingPanel.add(new SshColorPickingPanel(sshConfig));
-			mTestingPanel.add(new SshCommandSenderPanel(sshConfig));
+			mTestingPanel.add(new ManualColorPickingPanel(sshConfig));
 
 			mTestingPanel.add(Box.createVerticalGlue());
 

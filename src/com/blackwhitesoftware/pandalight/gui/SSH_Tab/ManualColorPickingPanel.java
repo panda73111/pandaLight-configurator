@@ -23,7 +23,7 @@ import com.bric.swing.ColorPicker;
  * @author Fabian Hertwig
  *
  */
-public class SshColorPickingPanel extends JPanel implements Observer, PropertyChangeListener{
+public class ManualColorPickingPanel extends JPanel implements Observer, PropertyChangeListener{
 
 
 	private ColorPicker colorPicker;
@@ -39,7 +39,7 @@ public class SshColorPickingPanel extends JPanel implements Observer, PropertyCh
 	 * @param psshConfig 
 	 * 
 	 */
-	public SshColorPickingPanel(SshAndColorPickerConfig psshConfig) {
+	public ManualColorPickingPanel(SshAndColorPickerConfig psshConfig) {
 		super();
 		sshConfig = psshConfig;
 		

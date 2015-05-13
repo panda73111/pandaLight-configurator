@@ -6,7 +6,6 @@ import java.io.File;
 
 import javax.swing.*;
 
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.SSHTrafficPrinterFrame;
 import com.blackwhitesoftware.pandalight.spec.SshAndColorPickerConfig;
 import com.blackwhitesoftware.pandalight.spec.TransformConfig;
 import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
@@ -62,7 +61,6 @@ public class Main {
 					System.err.println("Failed to save " + configFilename);
 				}
 				SshConnectionModel.getInstance().disconnect();
-				SSHTrafficPrinterFrame.close();
 			}
 		});
 		
