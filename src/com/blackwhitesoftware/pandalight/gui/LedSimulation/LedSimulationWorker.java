@@ -5,8 +5,8 @@ import com.blackwhitesoftware.pandalight.spec.Led;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
+import java.awt.image.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -56,6 +56,8 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 
         Graphics2D g2d = backgroundImage.createGraphics();
         paintAllLeds(g2d);
+        backgroundImage = applyBlurFilter(backgroundImage);
+        backgroundImage = adjustGamma(backgroundImage, 1.5);
 
         return backgroundImage;
     }
@@ -98,15 +100,15 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
     }
 
     private void paintAllLeds(Graphics2D g2d) {
-        final int ledSize = 200;
+        final int ledSize = 250;
         // pixels of space between the LED and its beam, outwards
         // (negative = move beam inside)
         final int ledOffset = -10;
         // 0 = ambient light, LED directed at the wall
         // ledSize/2 = beam follows the wall at 90 degrees
-        final int directionDistance = 80;
+        final int directionDistance = 120;
 
-        g2d.setComposite(new LightingComposite());
+        g2d.setComposite(new LightingComposite(true));
 
         for (LedPaint led : ledPaints) {
             if (isCancelled()) {
@@ -126,19 +128,14 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
                     (int) (-1.0 * xFactor * ledOffset),
                     (int) (-1.0 * yFactor * ledOffset));
 
-            Color Color1 = new Color(0xFF000000 | led.rgb, true);
-            Color Color2 = new Color(0xAA000000 | led.rgb, true);
-
             RadialGradientPaint paint = new RadialGradientPaint(
                     directionPoint, ledSize / 2.0f, virtualLedPoint,
                     new float[]{
-                            0.0f,
-                            0.5f,
+                            0.1f,
                             1.0f
                     },
                     new Color[]{
-                            Color1,
-                            Color2,
+                            new Color(led.rgb),
                             Color.BLACK
                     },
                     MultipleGradientPaint.CycleMethod.NO_CYCLE
@@ -155,5 +152,22 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
         int rgb;
         Point point;
         double angle_rad;
+    }
+
+    private BufferedImage applyBlurFilter(BufferedImage img) {
+        final float[] matrix = new float[3 * 3];
+        Arrays.fill(matrix, 1 / 9f);
+        Kernel kernel = new Kernel(3, 3, matrix);
+        ConvolveOp convolve = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP,
+                null);
+        return convolve.filter(img, null);
+    }
+
+    private BufferedImage adjustGamma(BufferedImage img, double gamma) {
+        final byte[] gammaLookupTable = new byte[256];
+        for (int i = 0; i < 256; i++)
+            gammaLookupTable[i] = (byte) (Math.pow(i / 255.0, gamma) * 255.0);
+        LookupOp op = new LookupOp(new ByteLookupTable(0, gammaLookupTable), null);
+        return op.filter(img, null);
     }
 }

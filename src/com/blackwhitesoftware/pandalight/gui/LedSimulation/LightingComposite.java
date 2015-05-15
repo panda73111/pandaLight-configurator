@@ -44,7 +44,7 @@ public class LightingComposite implements Composite {
             if (src.getSampleModel().getDataType() != DataBuffer.TYPE_INT ||
                     dstIn.getSampleModel().getDataType() != DataBuffer.TYPE_INT ||
                     dstOut.getSampleModel().getDataType() != DataBuffer.TYPE_INT) {
-                throw new IllegalArgumentException("Source and destination must store pixels as INT.");
+                throw new IllegalArgumentException("Source and destination must store pixels as integers");
             }
 
             final int w = dstIn.getWidth();
