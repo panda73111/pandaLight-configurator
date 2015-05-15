@@ -1,5 +1,5 @@
 package com.blackwhitesoftware.pandalight.spec;
 
 public enum ColorByteOrder {
-	RGB, RBG, BRG, BGR, GRB, GBR
+    RGB, RBG, BRG, BGR, GRB, GBR
 }

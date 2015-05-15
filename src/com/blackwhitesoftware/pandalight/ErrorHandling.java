@@ -14,7 +14,7 @@ public class ErrorHandling {
     public static JFrame mainframe;
 
 
-    public static void ShowException(Exception e){
+    public static void ShowException(Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         String exceptionAsString = sw.toString();
@@ -23,18 +23,17 @@ public class ErrorHandling {
 
     }
 
-    public static void ShowMessage(String Message){
+    public static void ShowMessage(String Message) {
 
-        JOptionPane.showMessageDialog(mainframe,Message, "Info", JOptionPane.OK_OPTION);
-
-    }
-
-    public static void ShowMessage(String Message, String title){
-
-        JOptionPane.showMessageDialog(mainframe,Message, title, JOptionPane.OK_OPTION);
+        JOptionPane.showMessageDialog(mainframe, Message, "Info", JOptionPane.OK_OPTION);
 
     }
 
+    public static void ShowMessage(String Message, String title) {
+
+        JOptionPane.showMessageDialog(mainframe, Message, title, JOptionPane.OK_OPTION);
+
+    }
 
 
 }

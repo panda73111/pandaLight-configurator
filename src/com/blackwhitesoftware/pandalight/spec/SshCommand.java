@@ -4,18 +4,18 @@ package com.blackwhitesoftware.pandalight.spec;
  * Created by Fabian on 01.04.2015.
  */
 public class SshCommand {
-    public String getCommand() {
-        return command;
-    }
-
     public String command;
 
-    public SshCommand(){
+    public SshCommand() {
         command = "";
     }
 
-    public SshCommand(String string){
+    public SshCommand(String string) {
         command = string;
+    }
+
+    public String getCommand() {
+        return command;
     }
 
 }

@@ -1,27 +1,25 @@
 package com.blackwhitesoftware.pandalight.gui.LedSimulation;
 
-import java.awt.Graphics;
-import java.awt.Image;
-
-import javax.swing.JComponent;
+import javax.swing.*;
+import java.awt.*;
 
 public class ImageComponent extends JComponent {
 
-	private Image mImage;
-	
-	public ImageComponent() {
-		super();
-	}
-	
-	public void setImage(Image pImage) {
-		mImage = pImage;
-	}
-	
-	@Override
-	public void paint(Graphics g) {
-		if (mImage == null) {
-			return;
-		}
-		g.drawImage(mImage, 0, 0, getWidth(), getHeight(), null);
-	}
+    private Image mImage;
+
+    public ImageComponent() {
+        super();
+    }
+
+    public void setImage(Image pImage) {
+        mImage = pImage;
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        if (mImage == null) {
+            return;
+        }
+        g.drawImage(mImage, 0, 0, getWidth(), getHeight(), null);
+    }
 }

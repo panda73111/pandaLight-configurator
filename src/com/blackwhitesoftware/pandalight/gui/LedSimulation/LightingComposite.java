@@ -10,9 +10,9 @@ import java.awt.image.WritableRaster;
  * Created by Sebastian Hüther on 13.05.15.
  */
 public class LightingComposite implements Composite {
+    private final boolean useAlpha;
     private ColorModel srcColorModel;
     private ColorModel dstColorModel;
-    private final boolean useAlpha;
 
     public LightingComposite() {
         this(true);
@@ -30,10 +30,8 @@ public class LightingComposite implements Composite {
         return new LightingCompositeContext(srcColorModel, dstColorModel);
     }
 
-    private class LightingCompositeContext implements CompositeContext
-    {
-        public LightingCompositeContext(ColorModel srcColorModel, ColorModel dstColorModel)
-        {
+    private class LightingCompositeContext implements CompositeContext {
+        public LightingCompositeContext(ColorModel srcColorModel, ColorModel dstColorModel) {
         }
 
         @Override
@@ -45,8 +43,7 @@ public class LightingComposite implements Composite {
         public void compose(Raster src, Raster dstIn, WritableRaster dstOut) {
             if (src.getSampleModel().getDataType() != DataBuffer.TYPE_INT ||
                     dstIn.getSampleModel().getDataType() != DataBuffer.TYPE_INT ||
-                    dstOut.getSampleModel().getDataType() != DataBuffer.TYPE_INT)
-            {
+                    dstOut.getSampleModel().getDataType() != DataBuffer.TYPE_INT) {
                 throw new IllegalArgumentException("Source and destination must store pixels as INT.");
             }
 
@@ -61,8 +58,7 @@ public class LightingComposite implements Composite {
             dstIn.getDataElements(dstIn.getMinX(), dstIn.getMinY(), w, h, dstInPixels);
 
             int maxI = h * w;
-            for (int i = 0; i < maxI; i++)
-            {
+            for (int i = 0; i < maxI; i++) {
                 // additive lighting
 
                 int srcRgba = srcPixels[i];
@@ -72,8 +68,7 @@ public class LightingComposite implements Composite {
                 int srcGreen = (srcRgba >> 8) & 0xFF;
                 int srcBlue = srcRgba & 0xFF;
 
-                if (useAlpha && srcColorModel.hasAlpha())
-                {
+                if (useAlpha && srcColorModel.hasAlpha()) {
                     // regard the alpha value as brightness factor
                     int srcAlpha = (srcRgba >> 24) & 0xFF;
                     int srcInvAlpha = 255 - srcAlpha;
@@ -86,8 +81,7 @@ public class LightingComposite implements Composite {
                 int dstInGreen = (dstInRgba >> 8) & 0xFF;
                 int dstInBlue = dstInRgba & 0xFF;
 
-                if (useAlpha && dstColorModel.hasAlpha())
-                {
+                if (useAlpha && dstColorModel.hasAlpha()) {
                     int dstInAlpha = (dstInRgba >> 24) & 0xFF;
                     int dstInInvAlpha = 255 - dstInAlpha;
                     dstInRed = Math.max(dstInRed - dstInInvAlpha, 0);
@@ -95,9 +89,9 @@ public class LightingComposite implements Composite {
                     dstInBlue = Math.max(dstInBlue - dstInInvAlpha, 0);
                 }
 
-                int dstOutRed = (int) Math.min(srcRed + dstInRed, 255.0f);
-                int dstOutGreen = (int) Math.min(srcGreen + dstInGreen, 255.0f);
-                int dstOutBlue = (int) Math.min(srcBlue + dstInBlue, 255.0f);
+                int dstOutRed = Math.max(srcRed, dstInRed);
+                int dstOutGreen = Math.max(srcGreen, dstInGreen);
+                int dstOutBlue = Math.max(srcBlue, dstInBlue);
 
                 int dstOutRgb = (dstOutRed << 16) | (dstOutGreen << 8) | dstOutBlue;
 
