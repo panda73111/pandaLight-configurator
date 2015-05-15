@@ -70,11 +70,10 @@ public class LightingComposite implements Composite {
 
                 if (useAlpha && srcColorModel.hasAlpha()) {
                     // regard the alpha value as brightness factor
-                    int srcAlpha = (srcRgba >> 24) & 0xFF;
-                    int srcInvAlpha = 255 - srcAlpha;
-                    srcRed = Math.max(srcRed - srcInvAlpha, 0);
-                    srcGreen = Math.max(srcGreen - srcInvAlpha, 0);
-                    srcBlue = Math.max(srcBlue - srcInvAlpha, 0);
+                    double srcAlpha = ((srcRgba >> 24) & 0xFF) / 255.0;
+                    srcRed = (int) (srcRed * srcAlpha);
+                    srcGreen = (int) (srcGreen * srcAlpha);
+                    srcBlue = (int) (srcBlue * srcAlpha);
                 }
 
                 int dstInRed = (dstInRgba >> 16) & 0xFF;
@@ -82,11 +81,10 @@ public class LightingComposite implements Composite {
                 int dstInBlue = dstInRgba & 0xFF;
 
                 if (useAlpha && dstColorModel.hasAlpha()) {
-                    int dstInAlpha = (dstInRgba >> 24) & 0xFF;
-                    int dstInInvAlpha = 255 - dstInAlpha;
-                    dstInRed = Math.max(dstInRed - dstInInvAlpha, 0);
-                    dstInGreen = Math.max(dstInGreen - dstInInvAlpha, 0);
-                    dstInBlue = Math.max(dstInBlue - dstInInvAlpha, 0);
+                    double dstInAlpha = ((dstInRgba >> 24) & 0xFF) / 255.0;
+                    dstInRed = (int) (dstInRed * dstInAlpha);
+                    dstInGreen = (int) (dstInGreen * dstInAlpha);
+                    dstInBlue = (int) (dstInBlue * dstInAlpha);
                 }
 
                 int dstOutRed = Math.max(srcRed, dstInRed);
