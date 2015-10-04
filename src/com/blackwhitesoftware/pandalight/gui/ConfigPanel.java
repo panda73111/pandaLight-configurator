@@ -6,6 +6,7 @@ import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.led_simulation.LedSimulationComponent;
 import com.blackwhitesoftware.pandalight.gui.remote_control_tab.ManualColorPickingPanel;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.SerialConnectionPanel;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;
@@ -76,7 +77,7 @@ public class ConfigPanel extends JPanel {
      * The left (WEST) side panel containing the different configuration panels
      */
     private JPanel mHardwarePanel = null;
-    private JPanel mTestingPanel = null;
+    private JPanel mRemoteControlPanel = null;
 
 
     /**
@@ -87,7 +88,10 @@ public class ConfigPanel extends JPanel {
     /**
      * Constructs the configuration panel with a default initialised led-frame and configuration
      */
-    public ConfigPanel(final PandaLightConfigurationContainer pandaLightConfig, final SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
+    public ConfigPanel(
+            final PandaLightConfigurationContainer pandaLightConfig,
+            final SerialAndColorPickerConfig serialConfig,
+            PandaLightSerialConnection serialConnection) {
         super();
 
         this.pandaLightConfig = pandaLightConfig;
@@ -96,14 +100,17 @@ public class ConfigPanel extends JPanel {
         initialise();
 
         // Compute the individual leds for the current configuration
-        this.pandaLightConfig.leds = LedFrameFactory.construct(this.pandaLightConfig.mLedFrameConfig, this.pandaLightConfig.mProcessConfig);
+        this.pandaLightConfig.leds = LedFrameFactory.construct(
+                this.pandaLightConfig.mLedFrameConfig, this.pandaLightConfig.mProcessConfig);
         mHyperionTv.setLeds(this.pandaLightConfig.leds);
 
         // Add Observer to update the individual leds if the configuration changes
         final Observer observer = new Observer() {
             @Override
             public void update(Observable o, Object arg) {
-                ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(ConfigPanel.this.pandaLightConfig.mLedFrameConfig, ConfigPanel.this.pandaLightConfig.mProcessConfig);
+                ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(
+                        ConfigPanel.this.pandaLightConfig.mLedFrameConfig,
+                        ConfigPanel.this.pandaLightConfig.mProcessConfig);
                 mHyperionTv.setLeds(ConfigPanel.this.pandaLightConfig.leds);
                 mHyperionTv.repaint();
             }
@@ -144,7 +151,7 @@ public class ConfigPanel extends JPanel {
             mSpecificationTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
             mSpecificationTabs.addTab("Hardware", new JScrollPane(getHardwarePanel()));
-            mSpecificationTabs.addTab("SSH", new JScrollPane(getTestingPanel()));
+            mSpecificationTabs.addTab("Remote Control", new JScrollPane(getRemoteControlPanel()));
         }
         return mSpecificationTabs;
     }
@@ -178,17 +185,18 @@ public class ConfigPanel extends JPanel {
         return mHardwarePanel;
     }
 
-    private JPanel getTestingPanel() {
-        if (mTestingPanel == null) {
-            mTestingPanel = new JPanel();
-            mTestingPanel.setLayout(new BoxLayout(mTestingPanel, BoxLayout.Y_AXIS));
-            mTestingPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
+    private JPanel getRemoteControlPanel() {
+        if (mRemoteControlPanel == null) {
+            mRemoteControlPanel = new JPanel();
+            mRemoteControlPanel.setLayout(new BoxLayout(mRemoteControlPanel, BoxLayout.Y_AXIS));
+            mRemoteControlPanel.add(new SerialConnectionPanel(serialConfig, serialConnection));
+            mRemoteControlPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
 
-            mTestingPanel.add(Box.createVerticalGlue());
+            mRemoteControlPanel.add(Box.createVerticalGlue());
 
         }
 
-        return mTestingPanel;
+        return mRemoteControlPanel;
     }
 
 
