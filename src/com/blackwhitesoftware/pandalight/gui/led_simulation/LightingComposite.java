@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.gui.LedSimulation;
+package com.blackwhitesoftware.pandalight.gui.led_simulation;
 
 import java.awt.*;
 import java.awt.image.ColorModel;

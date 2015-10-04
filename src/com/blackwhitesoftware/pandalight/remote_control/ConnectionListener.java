@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.ssh;
+package com.blackwhitesoftware.pandalight.remote_control;
 
 public interface ConnectionListener {
 

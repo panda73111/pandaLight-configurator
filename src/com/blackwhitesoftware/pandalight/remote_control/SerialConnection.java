@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.ssh;
+package com.blackwhitesoftware.pandalight.remote_control;
 
 import java.util.List;
 import java.util.Vector;

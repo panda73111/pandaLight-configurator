@@ -1,6 +1,6 @@
 package com.blackwhitesoftware.pandalight.spec;
 
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.device.*;
+import com.blackwhitesoftware.pandalight.gui.hardware_tab.device.*;
 
 /**
  * Enumeration of known device types

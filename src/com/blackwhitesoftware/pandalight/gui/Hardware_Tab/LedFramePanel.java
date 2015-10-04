@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.gui.Hardware_Tab;
+package com.blackwhitesoftware.pandalight.gui.hardware_tab;
 
 import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction;
 import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction.Direction;

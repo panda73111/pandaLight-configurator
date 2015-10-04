@@ -1,8 +1,8 @@
 package com.blackwhitesoftware.pandalight;
 
-import com.blackwhitesoftware.pandalight.ssh.ConnectionAdapter;
-import com.blackwhitesoftware.pandalight.ssh.ConnectionListener;
-import com.blackwhitesoftware.pandalight.ssh.SerialConnection;
+import com.blackwhitesoftware.pandalight.remote_control.ConnectionAdapter;
+import com.blackwhitesoftware.pandalight.remote_control.ConnectionListener;
+import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Observable;

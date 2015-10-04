@@ -1,11 +1,11 @@
 package com.blackwhitesoftware.pandalight.gui;
 
 import com.blackwhitesoftware.pandalight.*;
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.DevicePanel;
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.ImageProcessPanel;
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.LedFramePanel;
-import com.blackwhitesoftware.pandalight.gui.LedSimulation.LedSimulationComponent;
-import com.blackwhitesoftware.pandalight.gui.SSH_Tab.ManualColorPickingPanel;
+import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
+import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
+import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
+import com.blackwhitesoftware.pandalight.gui.led_simulation.LedSimulationComponent;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.ManualColorPickingPanel;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;

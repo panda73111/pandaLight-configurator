@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.gui.SSH_Tab;
+package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
 import com.blackwhitesoftware.pandalight.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
@@ -159,7 +159,7 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
     }
 
     /**
-     * is called when the ssh connection status changes
+     * is called when the remote control connection status changes
      */
     @Override
     public void update(Observable arg0, Object arg1) {

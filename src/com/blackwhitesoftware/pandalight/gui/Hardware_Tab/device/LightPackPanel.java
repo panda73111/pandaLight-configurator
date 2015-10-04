@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.gui.Hardware_Tab.device;
+package com.blackwhitesoftware.pandalight.gui.hardware_tab.device;
 
 import com.blackwhitesoftware.pandalight.spec.DeviceConfig;
 

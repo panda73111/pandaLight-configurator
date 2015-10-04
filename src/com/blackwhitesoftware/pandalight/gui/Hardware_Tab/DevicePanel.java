@@ -1,6 +1,6 @@
-package com.blackwhitesoftware.pandalight.gui.Hardware_Tab;
+package com.blackwhitesoftware.pandalight.gui.hardware_tab;
 
-import com.blackwhitesoftware.pandalight.gui.Hardware_Tab.device.DeviceTypePanel;
+import com.blackwhitesoftware.pandalight.gui.hardware_tab.device.DeviceTypePanel;
 import com.blackwhitesoftware.pandalight.spec.ColorByteOrder;
 import com.blackwhitesoftware.pandalight.spec.DeviceConfig;
 import com.blackwhitesoftware.pandalight.spec.DeviceType;
