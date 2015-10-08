@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
 import com.blackwhitesoftware.pandalight.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;
@@ -65,7 +66,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         //All the Gui elements
         setBorder(BorderFactory.createTitledBorder("Serial Connection"));
 
-        portComboBox = new JComboBox<>(new String[]{""});
+        portComboBox = new JComboBox<>(SerialConnection.getSerialPorts());
         portComboBox.addActionListener(mActionListener);
         add(portComboBox);
 
