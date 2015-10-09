@@ -6,7 +6,5 @@ public interface ConnectionListener {
 
     void disconnected();
 
-    void addLine(String pLine);
-
-    void addError(String pLine);
+    void gotLine(String pLine);
 }

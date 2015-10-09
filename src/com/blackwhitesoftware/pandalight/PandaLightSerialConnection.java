@@ -18,18 +18,10 @@ public class PandaLightSerialConnection extends Observable {
     final private SerialConnection serialConnection;
     private final ConnectionListener connectionConsoleListener = new ConnectionAdapter() {
         @Override
-        public void addLine(String pLine) {
+        public void gotLine(String pLine) {
             if (printTraffic) {
                 System.out.println("serial port: " + pLine);
             }
-        }
-
-        @Override
-        public void addError(String pLine) {
-            if (printTraffic) {
-                System.out.println("serial port error: " + "\u001B[31m" + pLine);
-            }
-
         }
 
         @Override

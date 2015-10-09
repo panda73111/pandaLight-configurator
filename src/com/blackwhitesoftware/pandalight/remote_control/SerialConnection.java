@@ -1,7 +1,10 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
-import gnu.io.CommPortIdentifier;
+import gnu.io.*;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -9,26 +12,53 @@ import java.util.Vector;
 
 public class SerialConnection {
 
+    private final static int BAUDRATE = 115200;
+    private final static int TIMELIMIT = 2000;
     private final List<ConnectionListener> connectionListeners = new Vector<>();
+
+    private SerialPort serialPort = null;
 
     public SerialConnection() {
 
     }
 
     public void connect(String portName) {
-        //TODO implement
+        try {
+            CommPortIdentifier identifier = CommPortIdentifier.getPortIdentifier(portName);
+            CommPort port = identifier.open(this.getClass().getName(), TIMELIMIT);
+            if (!(port instanceof SerialPort)) {
+                //TODO error message
+                return;
+            }
+
+            this.serialPort = (SerialPort) port;
+            serialPort.setSerialPortParams(
+                    BAUDRATE,
+                    SerialPort.DATABITS_8,
+                    SerialPort.STOPBITS_1,
+                    SerialPort.PARITY_NONE);
+
+            InputStream in = serialPort.getInputStream();
+            OutputStream out = serialPort.getOutputStream();
+
+            (new Thread(new SerialConnectionReader(in))).start();
+            (new Thread(new SerialConnectionWriter(out))).start();
+        }
+        catch (NoSuchPortException|PortInUseException|UnsupportedCommOperationException|IOException ex) {
+            //TODO error message
+        }
     }
 
     public boolean isConnected() {
-        //TODO implement
-        return false;
+        return this.serialPort != null;
     }
 
     public void disconnect() {
-        //TODO implement
+        serialPort.close();
         for (ConnectionListener cl : connectionListeners) {
             cl.disconnected();
         }
+        this.serialPort = null;
     }
 
     public static String[] getSerialPorts() {

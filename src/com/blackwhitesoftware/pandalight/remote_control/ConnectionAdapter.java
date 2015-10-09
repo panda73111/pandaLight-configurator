@@ -11,11 +11,7 @@ public abstract class ConnectionAdapter implements ConnectionListener {
     }
 
     @Override
-    public void addLine(String pLine) {
-    }
-
-    @Override
-    public void addError(String pLine) {
+    public void gotLine(String pLine) {
     }
 
 }
