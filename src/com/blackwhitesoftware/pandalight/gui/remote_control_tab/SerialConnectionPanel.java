@@ -19,11 +19,6 @@ import java.util.Observer;
  */
 public class SerialConnectionPanel extends JPanel implements Observer, PropertyChangeListener {
 
-    private PandaLightSerialConnection serialConnection;
-    private JComboBox portComboBox;
-    private JButton connectButton;
-    private SerialAndColorPickerConfig serialConfig;
-
     /**
      * Listener for the buttons and checkboxes
      */
@@ -32,6 +27,10 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         public void actionPerformed(ActionEvent e) {
         }
     };
+    private PandaLightSerialConnection serialConnection;
+    private JComboBox portComboBox;
+    private JButton connectButton;
+    private SerialAndColorPickerConfig serialConfig;
 
     /**
      * Constructor
@@ -81,17 +80,17 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         setLayout(layout);
 
         layout.setHorizontalGroup(layout.createParallelGroup()
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(portComboBox))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(connectButton)
-        ));
+                .addGroup(layout.createSequentialGroup()
+                        .addComponent(portComboBox))
+                .addGroup(layout.createSequentialGroup()
+                                .addComponent(connectButton)
+                ));
 
         layout.setVerticalGroup(layout.createSequentialGroup()
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(portComboBox)
-                .addComponent(connectButton)
-        ));
+                .addGroup(layout.createSequentialGroup()
+                                .addComponent(portComboBox)
+                                .addComponent(connectButton)
+                ));
     }
 
     /**

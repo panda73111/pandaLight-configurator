@@ -9,24 +9,18 @@ import java.io.OutputStream;
 public class SerialConnectionWriter implements Runnable {
     OutputStream out;
 
-    public SerialConnectionWriter ( OutputStream out )
-    {
+    public SerialConnectionWriter(OutputStream out) {
         this.out = out;
     }
 
     @Override
-    public void run ()
-    {
-        try
-        {
+    public void run() {
+        try {
             int c = 0;
-            while ( ( c = System.in.read()) > -1 )
-            {
+            while ((c = System.in.read()) > -1) {
                 this.out.write(c);
             }
-        }
-        catch ( IOException e )
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

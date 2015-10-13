@@ -148,12 +148,6 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
         }
     }
 
-    class LedPaint {
-        int rgb;
-        Point point;
-        double angle_rad;
-    }
-
     private BufferedImage applyBlurFilter(BufferedImage img) {
         final float[] matrix = new float[3 * 3];
         Arrays.fill(matrix, 1 / 9f);
@@ -169,5 +163,11 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
             gammaLookupTable[i] = (byte) (Math.pow(i / 255.0, gamma) * 255.0);
         LookupOp op = new LookupOp(new ByteLookupTable(0, gammaLookupTable), null);
         return op.filter(img, null);
+    }
+
+    class LedPaint {
+        int rgb;
+        Point point;
+        double angle_rad;
     }
 }

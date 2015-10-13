@@ -22,6 +22,20 @@ public class SerialConnection {
 
     }
 
+    public static String[] getSerialPorts() {
+        ArrayList<String> ports = new ArrayList<>();
+
+        Enumeration enumComm = CommPortIdentifier.getPortIdentifiers();
+        while (enumComm.hasMoreElements()) {
+            CommPortIdentifier serialPortId = (CommPortIdentifier) enumComm.nextElement();
+            if (serialPortId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+                ports.add(serialPortId.getName());
+            }
+        }
+
+        return ports.toArray(new String[ports.size()]);
+    }
+
     public void connect(String portName) {
         try {
             CommPortIdentifier identifier = CommPortIdentifier.getPortIdentifier(portName);
@@ -41,10 +55,22 @@ public class SerialConnection {
             InputStream in = serialPort.getInputStream();
             OutputStream out = serialPort.getOutputStream();
 
-            (new Thread(new SerialConnectionReader(in))).start();
+            ConnectionAdapter adapter = new ConnectionAdapter() {
+                @Override
+                public void connected() {
+                    super.connected();
+                }
+
+                @Override
+                public void disconnected() {
+                    super.disconnected();
+                    disconnect();
+                }
+            };
+
+            (new Thread(new SerialConnectionReader(in, adapter))).start();
             (new Thread(new SerialConnectionWriter(out))).start();
-        }
-        catch (NoSuchPortException|PortInUseException|UnsupportedCommOperationException|IOException ex) {
+        } catch (NoSuchPortException | PortInUseException | UnsupportedCommOperationException | IOException ex) {
             //TODO error message
         }
     }
@@ -55,24 +81,8 @@ public class SerialConnection {
 
     public void disconnect() {
         serialPort.close();
-        for (ConnectionListener cl : connectionListeners) {
-            cl.disconnected();
-        }
+        connectionListeners.forEach(ConnectionListener::disconnected);
         this.serialPort = null;
-    }
-
-    public static String[] getSerialPorts() {
-        ArrayList<String> ports = new ArrayList<>();
-
-        Enumeration enumComm = CommPortIdentifier.getPortIdentifiers();
-        while (enumComm.hasMoreElements()) {
-            CommPortIdentifier serialPortId = (CommPortIdentifier) enumComm.nextElement();
-            if(serialPortId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                ports.add(serialPortId.getName());
-            }
-        }
-
-        return ports.toArray(new String[ports.size()]);
     }
 
     public void addConnectionListener(ConnectionListener listener) {
