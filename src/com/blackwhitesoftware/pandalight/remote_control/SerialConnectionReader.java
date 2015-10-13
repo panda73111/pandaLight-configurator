@@ -8,27 +8,35 @@ import java.io.InputStream;
  */
 public class SerialConnectionReader implements Runnable {
     InputStream in;
+    ConnectionAdapter adapter;
 
-    public SerialConnectionReader ( InputStream in )
-    {
+    public SerialConnectionReader(InputStream in, ConnectionAdapter adapter) {
         this.in = in;
+        this.adapter = adapter;
+    }
+
+    private void readLines() {
+        byte[] buffer = new byte[1024];
+        int len;
+        try {
+            int lineStart = 0;
+            while ((len = this.in.read(buffer, lineStart, buffer.length - lineStart)) > -1) {
+                for (int i = lineStart; i < lineStart + len; i++)
+                    if (buffer[i] == (byte) '\n') {
+                        String line = new String(buffer, lineStart, i - lineStart - 1);
+                        adapter.gotLine(line);
+                        lineStart = i + 1;
+                    }
+                if (lineStart == len)
+                    lineStart = 0;
+            }
+        } catch (IOException e) {
+            adapter.disconnected();
+        }
     }
 
     @Override
-    public void run ()
-    {
-        byte[] buffer = new byte[1024];
-        int len;
-        try
-        {
-            while ( ( len = this.in.read(buffer)) > -1 )
-            {
-                System.out.print(new String(buffer,0,len));
-            }
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace();
-        }
+    public void run() {
+        readLines();
     }
 }
