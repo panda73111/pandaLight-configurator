@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Main-Class: com.blackwhitesoftware.pandalight.Main
+Specification-Title: PandaLight configurator
+Specification-Version: 1.0
+Specification-Vendor: BlackWhite Software
+Implementation-Title: com.blackwhitesoftware.pandalight
+Implementation-Version: build1
+Implementation-Vendor: BlackWhite Software
