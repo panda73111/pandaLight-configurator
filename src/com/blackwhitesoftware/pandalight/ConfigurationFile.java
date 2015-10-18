@@ -10,17 +10,17 @@ import java.util.Properties;
 import java.util.Vector;
 
 /**
- * Class for supporting the serialisation and deserialisation of HyperCon settings.
+ * Class for supporting the serialisation and deserialisation of settings.
  */
 public class ConfigurationFile {
 
     /**
-     * Temporary storage of the HyperCon configuration
+     * Temporary storage of the configuration
      */
     private final Properties mProps = new Properties();
 
     /**
-     * Loads the configuration of HyperCon from the given filename into this {@link ConfigurationFile}
+     * Loads the configuration from the given filename into this {@link ConfigurationFile}
      *
      * @param pFilename The absolute filename containing the configuration
      */
@@ -39,13 +39,13 @@ public class ConfigurationFile {
     /**
      * Saves the configuration of this {@link ConfigurationFile} to the given filename
      *
-     * @param pFilename The absolute filename to which to save the HyperCon configuration
+     * @param pFilename The absolute filename to which to save the configuration
      */
     public void save(String pFilename) {
 //		try (OutputStream out = new DeflaterOutputStream(new FileOutputStream(pFilename))) {
 //		try (OutputStream out = new GZIPOutputStream(new FileOutputStream(pFilename))) {
         try (OutputStream out = (new FileOutputStream(pFilename))) {
-            mProps.store(out, "Pesistent settings file for HyperCon");
+            mProps.store(out, "Pesistent settings file");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -17,7 +17,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 /**
- * The main-config panel of HyperCon. Includes the configuration and the panels to edit and
+ * The main-config panel. Includes the configuration and the panels to edit and
  * write-out the configuration. This can be placed on JFrame, JDialog or JApplet as required.
  */
 public class ConfigPanel extends JPanel {
@@ -30,13 +30,13 @@ public class ConfigPanel extends JPanel {
     private final PandaLightSerialConnection serialConnection;
 
     /**
-     * The panel for containing the example 'Hyperion TV'
+     * The panel for containing the example TV with ambient lighting
      */
     private JPanel mTvPanel;
     /**
-     * The simulated 'Hyperion TV'
+     * The simulated TV with ambient lighting
      */
-    private LedSimulationComponent mHyperionTv;
+    private LedSimulationComponent mLightedTV;
 
     private JTabbedPane mSpecificationTabs = null;
     /**
@@ -62,7 +62,7 @@ public class ConfigPanel extends JPanel {
         // Compute the individual leds for the current configuration
         this.pandaLightConfig.leds = LedFrameFactory.construct(
                 this.pandaLightConfig.mLedFrameConfig, this.pandaLightConfig.mProcessConfig);
-        mHyperionTv.setLeds(this.pandaLightConfig.leds);
+        mLightedTV.setLeds(this.pandaLightConfig.leds);
 
         // Add Observer to update the individual leds if the configuration changes
         final Observer observer = new Observer() {
@@ -71,8 +71,8 @@ public class ConfigPanel extends JPanel {
                 ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(
                         ConfigPanel.this.pandaLightConfig.mLedFrameConfig,
                         ConfigPanel.this.pandaLightConfig.mProcessConfig);
-                mHyperionTv.setLeds(ConfigPanel.this.pandaLightConfig.leds);
-                mHyperionTv.repaint();
+                mLightedTV.setLeds(ConfigPanel.this.pandaLightConfig.leds);
+                mLightedTV.repaint();
             }
         };
         this.pandaLightConfig.mLedFrameConfig.addObserver(observer);
@@ -111,7 +111,7 @@ public class ConfigPanel extends JPanel {
     }
 
     /**
-     * Created, if not exists, and returns the panel holding the simulated 'Hyperion TV'
+     * Created, if not exists, and returns the panel holding the simulated TV with ambient lighting
      *
      * @return The Tv panel
      */
@@ -120,8 +120,8 @@ public class ConfigPanel extends JPanel {
             mTvPanel = new JPanel();
             mTvPanel.setLayout(new BorderLayout());
 
-            mHyperionTv = new LedSimulationComponent(pandaLightConfig.leds);
-            mTvPanel.add(mHyperionTv, BorderLayout.CENTER);
+            mLightedTV = new LedSimulationComponent(pandaLightConfig.leds);
+            mTvPanel.add(mLightedTV, BorderLayout.CENTER);
         }
         return mTvPanel;
     }

@@ -22,7 +22,7 @@ public class TestDevicePanel extends DeviceTypePanel {
         super.setDeviceConfig(pDeviceConfig);
 
         // Make sure that the device specific configuration (and only device specific) is set
-        String output = getValue("output", "/tmp/hyperion.out");
+        String output = getValue("output", "/tmp/ledtest.out");
         mDeviceConfig.mDeviceProperties.clear();
         mDeviceConfig.mDeviceProperties.put("output", output);
 

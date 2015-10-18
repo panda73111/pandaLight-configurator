@@ -1,13 +1,9 @@
 package com.blackwhitesoftware.pandalight.spec;
 
-import com.blackwhitesoftware.pandalight.JsonStringBuffer;
-import com.blackwhitesoftware.pandalight.LedFrameFactory;
-
 import java.util.Observable;
 
 /**
- * Configuration parameters for the image processing. These settings are translated using the
- * {@link LedFrameFactory} to configuration items used in the Hyperion daemon configfile.
+ * Configuration parameters for the image processing.
  */
 public class ImageProcessConfig extends Observable {
 
@@ -126,7 +122,7 @@ public class ImageProcessConfig extends Observable {
      * Sets the horizontal gap (top and bottom) of the image integration area from the side as a fraction of the
      * screen [0.0; 1.0]
      *
-     * @param pHorizontalGap The horizontal integration area gap from the side [0.0; 1.0]
+     * @param pVerticalGap The vertical integration area gap [0.0; 1.0]
      */
     public void setVerticalGap(double pVerticalGap) {
         if (mVerticalGap != pVerticalGap) {
@@ -195,19 +191,6 @@ public class ImageProcessConfig extends Observable {
             mBlackBorderThreshold = pThreshold;
             setChanged();
         }
-    }
-
-    public void appendTo(JsonStringBuffer pJsonBuf) {
-        String comment =
-                "The black border configuration, contains the following items: \n" +
-                        " * enable    : true if the detector should be activated\n" +
-                        " * threshold : Value below which a pixel is regarded as black (value between 0.0 and 1.0)\n";
-        pJsonBuf.writeComment(comment);
-
-        pJsonBuf.startObject("blackborderdetector");
-        pJsonBuf.addValue("enable", mBlackBorderRemoval, false);
-        pJsonBuf.addValue("threshold", mBlackBorderThreshold, true);
-        pJsonBuf.stopObject();
     }
 
 }

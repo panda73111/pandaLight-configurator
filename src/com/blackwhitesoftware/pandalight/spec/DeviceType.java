@@ -98,7 +98,7 @@ public enum DeviceType {
     }
 
     /**
-     * Returns the type identifier as used by hyperion to determine the device type
+     * Returns the type identifier to determine the device type
      *
      * @return
      */

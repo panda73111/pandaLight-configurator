@@ -5,7 +5,7 @@ import com.blackwhitesoftware.pandalight.spec.*;
 import java.util.Vector;
 
 /**
- * The full configuration of Hyperion with sub-items for device, color, grabber-v4l2 and miscelanuous items.
+ * The full configuration with sub-items for device, color, grabber-v4l2 and miscelanuous items.
  */
 public class PandaLightConfigurationContainer {
     /**

@@ -10,19 +10,19 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 
 /**
- * (static) Main-class for starting HyperCon (the Hyperion configuration file builder) as a standard
- * JAVA application (contains the entry-point).
+ * (static) Main-class for starting the GUI as a standard JAVA application (contains the entry-point).
  */
 public class Main {
-    public static final String configFilename = "hypercon.dat";
+    public static final String configFilename = "settings.dat";
 
     /**
-     * Entry point to start HyperCon
+     * Entry point to start GUI
      *
-     * @param pArgs HyperCon does not have command line arguments
+     * @param pArgs This does not have command line arguments
      */
     public static void main(String[] pArgs) {
-        final String versionStr = Main.class.getPackage().getImplementationVersion();
+        final String versionStr = Main.class.getPackage().getSpecificationVersion();
+        final String appTitleStr = Main.class.getPackage().getSpecificationTitle();
         final PandaLightConfigurationContainer pandaLightConfig = new PandaLightConfigurationContainer();
         final SerialAndColorPickerConfig serialConfig = new SerialAndColorPickerConfig();
         final PandaLightSerialConnection serialConnection = new PandaLightSerialConnection();
@@ -36,11 +36,11 @@ public class Main {
         // Create a frame for the configuration panel
         JFrame frame = new JFrame();
         ErrorHandling.mainframe = frame;
-        String title = "Hyperion configuration Tool" + ((versionStr != null && !versionStr.isEmpty()) ? (" (" + versionStr + ")") : "");
+        String title = appTitleStr + " v" + versionStr;
         frame.setTitle(title);
         frame.setSize(1300, 700);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setIconImage(new ImageIcon(Main.class.getResource("HyperConIcon_64.png")).getImage());
+        frame.setIconImage(new ImageIcon(Main.class.getResource("icon64.png")).getImage());
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -78,7 +78,7 @@ public class Main {
             }
         }
 
-        // Add the HyperCon configuration panel
+        // Add the configuration panel
         frame.setContentPane(new ConfigPanel(pandaLightConfig, serialConfig, serialConnection));
 
         // Show the frame

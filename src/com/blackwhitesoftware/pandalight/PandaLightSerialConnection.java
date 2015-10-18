@@ -85,7 +85,7 @@ public class PandaLightSerialConnection extends Observable {
     }
 
     /**
-     * Sends the hyperion-remote -c command to set the led color
+     * Sends the command to set the led color
      *
      * @param red   value between 0 and 255
      * @param green value between 0 and 255
@@ -102,7 +102,7 @@ public class PandaLightSerialConnection extends Observable {
     }
 
     /**
-     * Sends the hyperion-remote -c command to set the led color
+     * Sends the command to set the led color
      *
      * @param hexValues RRGGBB as Hexvalues, eg. FF0000 for 255 0 0
      * @return false if there is no connection, true after the command was sent

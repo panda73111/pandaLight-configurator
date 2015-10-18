@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.test;
 
 import com.blackwhitesoftware.pandalight.ConfigurationFile;
+import com.blackwhitesoftware.pandalight.Main;
 import com.blackwhitesoftware.pandalight.spec.*;
 
 public class TesConfigWriter {
@@ -25,10 +26,10 @@ public class TesConfigWriter {
         configFile.store(colorConfig);
         configFile.store(imageConfig);
         configFile.store(miscConfig);
-        configFile.save("./HyperCon.dat");
+        configFile.save(Main.configFilename);
 
         ConfigurationFile configFile2 = new ConfigurationFile();
-        configFile2.load("./HyperCon.dat");
+        configFile2.load(Main.configFilename);
         configFile2.restore(deviceConfig);
         configFile2.restore(frameConfig);
         configFile2.restore(colorConfig);
