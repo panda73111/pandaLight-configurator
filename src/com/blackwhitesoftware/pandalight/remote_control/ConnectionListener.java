@@ -6,5 +6,5 @@ public interface ConnectionListener {
 
     void disconnected();
 
-    void gotLine(String pLine);
+    void gotData(byte[] data);
 }
