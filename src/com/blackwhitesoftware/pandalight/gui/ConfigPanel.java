@@ -1,6 +1,8 @@
 package com.blackwhitesoftware.pandalight.gui;
 
-import com.blackwhitesoftware.pandalight.*;
+import com.blackwhitesoftware.pandalight.LedFrameFactory;
+import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
+import com.blackwhitesoftware.pandalight.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
@@ -11,9 +13,6 @@ import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -31,39 +30,6 @@ public class ConfigPanel extends JPanel {
     private final PandaLightSerialConnection serialConnection;
 
     /**
-     * Action for write the Hyperion deamon configuration file
-     */
-    private final Action saveConfigAction = new AbstractAction("Create Hyperion Configuration") {
-        JFileChooser fileChooser = new JFileChooser();
-
-        {
-            fileChooser.setSelectedFile(new File("hyperion.config.json"));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (fileChooser.showSaveDialog(ConfigPanel.this) != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-
-            try {
-                pandaLightConfig.saveConfigFile(fileChooser.getSelectedFile().getAbsolutePath());
-
-                ConfigurationFile configFile = new ConfigurationFile();
-                configFile.store(pandaLightConfig.mDeviceConfig);
-                configFile.store(pandaLightConfig.mLedFrameConfig);
-                configFile.store(pandaLightConfig.mProcessConfig);
-                configFile.store(pandaLightConfig.mColorConfig);
-                configFile.store(pandaLightConfig.mMiscConfig);
-                configFile.save(Main.configFilename);
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-        }
-    };
-
-    /**
      * The panel for containing the example 'Hyperion TV'
      */
     private JPanel mTvPanel;
@@ -78,12 +44,6 @@ public class ConfigPanel extends JPanel {
      */
     private JPanel mHardwarePanel = null;
     private JPanel mRemoteControlPanel = null;
-
-
-    /**
-     * The button connected to saveConfigAction
-     */
-    private JButton saveConfigButton;
 
     /**
      * Constructs the configuration panel with a default initialised led-frame and configuration
@@ -135,12 +95,6 @@ public class ConfigPanel extends JPanel {
         mWestPanel.setLayout(new BorderLayout());
 
         mWestPanel.add(getSpecificationTabs(), BorderLayout.CENTER);
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        saveConfigButton = new JButton(saveConfigAction);
-        panel.add(saveConfigButton, BorderLayout.SOUTH);
-        mWestPanel.add(panel, BorderLayout.SOUTH);
 
         return mWestPanel;
     }
