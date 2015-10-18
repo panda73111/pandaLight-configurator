@@ -9,7 +9,7 @@ import java.util.Observable;
 
 /**
  * @author Sebastian Hüther
- *         A high level connection between the GUI and the pandaLightBoard
+ *         A high level connection between the GUI and the pandaLight board
  */
 public class PandaLightSerialConnection extends Observable {
 
@@ -17,13 +17,6 @@ public class PandaLightSerialConnection extends Observable {
 
     final private SerialConnection serialConnection;
     private final ConnectionListener connectionConsoleListener = new ConnectionAdapter() {
-        @Override
-        public void gotLine(String line) {
-            if (printTraffic) {
-                System.out.println("serial port: " + line);
-            }
-        }
-
         @Override
         public void connected() {
             if (printTraffic) {
