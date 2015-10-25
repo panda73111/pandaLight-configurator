@@ -10,5 +10,5 @@ public interface ConnectionListener {
 
     void sendingCommand(PandaLightCommand cmd);
 
-    void gotData(byte[] data);
+    void gotData(byte[] data, int offset, int length);
 }

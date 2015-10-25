@@ -17,7 +17,7 @@ public abstract class ConnectionAdapter implements ConnectionListener {
     }
 
     @Override
-    public void gotData(byte[] data) {
+    public void gotData(byte[] data, int offset, int length) {
     }
 
 }
