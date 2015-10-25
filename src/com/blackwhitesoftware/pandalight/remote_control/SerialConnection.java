@@ -1,5 +1,6 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
+import com.blackwhitesoftware.pandalight.PandaLightCommand;
 import gnu.io.*;
 
 import java.io.IOException;
@@ -17,9 +18,10 @@ public class SerialConnection {
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private SerialPort serialPort = null;
+    private InputStream in = null;
+    private OutputStream out = null;
 
     public SerialConnection() {
-
     }
 
     public static String[] getSerialPorts() {
@@ -45,44 +47,68 @@ public class SerialConnection {
                 return;
             }
 
-            this.serialPort = (SerialPort) port;
+            serialPort = (SerialPort) port;
             serialPort.setSerialPortParams(
                     BAUDRATE,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
-            InputStream in = serialPort.getInputStream();
-            OutputStream out = serialPort.getOutputStream();
+            in = serialPort.getInputStream();
+            out = serialPort.getOutputStream();
 
-            ConnectionAdapter adapter = new ConnectionAdapter() {
-                @Override
-                public void connected() {
-                    super.connected();
-                }
-
-                @Override
-                public void disconnected() {
-                    super.disconnected();
-                    disconnect();
-                }
-            };
-
-            (new Thread(new SerialConnectionReader(in, adapter))).start();
-            (new Thread(new SerialConnectionWriter(out))).start();
-        } catch (NoSuchPortException | PortInUseException | UnsupportedCommOperationException | IOException ex) {
+            connectionListeners.forEach(ConnectionListener::connected);
+        } catch (NoSuchPortException | PortInUseException | UnsupportedCommOperationException | IOException e) {
             //TODO error message
         }
     }
 
     public boolean isConnected() {
-        return this.serialPort != null;
+        return serialPort != null;
     }
 
     public void disconnect() {
         serialPort.close();
+        serialPort = null;
+        try {
+            in.close();
+        } catch (IOException ignored) {
+        }
+        try {
+            out.close();
+        } catch (IOException ignored) {
+        }
+        in = null;
+        out = null;
         connectionListeners.forEach(ConnectionListener::disconnected);
-        this.serialPort = null;
+    }
+
+    public void sendCommand(PandaLightCommand cmd) throws IOException {
+        sendData(new byte[]{cmd.byteCommand()});
+    }
+
+    public void sendData(byte[] data) throws IOException {
+        try {
+            out.write(data);
+        } catch (IOException e) {
+            disconnect();
+            throw e;
+        }
+    }
+
+    public int read(byte[] buffer) throws IOException {
+        return read(buffer, 0, buffer.length);
+    }
+
+    public int read(byte[] buffer, int offset, int length) throws IOException {
+        try {
+            int readCount = in.read(buffer, offset, length);
+            connectionListeners.forEach(listener -> listener.gotData(buffer, offset, readCount));
+            return readCount;
+        } catch (IOException e) {
+            disconnect();
+            throw e;
+        }
     }
 
     public void addConnectionListener(ConnectionListener listener) {
