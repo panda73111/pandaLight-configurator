@@ -1,5 +1,7 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
+import com.blackwhitesoftware.pandalight.PandaLightCommand;
+
 public abstract class ConnectionAdapter implements ConnectionListener {
 
     @Override
@@ -8,6 +10,10 @@ public abstract class ConnectionAdapter implements ConnectionListener {
 
     @Override
     public void disconnected() {
+    }
+
+    @Override
+    public void sendingCommand(PandaLightCommand cmd) {
     }
 
     @Override
