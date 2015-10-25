@@ -41,20 +41,6 @@ public class PandaLightSerialConnection extends Observable {
     }
 
     /**
-     * Convert an int to a hex value as String. Eg. 15 -> 0F , 16 -> 1F
-     *
-     * @param i
-     * @return
-     */
-    private static String intToTwoValueHex(int i) {
-        StringBuffer hex = new StringBuffer(Integer.toHexString(i));
-        if (hex.length() == 1) {
-            hex.insert(0, "0");
-        }
-        return hex.toString();
-    }
-
-    /**
      * Tries to establish a connection
      *
      * @param portName
@@ -95,22 +81,6 @@ public class PandaLightSerialConnection extends Observable {
      */
     public boolean sendLedColor(int red, int green, int blue) throws IllegalArgumentException {
         if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255) {
-            throw new IllegalArgumentException();
-        }
-
-        return sendLedColor(intToTwoValueHex(red) + intToTwoValueHex(green) + intToTwoValueHex(blue));
-    }
-
-    /**
-     * Sends the command to set the led color
-     *
-     * @param hexValues RRGGBB as Hexvalues, eg. FF0000 for 255 0 0
-     * @return false if there is no connection, true after the command was sent
-     * @throws IllegalArgumentException when the parameters don't fit
-     */
-    public boolean sendLedColor(String hexValues) throws IllegalArgumentException {
-
-        if (hexValues.length() != 6) {
             throw new IllegalArgumentException();
         }
 
