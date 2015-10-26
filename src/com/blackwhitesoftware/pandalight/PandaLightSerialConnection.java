@@ -3,8 +3,10 @@ package com.blackwhitesoftware.pandalight;
 import com.blackwhitesoftware.pandalight.remote_control.ConnectionAdapter;
 import com.blackwhitesoftware.pandalight.remote_control.ConnectionListener;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
+import org.pmw.tinylog.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.Formatter;
 import java.util.Observable;
 
 /**
@@ -13,24 +15,34 @@ import java.util.Observable;
  */
 public class PandaLightSerialConnection extends Observable {
 
-    private static boolean printTraffic = true;
-
     final private SerialConnection serialConnection;
     private final ConnectionListener connectionConsoleListener = new ConnectionAdapter() {
         @Override
         public void connected() {
-            if (printTraffic) {
-                System.out.println("serial port connected");
-            }
+            Logger.debug("serial port connected");
             super.connected();
         }
 
         @Override
         public void disconnected() {
-            if (printTraffic) {
-                System.out.println("serial port disconnected");
-            }
+            Logger.debug("serial port disconnected");
             super.disconnected();
+        }
+
+        @Override
+        public void sendingCommand(PandaLightCommand cmd) {
+            Logger.debug("sending serial command: {}",
+                    bytesToHex(new byte[]{cmd.byteCommand()}));
+
+            super.sendingCommand(cmd);
+        }
+
+        @Override
+        public void gotData(byte[] data, int offset, int length) {
+            Logger.debug("got serial data: {}",
+                    bytesToHex(data, offset, length));
+
+            super.gotData(data, offset, length);
         }
     };
     private boolean wasConnected;
@@ -38,6 +50,18 @@ public class PandaLightSerialConnection extends Observable {
     public PandaLightSerialConnection() {
         serialConnection = new SerialConnection();
         serialConnection.addConnectionListener(connectionConsoleListener);
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        return bytesToHex(bytes, 0, bytes.length);
+    }
+
+    private String bytesToHex(byte[] bytes, int offset, int length) {
+        Formatter formatter = new Formatter();
+        for (int i = offset; i < length; i++) {
+            formatter.format("%02x", bytes[i]);
+        }
+        return formatter.toString();
     }
 
     /**
@@ -49,12 +73,12 @@ public class PandaLightSerialConnection extends Observable {
     public boolean connect(String portName) {
         serialConnection.connect(portName);
 
-        if (isConnected()) {
-            setChanged();
-            notifyObservers();
-            return true;
-        }
-        return false;
+        if (!isConnected())
+            return false;
+
+        setChanged();
+        notifyObservers();
+        return true;
     }
 
     /**
@@ -97,12 +121,13 @@ public class PandaLightSerialConnection extends Observable {
      * @return
      */
     public boolean isConnected() {
-        if (wasConnected != serialConnection.isConnected()) {
-            wasConnected = serialConnection.isConnected();
+        boolean isConnected = serialConnection.isConnected();
+        if (wasConnected != isConnected) {
+            wasConnected = isConnected;
             setChanged();
             notifyObservers();
         }
-        return serialConnection.isConnected();
+        return isConnected;
     }
 
     public void addConnectionListener(ConnectionListener listener) {
