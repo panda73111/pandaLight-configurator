@@ -57,7 +57,9 @@ public class SerialConnection {
             in = serialPort.getInputStream();
             out = serialPort.getOutputStream();
 
-            connectionListeners.forEach(ConnectionListener::connected);
+            for (ConnectionListener listener : connectionListeners) {
+                listener.connected();
+            }
         } catch (NoSuchPortException | PortInUseException | UnsupportedCommOperationException | IOException e) {
             //TODO error message
         }
@@ -80,7 +82,9 @@ public class SerialConnection {
         }
         in = null;
         out = null;
-        connectionListeners.forEach(ConnectionListener::disconnected);
+        for (ConnectionListener listener : connectionListeners) {
+            listener.disconnected();
+        }
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
@@ -103,7 +107,9 @@ public class SerialConnection {
     public int read(byte[] buffer, int offset, int length) throws IOException {
         try {
             int readCount = in.read(buffer, offset, length);
-            connectionListeners.forEach(listener -> listener.gotData(buffer, offset, readCount));
+            for (ConnectionListener listener : connectionListeners) {
+                listener.gotData(buffer, offset, readCount);
+            }
             return readCount;
         } catch (IOException e) {
             disconnect();
