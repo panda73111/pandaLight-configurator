@@ -3,9 +3,13 @@ package com.blackwhitesoftware.pandalight;
 import com.blackwhitesoftware.pandalight.remote_control.ConnectionAdapter;
 import com.blackwhitesoftware.pandalight.remote_control.ConnectionListener;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.UnsupportedCommOperationException;
 import org.pmw.tinylog.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -70,7 +74,7 @@ public class PandaLightSerialConnection extends Observable {
      * @param portName
      * @return true if the connection is established
      */
-    public boolean connect(String portName) {
+    public boolean connect(String portName) throws PortInUseException, UnsupportedCommOperationException, NoSuchPortException, IOException {
         serialConnection.connect(portName);
 
         if (!isConnected())

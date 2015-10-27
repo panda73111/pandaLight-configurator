@@ -2,6 +2,7 @@ package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.PandaLightCommand;
 import gnu.io.*;
+import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +39,8 @@ public class SerialConnection {
         return ports.toArray(new String[ports.size()]);
     }
 
-    public void connect(String portName) {
+    public void connect(String portName) throws PortInUseException, IOException, NoSuchPortException, UnsupportedCommOperationException {
+        Logger.debug("connecting to serial port '{}'", portName);
         try {
             CommPortIdentifier identifier = CommPortIdentifier.getPortIdentifier(portName);
             CommPort port = identifier.open(this.getClass().getName(), TIMELIMIT);
@@ -61,7 +63,8 @@ public class SerialConnection {
                 listener.connected();
             }
         } catch (NoSuchPortException | PortInUseException | UnsupportedCommOperationException | IOException e) {
-            //TODO error message
+            Logger.error("error while opening serial port: {}", e.getClass().getSimpleName());
+            throw e;
         }
     }
 
