@@ -1,8 +1,12 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
+import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.UnsupportedCommOperationException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.Transient;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -19,16 +24,24 @@ import java.util.Observer;
  */
 public class SerialConnectionPanel extends JPanel implements Observer, PropertyChangeListener {
 
-    /**
-     * Listener for the buttons and checkboxes
-     */
-    private final ActionListener mActionListener = new ActionListener() {
+    private final ActionListener connectButtonListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                serialConnection.connect((String) portComboBox.getSelectedItem());
+            } catch (PortInUseException e1) {
+                ErrorHandling.ShowMessage("Serial port is already in use!");
+            } catch (NoSuchPortException e1) {
+                ErrorHandling.ShowMessage("This serial port could not be found!");
+            } catch (UnsupportedCommOperationException | IOException e1) {
+                ErrorHandling.ShowMessage("Error while opening serial port:\n" + e1.getLocalizedMessage());
+            }
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     };
     private PandaLightSerialConnection serialConnection;
-    private JComboBox portComboBox;
+    private JComboBox<String> portComboBox;
     private JButton connectButton;
     private SerialAndColorPickerConfig serialConfig;
 
@@ -66,11 +79,10 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         setBorder(BorderFactory.createTitledBorder("Serial Connection"));
 
         portComboBox = new JComboBox<>(SerialConnection.getSerialPorts());
-        portComboBox.addActionListener(mActionListener);
         add(portComboBox);
 
         connectButton = new JButton("Connect");
-        connectButton.addActionListener(mActionListener);
+        connectButton.addActionListener(connectButtonListener);
         add(connectButton);
 
         //The Layout
