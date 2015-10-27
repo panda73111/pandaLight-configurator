@@ -10,29 +10,22 @@ import java.io.StringWriter;
  */
 public class ErrorHandling {
 
-
     public static JFrame mainframe;
-
 
     public static void ShowException(Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         String exceptionAsString = sw.toString();
 
-        JOptionPane.showMessageDialog(mainframe, e.getMessage() + "\n\n" + exceptionAsString, "Error", JOptionPane.OK_OPTION);
-
+        ShowMessage(e.getMessage() + "\n\n" + exceptionAsString);
     }
 
     public static void ShowMessage(String Message) {
-
-        JOptionPane.showMessageDialog(mainframe, Message, "Info", JOptionPane.OK_OPTION);
-
+        ShowMessage(Message, "Error");
     }
 
     public static void ShowMessage(String Message, String title) {
-
-        JOptionPane.showMessageDialog(mainframe, Message, title, JOptionPane.OK_OPTION);
-
+        JOptionPane.showMessageDialog(mainframe, Message, title, JOptionPane.ERROR_MESSAGE);
     }
 
 
