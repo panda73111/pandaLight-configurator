@@ -97,10 +97,6 @@ public class SerialConnection {
         }
     }
 
-    public void sendCommand(PandaLightCommand cmd) throws IOException {
-        sendData(new byte[]{cmd.byteCommand()});
-    }
-
     public void sendData(byte[] data) throws IOException {
         if (!isConnected())
             return;

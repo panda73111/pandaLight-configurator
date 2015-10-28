@@ -98,6 +98,10 @@ public class PandaLightSerialConnection extends Observable {
         notifyObservers();
     }
 
+    public void sendCommand(PandaLightCommand cmd) throws IOException {
+        serialConnection.sendData(new byte[]{cmd.byteCommand()});
+    }
+
     /**
      * Sends the command to set the led color
      *
