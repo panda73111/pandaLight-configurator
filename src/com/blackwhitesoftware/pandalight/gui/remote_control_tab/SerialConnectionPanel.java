@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.Transient;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -27,7 +28,13 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
     private final ActionListener connectButtonListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (connected) {
+                serialConnection.disconnect();
+                return;
+            }
+
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            connectButton.setEnabled(false);
             try {
                 serialConnection.connect((String) portComboBox.getSelectedItem());
             } catch (PortInUseException e1) {
@@ -37,6 +44,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
             } catch (UnsupportedCommOperationException | IOException e1) {
                 ErrorHandling.ShowMessage("Error while opening serial port:\n" + e1.getLocalizedMessage());
             }
+            connectButton.setEnabled(true);
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     };
@@ -44,6 +52,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
     private JComboBox<String> portComboBox;
     private JButton connectButton;
     private SerialAndColorPickerConfig serialConfig;
+    private boolean connected = false;
 
     /**
      * Constructor
@@ -60,7 +69,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
     }
 
     /**
-     * to set the Guielements sizes
+     * to set the GUI elements sizes
      */
     @Override
     @Transient
@@ -78,7 +87,11 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         //All the Gui elements
         setBorder(BorderFactory.createTitledBorder("Serial Connection"));
 
-        portComboBox = new JComboBox<>(SerialConnection.getSerialPorts());
+        String[] ports = SerialConnection.getSerialPorts();
+        portComboBox = new JComboBox<>(ports);
+        if (Arrays.asList(ports).contains(serialConfig.portName)) {
+            portComboBox.setSelectedItem(serialConfig.portName);
+        }
         add(portComboBox);
 
         connectButton = new JButton("Connect");
@@ -106,10 +119,21 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
     }
 
     /**
+     * Enable or disable the Gui elements which depend on a shh connection
+     * @param enabled
+     */
+    private void setConnectionFieldsAccess(boolean enabled) {
+        portComboBox.setEnabled(enabled);
+    }
+
+    /**
      * is called when the remote control connection status changes
      */
     @Override
     public void update(Observable arg0, Object arg1) {
+        connected = serialConnection.isConnected();
+        setConnectionFieldsAccess(!connected);
+        connectButton.setText(connected ? "Disconnect" : "Connect");
     }
 
     /**
