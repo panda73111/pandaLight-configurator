@@ -7,6 +7,7 @@ import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.led_simulation.LedSimulationComponent;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.BoardInfoPanel;
 import com.blackwhitesoftware.pandalight.gui.remote_control_tab.ManualColorPickingPanel;
 import com.blackwhitesoftware.pandalight.gui.remote_control_tab.SerialConnectionPanel;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
@@ -144,6 +145,7 @@ public class ConfigPanel extends JPanel {
             mRemoteControlPanel = new JPanel();
             mRemoteControlPanel.setLayout(new BoxLayout(mRemoteControlPanel, BoxLayout.Y_AXIS));
             mRemoteControlPanel.add(new SerialConnectionPanel(serialConfig, serialConnection));
+            mRemoteControlPanel.add(new BoardInfoPanel(serialConnection));
             mRemoteControlPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
 
             mRemoteControlPanel.add(Box.createVerticalGlue());
