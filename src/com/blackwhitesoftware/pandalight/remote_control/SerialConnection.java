@@ -40,13 +40,16 @@ public class SerialConnection {
     }
 
     public void connect(String portName) throws PortInUseException, IOException, NoSuchPortException, UnsupportedCommOperationException {
-        Logger.debug("connecting to serial port '{}'", portName);
+        if (isConnected())
+            return;
+
+        Logger.debug("connecting serial port '{}'", portName);
         try {
             CommPortIdentifier identifier = CommPortIdentifier.getPortIdentifier(portName);
             CommPort port = identifier.open(this.getClass().getName(), TIMELIMIT);
             if (!(port instanceof SerialPort)) {
-                //TODO error message
-                return;
+                Logger.error("the target device is no serial port");
+                throw new IOException("Not a serial port");
             }
 
             serialPort = (SerialPort) port;
@@ -73,6 +76,10 @@ public class SerialConnection {
     }
 
     public void disconnect() {
+        if (!isConnected())
+            return;
+
+        Logger.debug("disconnecting serial port");
         serialPort.close();
         serialPort = null;
         try {
@@ -95,6 +102,9 @@ public class SerialConnection {
     }
 
     public void sendData(byte[] data) throws IOException {
+        if (!isConnected())
+            return;
+
         try {
             out.write(data);
         } catch (IOException e) {
@@ -108,6 +118,9 @@ public class SerialConnection {
     }
 
     public int read(byte[] buffer, int offset, int length) throws IOException {
+        if (!isConnected())
+            return -1;
+
         try {
             int readCount = in.read(buffer, offset, length);
             for (ConnectionListener listener : connectionListeners) {
