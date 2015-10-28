@@ -20,7 +20,7 @@ import java.util.Observable;
 public class PandaLightSerialConnection extends Observable {
 
     final private SerialConnection serialConnection;
-    private final ConnectionListener connectionConsoleListener = new ConnectionAdapter() {
+    private final ConnectionListener connectionDebugListener = new ConnectionAdapter() {
         @Override
         public void connected() {
             Logger.debug("serial port connected");
@@ -53,7 +53,7 @@ public class PandaLightSerialConnection extends Observable {
 
     public PandaLightSerialConnection() {
         serialConnection = new SerialConnection();
-        serialConnection.addConnectionListener(connectionConsoleListener);
+        serialConnection.addConnectionListener(connectionDebugListener);
     }
 
     private String bytesToHex(byte[] bytes) {
@@ -89,11 +89,11 @@ public class PandaLightSerialConnection extends Observable {
      * Closes the connection and removes the connectionlistener
      */
     public void disconnect() {
-        if (!isConnected()) {
+        if (!isConnected())
             return;
-        }
+
         serialConnection.disconnect();
-        serialConnection.removeConnectionListener(connectionConsoleListener);
+        serialConnection.removeConnectionListener(connectionDebugListener);
         setChanged();
         notifyObservers();
     }
