@@ -49,6 +49,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         }
     };
     private PandaLightSerialConnection serialConnection;
+    private JLabel portLabel;
     private JComboBox<String> portComboBox;
     private JButton connectButton;
     private SerialAndColorPickerConfig serialConfig;
@@ -87,6 +88,9 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         //All the Gui elements
         setBorder(BorderFactory.createTitledBorder("Serial Connection"));
 
+        portLabel = new JLabel("Port: ");
+        add(portLabel);
+
         String[] ports = SerialConnection.getSerialPorts();
         portComboBox = new JComboBox<>(ports);
         if (Arrays.asList(ports).contains(serialConfig.portName)) {
@@ -104,16 +108,19 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         layout.setAutoCreateGaps(true);
         setLayout(layout);
 
-        layout.setHorizontalGroup(layout.createParallelGroup()
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(portComboBox))
-                .addGroup(layout.createSequentialGroup()
-                                .addComponent(connectButton)
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(portLabel)
+                        .addComponent(connectButton))
+                .addGroup(layout.createParallelGroup()
+                                .addComponent(portComboBox)
                 ));
 
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createSequentialGroup()
-                                .addComponent(portComboBox)
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(portLabel)
+                        .addComponent(portComboBox))
+                .addGroup(layout.createParallelGroup()
                                 .addComponent(connectButton)
                 ));
     }
