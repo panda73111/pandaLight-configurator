@@ -20,40 +20,42 @@ import java.util.Observable;
 public class PandaLightSerialConnection extends Observable {
 
     final private SerialConnection serialConnection;
-    private final ConnectionListener connectionDebugListener = new ConnectionAdapter() {
-        @Override
-        public void connected() {
-            Logger.debug("serial port connected");
-            super.connected();
-        }
-
-        @Override
-        public void disconnected() {
-            Logger.debug("serial port disconnected");
-            super.disconnected();
-        }
-
-        @Override
-        public void sendingCommand(PandaLightCommand cmd) {
-            Logger.debug("sending serial command: {}",
-                    bytesToHex(new byte[]{cmd.byteCommand()}));
-
-            super.sendingCommand(cmd);
-        }
-
-        @Override
-        public void gotData(byte[] data, int offset, int length) {
-            Logger.debug("got serial data: {}",
-                    bytesToHex(data, offset, length));
-
-            super.gotData(data, offset, length);
-        }
-    };
-    private boolean wasConnected;
 
     public PandaLightSerialConnection() {
         serialConnection = new SerialConnection();
-        serialConnection.addConnectionListener(connectionDebugListener);
+        serialConnection.addConnectionListener(new ConnectionAdapter() {
+            @Override
+            public void connected() {
+                Logger.debug("serial port connected");
+                super.connected();
+                setChanged();
+                notifyObservers();
+            }
+
+            @Override
+            public void disconnected() {
+                Logger.debug("serial port disconnected");
+                super.disconnected();
+                setChanged();
+                notifyObservers();
+            }
+
+            @Override
+            public void sendingCommand(PandaLightCommand cmd) {
+                Logger.debug("sending serial command: {}",
+                        bytesToHex(new byte[]{cmd.byteCommand()}));
+
+                super.sendingCommand(cmd);
+            }
+
+            @Override
+            public void gotData(byte[] data, int offset, int length) {
+                Logger.debug("got serial data: {}",
+                        bytesToHex(data, offset, length));
+
+                super.gotData(data, offset, length);
+            }
+        });
     }
 
     private String bytesToHex(byte[] bytes) {
@@ -76,26 +78,14 @@ public class PandaLightSerialConnection extends Observable {
      */
     public boolean connect(String portName) throws PortInUseException, UnsupportedCommOperationException, NoSuchPortException, IOException {
         serialConnection.connect(portName);
-
-        if (!isConnected())
-            return false;
-
-        setChanged();
-        notifyObservers();
-        return true;
+        return isConnected();
     }
 
     /**
      * Closes the connection and removes the connectionlistener
      */
     public void disconnect() {
-        if (!isConnected())
-            return;
-
         serialConnection.disconnect();
-        serialConnection.removeConnectionListener(connectionDebugListener);
-        setChanged();
-        notifyObservers();
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
@@ -112,13 +102,8 @@ public class PandaLightSerialConnection extends Observable {
      * @throws IllegalArgumentException when the parameters don't fit
      */
     public boolean sendLedColor(int red, int green, int blue) throws IllegalArgumentException {
-        if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255) {
+        if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
             throw new IllegalArgumentException();
-        }
-
-        if (!isConnected()) {
-            return false;
-        }
 
         throw new NotImplementedException();
     }
@@ -129,13 +114,7 @@ public class PandaLightSerialConnection extends Observable {
      * @return
      */
     public boolean isConnected() {
-        boolean isConnected = serialConnection.isConnected();
-        if (wasConnected != isConnected) {
-            wasConnected = isConnected;
-            setChanged();
-            notifyObservers();
-        }
-        return isConnected;
+        return serialConnection.isConnected();
     }
 
     public void addConnectionListener(ConnectionListener listener) {
