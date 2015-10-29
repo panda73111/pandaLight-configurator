@@ -1,6 +1,5 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
-import com.blackwhitesoftware.pandalight.PandaLightCommand;
 import gnu.io.*;
 import org.pmw.tinylog.Logger;
 
