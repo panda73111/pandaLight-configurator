@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight;
 
 import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
+import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 import com.blackwhitesoftware.pandalight.spec.TransformConfig;
 

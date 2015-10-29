@@ -1,7 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
-import com.blackwhitesoftware.pandalight.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 import gnu.io.NoSuchPortException;
