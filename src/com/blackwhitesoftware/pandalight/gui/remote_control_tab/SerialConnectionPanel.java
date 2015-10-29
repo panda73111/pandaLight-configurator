@@ -33,6 +33,8 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
                 return;
             }
 
+            serialConfig.portName = (String) portComboBox.getSelectedItem();
+
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             connectButton.setEnabled(false);
             try {
