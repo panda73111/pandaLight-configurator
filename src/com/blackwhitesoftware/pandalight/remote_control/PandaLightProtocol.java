@@ -1,9 +1,10 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.PandaLightCommand;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -15,7 +16,7 @@ public class PandaLightProtocol {
     private static final byte RESEND_MAGIC = 0x68;
 
     private SerialConnection serialConnection;
-    private ByteBuffer buffer;
+    private LinkedList<Byte> buffer = new LinkedList<>();
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
 
     public PandaLightProtocol(SerialConnection connection) {
@@ -47,37 +48,73 @@ public class PandaLightProtocol {
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
-                if (!parseTransportLayer(data, offset, length))
-                    return;
+                for (int i = offset; i < offset + length; i++)
+                    buffer.add(data[i]);
 
-                buffer.put(data, offset, length);
+                tryPopNextPacket();
             }
         };
         serialConnection.addConnectionListener(listener);
     }
 
-    public void sendCommand(PandaLightCommand cmd) throws IOException {
-        serialConnection.sendData(new byte[]{cmd.byteCommand()});
-    }
+    private boolean tryPopNextPacket() {
+        //TODO CHECK THIS SIGNED BYTE JAVA FUCK FOR CORRECTNESS
 
-    private boolean parseTransportLayer(byte[] data, int offset, int length) {
-        int checksum = 0;
-        for (int i = offset; i < offset+length-1; i++) {
-            checksum += data[i];
-        }
-        if (checksum != data[offset+length-1])
-            // bit error in packet
+        if (buffer.size() < 3)
+            // the packet was not yet read completely
             return false;
 
-        switch (data[offset]) {
-            case DATA_MAGIC:
-                break;
+        byte magic;
+        do {
+            magic = buffer.getFirst();
+        } while (
+                magic != DATA_MAGIC &&
+                        magic != ACK_MAGIC &&
+                        magic != RESEND_MAGIC);
+
+        byte packetNumber = buffer.getFirst();
+        //TODO use packet number for sorting packets
+
+        byte checksum = (byte) (magic + packetNumber);
+
+        switch (magic) {
             case ACK_MAGIC:
-                break;
+                throw new NotImplementedException();
             case RESEND_MAGIC:
-                break;
+                throw new NotImplementedException();
         }
 
+        // it's a data packet
+
+        byte length = (byte) (buffer.getFirst() + 1);
+        if (buffer.size() < length + 1) {
+            // the packet was not yet read completely
+            buffer.addFirst(length);
+            buffer.addFirst(packetNumber);
+            buffer.addFirst(magic);
+            return false;
+        }
+
+        checksum += length;
+
+        byte[] payload = new byte[length];
+        for (int i = 0; i < length; i++) {
+            byte b = buffer.getFirst();
+            payload[i] = b;
+            checksum += b;
+        }
+
+        if (buffer.getFirst() != checksum) {
+            // bit error in packet, purge it
+            return false;
+        }
+
+        //TODO store partial data packet
+
         return true;
+    }
+
+    public void sendCommand(PandaLightCommand cmd) throws IOException {
+        serialConnection.sendData(new byte[]{cmd.byteCommand()});
     }
 }
