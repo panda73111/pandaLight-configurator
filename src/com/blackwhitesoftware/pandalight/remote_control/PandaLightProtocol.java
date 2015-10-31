@@ -16,7 +16,7 @@ public class PandaLightProtocol {
     private static final byte RESEND_MAGIC = 0x68;
 
     private SerialConnection serialConnection;
-    private LinkedList<Byte> buffer = new LinkedList<>();
+    private LinkedList<Byte> inputDataBuffer = new LinkedList<>();
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
 
     public PandaLightProtocol(SerialConnection connection) {
@@ -24,7 +24,7 @@ public class PandaLightProtocol {
         ConnectionListener listener = new ConnectionListener() {
             @Override
             public void connected() {
-                buffer.clear();
+                inputDataBuffer.clear();
             }
 
             @Override
@@ -49,7 +49,7 @@ public class PandaLightProtocol {
             @Override
             public void gotData(byte[] data, int offset, int length) {
                 for (int i = offset; i < offset + length; i++)
-                    buffer.add(data[i]);
+                    inputDataBuffer.add(data[i]);
 
                 tryPopNextPacket();
             }
@@ -60,19 +60,19 @@ public class PandaLightProtocol {
     private boolean tryPopNextPacket() {
         //TODO CHECK THIS SIGNED BYTE JAVA FUCK FOR CORRECTNESS
 
-        if (buffer.size() < 3)
+        if (inputDataBuffer.size() < 3)
             // the packet was not yet read completely
             return false;
 
         byte magic;
         do {
-            magic = buffer.getFirst();
+            magic = inputDataBuffer.getFirst();
         } while (
                 magic != DATA_MAGIC &&
                         magic != ACK_MAGIC &&
                         magic != RESEND_MAGIC);
 
-        byte packetNumber = buffer.getFirst();
+        byte packetNumber = inputDataBuffer.getFirst();
         //TODO use packet number for sorting packets
 
         byte checksum = (byte) (magic + packetNumber);
@@ -86,12 +86,12 @@ public class PandaLightProtocol {
 
         // it's a data packet
 
-        byte length = (byte) (buffer.getFirst() + 1);
-        if (buffer.size() < length + 1) {
+        byte length = (byte) (inputDataBuffer.getFirst() + 1);
+        if (inputDataBuffer.size() < length + 1) {
             // the packet was not yet read completely
-            buffer.addFirst(length);
-            buffer.addFirst(packetNumber);
-            buffer.addFirst(magic);
+            inputDataBuffer.addFirst(length);
+            inputDataBuffer.addFirst(packetNumber);
+            inputDataBuffer.addFirst(magic);
             return false;
         }
 
@@ -99,13 +99,15 @@ public class PandaLightProtocol {
 
         byte[] payload = new byte[length];
         for (int i = 0; i < length; i++) {
-            byte b = buffer.getFirst();
+            byte b = inputDataBuffer.getFirst();
             payload[i] = b;
             checksum += b;
         }
 
-        if (buffer.getFirst() != checksum) {
-            // bit error in packet, purge it
+        if (inputDataBuffer.getFirst() != checksum) {
+            // bit error in packet, flush the buffer
+            // to get a new packet beginning
+            inputDataBuffer.clear();
             return false;
         }
 
