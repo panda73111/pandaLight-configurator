@@ -25,6 +25,7 @@ public class PandaLightProtocol {
             @Override
             public void connected() {
                 inputDataBuffer.clear();
+                expectedPackets.clear();
             }
 
             @Override
