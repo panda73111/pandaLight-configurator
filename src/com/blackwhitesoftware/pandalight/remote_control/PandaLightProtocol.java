@@ -82,13 +82,17 @@ public class PandaLightProtocol {
         byte packetNumber = inDataBuffer.getFirst();
         //TODO use packet number for sorting packets
 
-        byte checksum = (byte) (magic + packetNumber);
+        int checksum = magic + packetNumber;
 
         switch (magic) {
             case ACK_MAGIC:
                 throw new NotImplementedException();
             case RESEND_MAGIC:
-                throw new NotImplementedException();
+                if (!isChecksumValid(checksum))
+                    return false;
+
+                resendPacket(packetNumber);
+                return true;
         }
 
         // it's a data packet
@@ -111,16 +115,28 @@ public class PandaLightProtocol {
             checksum += b;
         }
 
-        if (inDataBuffer.getFirst() != checksum) {
-            // bit error in packet, flush the buffer
-            // to get a new packet beginning
-            inDataBuffer.clear();
+        if (!isChecksumValid(checksum))
             return false;
-        }
 
         //TODO store partial data packet
 
         return true;
+    }
+
+    private boolean isChecksumValid(int checksum) {
+        if (inDataBuffer.getFirst() == checksum)
+            return true;
+
+        // bit error in packet, flush the buffer
+        // to get a new packet beginning
+        inDataBuffer.clear();
+        return false;
+    }
+
+    private void resendPacket(int packetNumber) {
+        try {
+            serialConnection.sendData(outPacketBuffer.get(packetNumber));
+        } catch (IOException ignored) { }
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
@@ -131,6 +147,7 @@ public class PandaLightProtocol {
                 0, // [payload length]-1
                 (byte) (DATA_MAGIC + outPacketNumber + cmd.byteCommand()) // checksum
         };
+        outPacketBuffer.add(outPacketNumber, data);
         serialConnection.sendData(data);
         outPacketNumber++;
     }
