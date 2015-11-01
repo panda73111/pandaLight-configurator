@@ -4,6 +4,7 @@ import com.blackwhitesoftware.pandalight.PandaLightCommand;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -19,8 +20,8 @@ public class PandaLightProtocol {
     private LinkedList<Byte> inDataBuffer = new LinkedList<>();
     private LinkedList<byte[]> inPacketBuffer = new LinkedList<>();
     private LinkedList<byte[]> outPacketBuffer = new LinkedList<>();
-    private short inPacketNumber = 0;
-    private short outPacketNumber = 0;
+    private int inPacketNumber = 0;
+    private int outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
 
     public PandaLightProtocol(SerialConnection connection) {
@@ -82,7 +83,7 @@ public class PandaLightProtocol {
         byte packetNumber = inDataBuffer.getFirst();
         //TODO use packet number for sorting packets
 
-        int checksum = magic + packetNumber;
+        int checksum = (magic + packetNumber) % 256;
 
         switch (magic) {
             case ACK_MAGIC:
@@ -106,13 +107,13 @@ public class PandaLightProtocol {
             return false;
         }
 
-        checksum += length;
+        checksum = (checksum + length) % 256;
 
         byte[] payload = new byte[length];
         for (int i = 0; i < length; i++) {
             byte b = inDataBuffer.getFirst();
             payload[i] = b;
-            checksum += b;
+            checksum = (checksum + b) % 256;
         }
 
         if (!isChecksumValid(checksum))
@@ -149,6 +150,47 @@ public class PandaLightProtocol {
         };
         outPacketBuffer.add(outPacketNumber, data);
         serialConnection.sendData(data);
-        outPacketNumber++;
+        incrementOutPacketNumber();
+    }
+
+    private void incrementOutPacketNumber() {
+        outPacketNumber = (outPacketNumber + 1) % 256;
+    }
+
+    private void incrementInPacketNumber() {
+        inPacketNumber = (inPacketNumber + 1) % 256;
+    }
+
+    public void sendData(byte[] data) throws IOException {
+        sendData(data, 0, data.length);
+    }
+
+    public void sendData(byte[] data, int offset, int length) throws IOException {
+        int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
+        byte[] wrappedData = new byte[260];
+
+        wrappedData[0] = DATA_MAGIC;
+        for (int packetI = 0; packetI < partialPacketCount; packetI++) {
+            int partialPacketLength = ((length - 1) % 256) + 1;
+
+            wrappedData[1] = (byte) outPacketNumber;
+            wrappedData[2] = (byte) partialPacketLength;
+            int checksum = (DATA_MAGIC + outPacketNumber + partialPacketLength) % 256;
+
+            for (int byteI = 0; byteI < partialPacketLength; byteI++) {
+                // copy the data
+                byte b = data[byteI + packetI * 256];
+                wrappedData[byteI + 3] = b;
+                checksum = (checksum + b) % 256;
+            }
+            wrappedData[partialPacketLength + 3] = (byte) checksum;
+
+            byte[] copyOfWrappedData = Arrays.copyOfRange(wrappedData, 0, partialPacketLength + 4);
+            serialConnection.sendData(copyOfWrappedData);
+            outPacketBuffer.add(outPacketNumber, copyOfWrappedData);
+
+            length -= 256;
+            incrementOutPacketNumber();
+        }
     }
 }
