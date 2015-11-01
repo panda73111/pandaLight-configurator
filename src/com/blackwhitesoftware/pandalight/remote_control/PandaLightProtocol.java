@@ -16,7 +16,11 @@ public class PandaLightProtocol {
     private static final byte RESEND_MAGIC = 0x68;
 
     private SerialConnection serialConnection;
-    private LinkedList<Byte> inputDataBuffer = new LinkedList<>();
+    private LinkedList<Byte> inDataBuffer = new LinkedList<>();
+    private LinkedList<byte[]> inPacketBuffer = new LinkedList<>();
+    private LinkedList<byte[]> outPacketBuffer = new LinkedList<>();
+    private short inPacketNumber = 0;
+    private short outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
 
     public PandaLightProtocol(SerialConnection connection) {
@@ -24,8 +28,10 @@ public class PandaLightProtocol {
         ConnectionListener listener = new ConnectionListener() {
             @Override
             public void connected() {
-                inputDataBuffer.clear();
+                inDataBuffer.clear();
                 expectedPackets.clear();
+                inPacketNumber = 0;
+                outPacketNumber = 0;
             }
 
             @Override
@@ -50,7 +56,7 @@ public class PandaLightProtocol {
             @Override
             public void gotData(byte[] data, int offset, int length) {
                 for (int i = offset; i < offset + length; i++)
-                    inputDataBuffer.add(data[i]);
+                    inDataBuffer.add(data[i]);
 
                 tryPopNextPacket();
             }
@@ -61,19 +67,19 @@ public class PandaLightProtocol {
     private boolean tryPopNextPacket() {
         //TODO CHECK THIS SIGNED BYTE JAVA FUCK FOR CORRECTNESS
 
-        if (inputDataBuffer.size() < 3)
+        if (inDataBuffer.size() < 3)
             // the packet was not yet read completely
             return false;
 
         byte magic;
         do {
-            magic = inputDataBuffer.getFirst();
+            magic = inDataBuffer.getFirst();
         } while (
                 magic != DATA_MAGIC &&
                         magic != ACK_MAGIC &&
                         magic != RESEND_MAGIC);
 
-        byte packetNumber = inputDataBuffer.getFirst();
+        byte packetNumber = inDataBuffer.getFirst();
         //TODO use packet number for sorting packets
 
         byte checksum = (byte) (magic + packetNumber);
@@ -87,12 +93,12 @@ public class PandaLightProtocol {
 
         // it's a data packet
 
-        byte length = (byte) (inputDataBuffer.getFirst() + 1);
-        if (inputDataBuffer.size() < length + 1) {
+        byte length = (byte) (inDataBuffer.getFirst() + 1);
+        if (inDataBuffer.size() < length + 1) {
             // the packet was not yet read completely
-            inputDataBuffer.addFirst(length);
-            inputDataBuffer.addFirst(packetNumber);
-            inputDataBuffer.addFirst(magic);
+            inDataBuffer.addFirst(length);
+            inDataBuffer.addFirst(packetNumber);
+            inDataBuffer.addFirst(magic);
             return false;
         }
 
@@ -100,15 +106,15 @@ public class PandaLightProtocol {
 
         byte[] payload = new byte[length];
         for (int i = 0; i < length; i++) {
-            byte b = inputDataBuffer.getFirst();
+            byte b = inDataBuffer.getFirst();
             payload[i] = b;
             checksum += b;
         }
 
-        if (inputDataBuffer.getFirst() != checksum) {
+        if (inDataBuffer.getFirst() != checksum) {
             // bit error in packet, flush the buffer
             // to get a new packet beginning
-            inputDataBuffer.clear();
+            inDataBuffer.clear();
             return false;
         }
 
@@ -118,6 +124,14 @@ public class PandaLightProtocol {
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
-        serialConnection.sendData(new byte[]{cmd.byteCommand()});
+        byte[] data = new byte[] {
+                DATA_MAGIC,
+                (byte) outPacketNumber,
+                cmd.byteCommand(),
+                0, // [payload length]-1
+                (byte) (DATA_MAGIC + outPacketNumber + cmd.byteCommand()) // checksum
+        };
+        serialConnection.sendData(data);
+        outPacketNumber++;
     }
 }
