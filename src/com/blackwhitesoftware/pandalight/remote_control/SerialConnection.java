@@ -97,11 +97,15 @@ public class SerialConnection {
     }
 
     public void sendData(byte[] data) throws IOException {
+        sendData(data, 0, data.length);
+    }
+
+    public void sendData(byte[] data, int offset, int length) throws IOException {
         if (!isConnected())
             return;
 
         try {
-            out.write(data);
+            out.write(data, offset, length);
         } catch (IOException e) {
             disconnect();
             throw e;
