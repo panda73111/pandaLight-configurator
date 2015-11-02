@@ -1,12 +1,9 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.PandaLightCommand;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Created by sebastian on 29.10.15.
@@ -16,12 +13,19 @@ public class PandaLightProtocol {
     private static final byte ACK_MAGIC = 0x67;
     private static final byte RESEND_MAGIC = 0x68;
 
+    private static final int SETTINGS_SIZE = 1024;
+    private static final int BITFILE_SIZE = 342816;
+
+    private static final long RESEND_TIMEOUT_MILLIS = 100;
+    private static final int MAX_TIMEOUT_RESENDS = 10;
+
     private SerialConnection serialConnection;
     private LinkedList<Byte> inDataBuffer = new LinkedList<>();
     private byte[][] inPayloadBuffer = new byte[256][];
     private byte[][] outPacketBuffer = new byte[256][];
     private int outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
+    private Timer[] resendTimers = new Timer[256];
 
     public PandaLightProtocol(SerialConnection connection) {
         serialConnection = connection;
@@ -32,6 +36,10 @@ public class PandaLightProtocol {
                 expectedPackets.clear();
                 Arrays.fill(inPayloadBuffer, null);
                 Arrays.fill(outPacketBuffer, null);
+                for (Timer t : resendTimers)
+                    if (t != null)
+                        t.cancel();
+                Arrays.fill(resendTimers, null);
                 outPacketNumber = 0;
             }
 
@@ -83,7 +91,15 @@ public class PandaLightProtocol {
 
         switch (magic) {
             case ACK_MAGIC:
-                throw new NotImplementedException();
+                if (!isChecksumValid(checksum))
+                    return false;
+
+                Timer timer = resendTimers[packetNumber];
+                if (timer != null) {
+                    timer.cancel();
+                    resendTimers[packetNumber] = null;
+                }
+                return true;
             case RESEND_MAGIC:
                 if (!isChecksumValid(checksum))
                     return false;
@@ -186,8 +202,26 @@ public class PandaLightProtocol {
             outPacketBuffer[outPacketNumber] = wrappedData;
             serialConnection.sendData(wrappedData);
 
+            scheduleResendTimer(outPacketNumber);
+
             length -= 256;
             incrementOutPacketNumber();
         }
+    }
+
+    private void scheduleResendTimer(final int packetNumber) {
+        Timer t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+            private int runCount = 0;
+
+            @Override
+            public void run() {
+                resendPacket(packetNumber);
+
+                if (++runCount == MAX_TIMEOUT_RESENDS)
+                    cancel();
+            }
+        }, RESEND_TIMEOUT_MILLIS, RESEND_TIMEOUT_MILLIS);
+        resendTimers[outPacketNumber] = t;
     }
 }
