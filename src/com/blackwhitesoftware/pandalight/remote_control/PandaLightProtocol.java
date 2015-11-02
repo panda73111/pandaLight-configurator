@@ -17,7 +17,7 @@ public class PandaLightProtocol {
 
     private SerialConnection serialConnection;
     private LinkedList<Byte> inDataBuffer = new LinkedList<>();
-    private LinkedList<byte[]> inPacketBuffer = new LinkedList<>();
+    private LinkedList<byte[]> inPayloadBuffer = new LinkedList<>();
     private LinkedList<byte[]> outPacketBuffer = new LinkedList<>();
     private int inPacketNumber = 0;
     private int outPacketNumber = 0;
@@ -65,8 +65,6 @@ public class PandaLightProtocol {
     }
 
     private boolean tryPopNextPacket() {
-        //TODO CHECK THIS SIGNED BYTE JAVA FUCK FOR CORRECTNESS
-
         if (inDataBuffer.size() < 3)
             // the packet was not yet read completely
             return false;
@@ -79,9 +77,7 @@ public class PandaLightProtocol {
                         magic != ACK_MAGIC &&
                         magic != RESEND_MAGIC);
 
-        byte packetNumber = inDataBuffer.getFirst();
-        //TODO use packet number for sorting packets
-
+        int packetNumber = inDataBuffer.getFirst();
         int checksum = (magic + packetNumber) % 256;
 
         switch (magic) {
@@ -101,7 +97,7 @@ public class PandaLightProtocol {
         if (inDataBuffer.size() < length + 1) {
             // the packet was not yet read completely
             inDataBuffer.addFirst(length);
-            inDataBuffer.addFirst(packetNumber);
+            inDataBuffer.addFirst((byte) packetNumber);
             inDataBuffer.addFirst(magic);
             return false;
         }
@@ -118,9 +114,21 @@ public class PandaLightProtocol {
         if (!isChecksumValid(checksum))
             return false;
 
-        //TODO store partial data packet
+        inPayloadBuffer.add(packetNumber, payload);
+        sendAcknowledge(packetNumber);
+        incrementInPacketNumber();
 
         return true;
+    }
+
+    private void sendAcknowledge(int packetNumber) {
+        try {
+            serialConnection.sendData(new byte[] {
+                    ACK_MAGIC,
+                    (byte) packetNumber,
+                    (byte) ((ACK_MAGIC + packetNumber) % 256)
+            });
+        } catch (IOException ignored) { }
     }
 
     private boolean isChecksumValid(int checksum) {
