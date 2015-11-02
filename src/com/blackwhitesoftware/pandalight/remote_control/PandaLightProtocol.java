@@ -73,7 +73,7 @@ public class PandaLightProtocol {
         serialConnection.addConnectionListener(listener);
     }
 
-    private boolean tryPopNextPacket() {
+    private synchronized boolean tryPopNextPacket() {
         if (inDataBuffer.size() < 3)
             // the packet was not yet read completely
             return false;
@@ -137,7 +137,7 @@ public class PandaLightProtocol {
         return true;
     }
 
-    private void sendAcknowledge(int packetNumber) {
+    private synchronized void sendAcknowledge(int packetNumber) {
         try {
             serialConnection.sendData(new byte[] {
                     ACK_MAGIC,
@@ -147,7 +147,7 @@ public class PandaLightProtocol {
         } catch (IOException ignored) { }
     }
 
-    private boolean isChecksumValid(int checksum) {
+    private synchronized boolean isChecksumValid(int checksum) {
         if (inDataBuffer.getFirst() == checksum)
             return true;
 
@@ -157,7 +157,7 @@ public class PandaLightProtocol {
         return false;
     }
 
-    private void resendPacket(int packetNumber) {
+    private synchronized void resendPacket(int packetNumber) {
         byte[] data = outPacketBuffer[packetNumber];
         if (data == null)
             return;
@@ -171,7 +171,7 @@ public class PandaLightProtocol {
         sendData(new byte[] {cmd.byteCommand()});
     }
 
-    private void incrementOutPacketNumber() {
+    private synchronized void incrementOutPacketNumber() {
         outPacketNumber = (outPacketNumber + 1) % 256;
     }
 
@@ -179,7 +179,7 @@ public class PandaLightProtocol {
         sendData(data, 0, data.length);
     }
 
-    public void sendData(byte[] data, int offset, int length) throws IOException {
+    public synchronized void sendData(byte[] data, int offset, int length) throws IOException {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
 
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
