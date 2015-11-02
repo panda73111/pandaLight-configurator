@@ -140,16 +140,7 @@ public class PandaLightProtocol {
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
-        byte[] data = new byte[] {
-                DATA_MAGIC,
-                (byte) outPacketNumber,
-                cmd.byteCommand(),
-                0, // [payload length]-1
-                (byte) (DATA_MAGIC + outPacketNumber + cmd.byteCommand()) // checksum
-        };
-        outPacketBuffer.add(outPacketNumber, data);
-        serialConnection.sendData(data);
-        incrementOutPacketNumber();
+        sendData(new byte[] {cmd.byteCommand()});
     }
 
     private void incrementOutPacketNumber() {
