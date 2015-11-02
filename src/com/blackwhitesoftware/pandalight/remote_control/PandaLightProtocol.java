@@ -19,7 +19,6 @@ public class PandaLightProtocol {
     private LinkedList<Byte> inDataBuffer = new LinkedList<>();
     private LinkedList<byte[]> inPayloadBuffer = new LinkedList<>();
     private LinkedList<byte[]> outPacketBuffer = new LinkedList<>();
-    private int inPacketNumber = 0;
     private int outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
 
@@ -30,7 +29,6 @@ public class PandaLightProtocol {
             public void connected() {
                 inDataBuffer.clear();
                 expectedPackets.clear();
-                inPacketNumber = 0;
                 outPacketNumber = 0;
             }
 
@@ -116,7 +114,6 @@ public class PandaLightProtocol {
 
         inPayloadBuffer.add(packetNumber, payload);
         sendAcknowledge(packetNumber);
-        incrementInPacketNumber();
 
         return true;
     }
@@ -153,10 +150,6 @@ public class PandaLightProtocol {
 
     private void incrementOutPacketNumber() {
         outPacketNumber = (outPacketNumber + 1) % 256;
-    }
-
-    private void incrementInPacketNumber() {
-        inPacketNumber = (inPacketNumber + 1) % 256;
     }
 
     public void sendData(byte[] data) throws IOException {
