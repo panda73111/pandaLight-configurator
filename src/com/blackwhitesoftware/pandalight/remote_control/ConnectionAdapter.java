@@ -3,7 +3,6 @@ package com.blackwhitesoftware.pandalight.remote_control;
 import com.blackwhitesoftware.pandalight.PandaLightCommand;
 
 public abstract class ConnectionAdapter implements ConnectionListener {
-
     @Override
     public void connected() {
     }
@@ -20,4 +19,7 @@ public abstract class ConnectionAdapter implements ConnectionListener {
     public void gotData(byte[] data, int offset, int length) {
     }
 
+    @Override
+    public void gotPacket(PandaLightPacket packet) {
+    }
 }
