@@ -9,6 +9,8 @@ import java.util.*;
  * Created by sebastian on 29.10.15.
  */
 public class PandaLightProtocol {
+    //TODO Refactoring!!!
+
     private static final byte DATA_MAGIC = 0x66;
     private static final byte ACK_MAGIC = 0x67;
     private static final byte RESEND_MAGIC = 0x68;
@@ -26,12 +28,22 @@ public class PandaLightProtocol {
     private int outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
     private Timer[] resendTimers = new Timer[256];
+    private byte[] settingsBuffer = new byte[SETTINGS_SIZE];
+    private byte[] bitfileBuffer = new byte[BITFILE_SIZE];
+    private int prevSettingsPacketNumber = -1;
+    private int prevBitfilePacketNumber = -1;
+    private int settingsBytesGotten = 0;
+    private int bitfileBytesGotten = 0;
+    private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     public PandaLightProtocol(SerialConnection connection) {
         serialConnection = connection;
         ConnectionListener listener = new ConnectionListener() {
             @Override
             public void connected() {
+                for (ConnectionListener l : connectionListeners)
+                    l.connected();
+
                 inDataBuffer.clear();
                 expectedPackets.clear();
                 Arrays.fill(inPayloadBuffer, null);
@@ -41,14 +53,23 @@ public class PandaLightProtocol {
                         t.cancel();
                 Arrays.fill(resendTimers, null);
                 outPacketNumber = 0;
+                prevSettingsPacketNumber = -1;
+                prevBitfilePacketNumber = -1;
+                settingsBytesGotten = 0;
+                bitfileBytesGotten = 0;
             }
 
             @Override
             public void disconnected() {
+                for (ConnectionListener l : connectionListeners)
+                    l.disconnected();
             }
 
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
+                for (ConnectionListener l : connectionListeners)
+                    l.sendingCommand(cmd);
+
                 switch (cmd) {
                     case SYSINFO:
                         expectedPackets.add(PandaLightSysinfoPacket.class);
@@ -64,10 +85,19 @@ public class PandaLightProtocol {
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
+                for (ConnectionListener l : connectionListeners)
+                    l.gotData(data, offset, length);
+
                 for (int i = offset; i < offset + length; i++)
                     inDataBuffer.add(data[i]);
 
                 tryPopNextPacket();
+            }
+
+            @Override
+            public void gotPacket(PandaLightPacket packet) {
+                for (ConnectionListener l : connectionListeners)
+                    l.gotPacket(packet);
             }
         };
         serialConnection.addConnectionListener(listener);
@@ -133,8 +163,40 @@ public class PandaLightProtocol {
 
         inPayloadBuffer[packetNumber] = payload;
         sendAcknowledge(packetNumber);
+        tryCombinePayloads();
 
         return true;
+    }
+
+    private synchronized void tryCombinePayloads() {
+        // search for consecutive payloads
+        // and copy them to the respective buffer
+        for (int i = 0; i < 256; i++) {
+            int packetNumber = (prevSettingsPacketNumber + 1) % 256;
+
+            byte[] paylaod = inPayloadBuffer[packetNumber];
+
+            if (paylaod == null)
+                return;
+
+            System.arraycopy(
+                    paylaod, 0,
+                    settingsBuffer, settingsBytesGotten,
+                    paylaod.length);
+
+            prevSettingsPacketNumber = packetNumber;
+            settingsBytesGotten += paylaod.length;
+
+            if (settingsBytesGotten == SETTINGS_SIZE) {
+                PandaLightSettingsPacket packet = new PandaLightSettingsPacket(settingsBuffer);
+                for (ConnectionListener l : connectionListeners)
+                    l.gotPacket(packet);
+
+                prevSettingsPacketNumber = -1;
+                settingsBytesGotten = 0;
+                return;
+            }
+        }
     }
 
     private synchronized void sendAcknowledge(int packetNumber) {
@@ -227,5 +289,13 @@ public class PandaLightProtocol {
             }
         }, RESEND_TIMEOUT_MILLIS, RESEND_TIMEOUT_MILLIS);
         resendTimers[outPacketNumber] = t;
+    }
+
+    public void addConnectionListener(ConnectionListener listener) {
+        connectionListeners.add(listener);
+    }
+
+    public void removeConnectionListener(ConnectionListener listener) {
+        connectionListeners.remove(listener);
     }
 }
