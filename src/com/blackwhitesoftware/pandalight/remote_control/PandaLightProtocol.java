@@ -4,7 +4,6 @@ import com.blackwhitesoftware.pandalight.PandaLightCommand;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -167,12 +166,12 @@ public class PandaLightProtocol {
 
     public void sendData(byte[] data, int offset, int length) throws IOException {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
-        byte[] wrappedData = new byte[260];
 
-        wrappedData[0] = DATA_MAGIC;
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
             int partialPacketLength = ((length - 1) % 256) + 1;
+            byte[] wrappedData = new byte[partialPacketLength];
 
+            wrappedData[0] = DATA_MAGIC;
             wrappedData[1] = (byte) outPacketNumber;
             wrappedData[2] = (byte) partialPacketLength;
             int checksum = (DATA_MAGIC + outPacketNumber + partialPacketLength) % 256;
@@ -185,9 +184,8 @@ public class PandaLightProtocol {
             }
             wrappedData[partialPacketLength + 3] = (byte) checksum;
 
-            byte[] copyOfWrappedData = Arrays.copyOfRange(wrappedData, 0, partialPacketLength + 4);
-            serialConnection.sendData(copyOfWrappedData);
-            outPacketBuffer.add(outPacketNumber, copyOfWrappedData);
+            serialConnection.sendData(wrappedData);
+            outPacketBuffer.add(outPacketNumber, wrappedData);
 
             length -= 256;
             incrementOutPacketNumber();
