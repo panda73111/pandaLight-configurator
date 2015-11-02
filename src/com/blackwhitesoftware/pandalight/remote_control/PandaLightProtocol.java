@@ -4,6 +4,7 @@ import com.blackwhitesoftware.pandalight.PandaLightCommand;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -17,8 +18,8 @@ public class PandaLightProtocol {
 
     private SerialConnection serialConnection;
     private LinkedList<Byte> inDataBuffer = new LinkedList<>();
-    private LinkedList<byte[]> inPayloadBuffer = new LinkedList<>();
-    private LinkedList<byte[]> outPacketBuffer = new LinkedList<>();
+    private byte[][] inPayloadBuffer = new byte[256][];
+    private byte[][] outPacketBuffer = new byte[256][];
     private int outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
 
@@ -29,6 +30,8 @@ public class PandaLightProtocol {
             public void connected() {
                 inDataBuffer.clear();
                 expectedPackets.clear();
+                Arrays.fill(inPayloadBuffer, null);
+                Arrays.fill(outPacketBuffer, null);
                 outPacketNumber = 0;
             }
 
@@ -112,7 +115,7 @@ public class PandaLightProtocol {
         if (!isChecksumValid(checksum))
             return false;
 
-        inPayloadBuffer.add(packetNumber, payload);
+        inPayloadBuffer[packetNumber] = payload;
         sendAcknowledge(packetNumber);
 
         return true;
@@ -139,8 +142,12 @@ public class PandaLightProtocol {
     }
 
     private void resendPacket(int packetNumber) {
+        byte[] data = outPacketBuffer[packetNumber];
+        if (data == null)
+            return;
+
         try {
-            serialConnection.sendData(outPacketBuffer.get(packetNumber));
+            serialConnection.sendData(data);
         } catch (IOException ignored) { }
     }
 
@@ -176,7 +183,7 @@ public class PandaLightProtocol {
             }
             wrappedData[partialPacketLength + 3] = (byte) checksum;
 
-            outPacketBuffer.add(outPacketNumber, wrappedData);
+            outPacketBuffer[outPacketNumber] = wrappedData;
             serialConnection.sendData(wrappedData);
 
             length -= 256;
