@@ -38,7 +38,7 @@ public class SerialConnection {
         return ports.toArray(new String[ports.size()]);
     }
 
-    public void connect(String portName) throws PortInUseException, IOException, NoSuchPortException, UnsupportedCommOperationException {
+    public synchronized void connect(String portName) throws PortInUseException, IOException, NoSuchPortException, UnsupportedCommOperationException {
         if (isConnected())
             return;
 
@@ -74,7 +74,7 @@ public class SerialConnection {
         return serialPort != null;
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
         if (!isConnected())
             return;
 
@@ -100,7 +100,7 @@ public class SerialConnection {
         sendData(data, 0, data.length);
     }
 
-    public void sendData(byte[] data, int offset, int length) throws IOException {
+    public synchronized void sendData(byte[] data, int offset, int length) throws IOException {
         if (!isConnected())
             return;
 
@@ -116,7 +116,7 @@ public class SerialConnection {
         return read(buffer, 0, buffer.length);
     }
 
-    public int read(byte[] buffer, int offset, int length) throws IOException {
+    public synchronized int read(byte[] buffer, int offset, int length) throws IOException {
         if (!isConnected())
             return -1;
 
