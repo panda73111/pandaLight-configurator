@@ -189,14 +189,18 @@ public class PandaLightProtocol {
             wrappedData[0] = DATA_MAGIC;
             wrappedData[1] = (byte) outPacketNumber;
             wrappedData[2] = (byte) (partialPacketLength - 1);
-            int checksum = (DATA_MAGIC + outPacketNumber + partialPacketLength - 1) % 256;
+            int checksum = 0;
 
-            for (int byteI = 0; byteI < partialPacketLength; byteI++) {
-                // copy the data
-                byte b = data[offset + byteI + packetI * 256];
-                wrappedData[byteI + 3] = b;
-                checksum = (checksum + b) % 256;
+            System.arraycopy(
+                    data, offset + packetI * 256, // from data
+                    wrappedData, 3, // to wrappedData
+                    partialPacketLength
+                    );
+
+            for (byte b : wrappedData) {
+                checksum += b;
             }
+            checksum = checksum % 256;
             wrappedData[partialPacketLength + 3] = (byte) checksum;
 
             outPacketBuffer[outPacketNumber] = wrappedData;
