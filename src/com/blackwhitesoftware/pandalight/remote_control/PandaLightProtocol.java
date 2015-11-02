@@ -178,14 +178,14 @@ public class PandaLightProtocol {
 
             for (int byteI = 0; byteI < partialPacketLength; byteI++) {
                 // copy the data
-                byte b = data[byteI + packetI * 256];
+                byte b = data[offset + byteI + packetI * 256];
                 wrappedData[byteI + 3] = b;
                 checksum = (checksum + b) % 256;
             }
             wrappedData[partialPacketLength + 3] = (byte) checksum;
 
-            serialConnection.sendData(wrappedData);
             outPacketBuffer.add(outPacketNumber, wrappedData);
+            serialConnection.sendData(wrappedData);
 
             length -= 256;
             incrementOutPacketNumber();
