@@ -1,10 +1,15 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
+import com.blackwhitesoftware.pandalight.remote_control.PandaLightCommand;
+import com.blackwhitesoftware.pandalight.remote_control.ConnectionListener;
+import com.blackwhitesoftware.pandalight.remote_control.PandaLightPacket;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.remote_control.PandaLightSysinfoPacket;
 
 import javax.swing.*;
 import java.awt.*;
 import java.beans.Transient;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -22,9 +27,45 @@ public class BoardInfoPanel extends JPanel implements Observer {
      *
      * @param serialConnection
      */
-    public BoardInfoPanel(PandaLightSerialConnection serialConnection) {
+    public BoardInfoPanel(final PandaLightSerialConnection serialConnection) {
         super();
         this.serialConnection = serialConnection;
+        ConnectionListener listener = new ConnectionListener() {
+            @Override
+            public void connected() {
+                try {
+                    serialConnection.sendCommand(PandaLightCommand.SYSINFO);
+                } catch (IOException ignored) { }
+            }
+
+            @Override
+            public void disconnected() {
+
+            }
+
+            @Override
+            public void sendingCommand(PandaLightCommand cmd) {
+
+            }
+
+            @Override
+            public void gotData(byte[] data, int offset, int length) {
+
+            }
+
+            @Override
+            public void gotPacket(PandaLightPacket packet) {
+                if (!(packet instanceof PandaLightSysinfoPacket))
+                    return;
+
+                PandaLightSysinfoPacket sysinfoPacket = (PandaLightSysinfoPacket) packet;
+                String versionString = versionToString(
+                        sysinfoPacket.getMajorVersion(),
+                        sysinfoPacket.getMinorVersion());
+                versionDisplay.setText(versionString);
+            }
+        };
+        this.serialConnection.addConnectionListener(listener);
         this.serialConnection.addObserver(this);
         initialise();
     }
@@ -82,6 +123,10 @@ public class BoardInfoPanel extends JPanel implements Observer {
                 .addGroup(layout.createSequentialGroup()
                                 .addComponent(versionDisplay)
                 ));
+    }
+
+    private static String versionToString(int major, int minor) {
+        return String.format("%d.%02d", major, minor);
     }
 
     /**
