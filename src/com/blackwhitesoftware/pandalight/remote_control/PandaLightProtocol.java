@@ -1,7 +1,5 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
-import com.blackwhitesoftware.pandalight.PandaLightCommand;
-
 import java.io.IOException;
 import java.util.*;
 

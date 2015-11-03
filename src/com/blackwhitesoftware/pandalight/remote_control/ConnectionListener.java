@@ -1,7 +1,5 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
-import com.blackwhitesoftware.pandalight.PandaLightCommand;
-
 public interface ConnectionListener {
 
     void connected();
