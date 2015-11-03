@@ -176,9 +176,12 @@ public class PandaLightProtocol {
             packet = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
         }
 
-        if (packet != null)
+        if (packet != null) {
+            expectedPackets.remove(0);
+
             for (ConnectionListener l : connectionListeners)
                 l.gotPacket(packet);
+        }
     }
 
     private synchronized void sendAcknowledge(int packetNumber) {
