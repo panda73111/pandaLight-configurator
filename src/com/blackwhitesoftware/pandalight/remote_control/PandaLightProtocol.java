@@ -169,11 +169,14 @@ public class PandaLightProtocol {
         PandaLightPacket packet = null;
 
         if (nextExpectedPacket == PandaLightSysinfoPacket.class) {
-            packet = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            byte[] data = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            packet = new PandaLightSysinfoPacket(data);
         } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
-            packet = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            byte[] data = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            packet = new PandaLightSettingsPacket(data);
         } else if (nextExpectedPacket == PandaLightBitfilePacket.class) {
-            packet = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            byte[] data = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            packet = new PandaLightBitfilePacket(data);
         }
 
         if (packet != null) {
