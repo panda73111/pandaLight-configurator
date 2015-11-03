@@ -15,6 +15,7 @@ public class PandaLightProtocol {
     private static final byte ACK_MAGIC = 0x67;
     private static final byte RESEND_MAGIC = 0x68;
 
+    private static final int SYSINFO_SIZE = 12;
     private static final int SETTINGS_SIZE = 1024;
     private static final int BITFILE_SIZE = 342816;
 
@@ -28,13 +29,11 @@ public class PandaLightProtocol {
     private int outPacketNumber = 0;
     private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
     private Timer[] resendTimers = new Timer[256];
-    private byte[] settingsBuffer = new byte[SETTINGS_SIZE];
-    private byte[] bitfileBuffer = new byte[BITFILE_SIZE];
-    private int prevSettingsPacketNumber = -1;
-    private int prevBitfilePacketNumber = -1;
-    private int settingsBytesGotten = 0;
-    private int bitfileBytesGotten = 0;
     private final List<ConnectionListener> connectionListeners = new Vector<>();
+
+    private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);
+    private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
+    private final PartialPacketJoiner bitfilePacketJoiner = new PartialPacketJoiner(BITFILE_SIZE);
 
     public PandaLightProtocol(SerialConnection connection) {
         serialConnection = connection;
@@ -50,10 +49,6 @@ public class PandaLightProtocol {
                 Arrays.fill(outPacketBuffer, null);
                 Arrays.fill(resendTimers, null);
                 outPacketNumber = 0;
-                prevSettingsPacketNumber = -1;
-                prevBitfilePacketNumber = -1;
-                settingsBytesGotten = 0;
-                bitfileBytesGotten = 0;
             }
 
             @Override
@@ -169,35 +164,21 @@ public class PandaLightProtocol {
         return true;
     }
 
-    private synchronized void tryCombinePayloads() {
-        // search for consecutive payloads
-        // and copy them to the respective buffer
-        for (int i = 0; i < 256; i++) {
-            int packetNumber = (prevSettingsPacketNumber + 1) % 256;
+    private void tryCombinePayloads() {
+        Class<? extends PandaLightPacket> nextExpectedPacket = expectedPackets.get(0);
+        PandaLightPacket packet = null;
 
-            byte[] paylaod = inPayloadBuffer[packetNumber];
-
-            if (paylaod == null)
-                return;
-
-            System.arraycopy(
-                    paylaod, 0,
-                    settingsBuffer, settingsBytesGotten,
-                    paylaod.length);
-
-            prevSettingsPacketNumber = packetNumber;
-            settingsBytesGotten += paylaod.length;
-
-            if (settingsBytesGotten == SETTINGS_SIZE) {
-                PandaLightSettingsPacket packet = new PandaLightSettingsPacket(settingsBuffer);
-                for (ConnectionListener l : connectionListeners)
-                    l.gotPacket(packet);
-
-                prevSettingsPacketNumber = -1;
-                settingsBytesGotten = 0;
-                return;
-            }
+        if (nextExpectedPacket == PandaLightSysinfoPacket.class) {
+            packet = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+        } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
+            packet = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+        } else if (nextExpectedPacket == PandaLightBitfilePacket.class) {
+            packet = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
         }
+
+        if (packet != null)
+            for (ConnectionListener l : connectionListeners)
+                l.gotPacket(packet);
     }
 
     private synchronized void sendAcknowledge(int packetNumber) {
