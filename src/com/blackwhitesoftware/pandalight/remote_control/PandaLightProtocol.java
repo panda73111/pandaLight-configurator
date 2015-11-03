@@ -22,13 +22,13 @@ public class PandaLightProtocol {
     private static final long RESEND_TIMEOUT_MILLIS = 100;
     private static final int MAX_TIMEOUT_RESENDS = 10;
 
-    private SerialConnection serialConnection;
-    private LinkedList<Byte> inDataBuffer = new LinkedList<>();
-    private byte[][] inPayloadBuffer = new byte[256][];
-    private byte[][] outPacketBuffer = new byte[256][];
+    private final SerialConnection serialConnection;
+    private final LinkedList<Byte> inDataBuffer = new LinkedList<>();
+    private final byte[][] inPayloadBuffer = new byte[256][];
+    private final byte[][] outPacketBuffer = new byte[256][];
     private int outPacketNumber = 0;
-    private Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
-    private Timer[] resendTimers = new Timer[256];
+    private final Vector<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
+    private final Timer[] resendTimers = new Timer[256];
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);

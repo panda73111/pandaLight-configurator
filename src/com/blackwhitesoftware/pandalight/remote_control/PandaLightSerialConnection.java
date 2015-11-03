@@ -1,9 +1,6 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.PandaLightCommand;
-import com.blackwhitesoftware.pandalight.remote_control.ConnectionAdapter;
-import com.blackwhitesoftware.pandalight.remote_control.ConnectionListener;
-import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
 import gnu.io.UnsupportedCommOperationException;
@@ -20,11 +17,13 @@ import java.util.Observable;
  */
 public class PandaLightSerialConnection extends Observable {
 
-    final private SerialConnection serialConnection;
+    private final SerialConnection serialConnection;
+    private final PandaLightProtocol protocol;
 
     public PandaLightSerialConnection() {
         serialConnection = new SerialConnection();
-        serialConnection.addConnectionListener(new ConnectionAdapter() {
+        protocol = new PandaLightProtocol(serialConnection);
+        protocol.addConnectionListener(new ConnectionAdapter() {
             @Override
             public void connected() {
                 Logger.debug("serial port connected");
@@ -55,6 +54,13 @@ public class PandaLightSerialConnection extends Observable {
                         bytesToHex(data, offset, length));
 
                 super.gotData(data, offset, length);
+            }
+
+            @Override
+            public void gotPacket(PandaLightPacket packet) {
+                Logger.debug("got packet: {}", packet);
+
+                super.gotPacket(packet);
             }
         });
     }
@@ -90,7 +96,7 @@ public class PandaLightSerialConnection extends Observable {
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
-        serialConnection.sendData(new byte[]{cmd.byteCommand()});
+        protocol.sendCommand(cmd);
     }
 
     /**
@@ -119,11 +125,11 @@ public class PandaLightSerialConnection extends Observable {
     }
 
     public void addConnectionListener(ConnectionListener listener) {
-        serialConnection.addConnectionListener(listener);
+        protocol.addConnectionListener(listener);
     }
 
     public void removeConnectionListener(ConnectionListener listener) {
-        serialConnection.removeConnectionListener(listener);
+        protocol.removeConnectionListener(listener);
     }
 
 
