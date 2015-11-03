@@ -12,7 +12,7 @@ public class PartialPacketJoiner {
         packetBuffer = new byte[packetSize];
     }
 
-    public byte[] tryCombinePayloads(byte[][] payloadBuffer) {
+    public byte[] tryCombinePayloads(byte[][] payloadBuffer) throws PandaLightProtocolException {
         // search for consecutive payloads
         // and copy them to the respective buffer
         for (int i = 0; i < 256; i++) {
@@ -22,6 +22,11 @@ public class PartialPacketJoiner {
 
             if (paylaod == null)
                 return null;
+
+            if (bytesGotten + paylaod.length > packetBuffer.length) {
+                reset();
+                throw new PandaLightProtocolException();
+            }
 
             System.arraycopy(
                     paylaod, 0,
@@ -35,13 +40,15 @@ public class PartialPacketJoiner {
                 continue;
 
             // packet completed
-
-            prevPacketNumber = -1;
-            bytesGotten = 0;
-
+            reset();
             return packetBuffer.clone();
         }
 
         return null;
+    }
+
+    private void reset() {
+        prevPacketNumber = -1;
+        bytesGotten = 0;
     }
 }

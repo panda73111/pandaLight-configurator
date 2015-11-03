@@ -22,6 +22,8 @@ public class PandaLightProtocol {
     private static final long RESEND_TIMEOUT_MILLIS = 100;
     private static final int MAX_TIMEOUT_RESENDS = 10;
 
+    private static final int MAX_PROTOCOL_ERRORS = 10;
+
     private final SerialConnection serialConnection;
     private final LinkedList<Byte> inDataBuffer = new LinkedList<>();
     private final byte[][] inPayloadBuffer = new byte[256][];
@@ -34,6 +36,8 @@ public class PandaLightProtocol {
     private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);
     private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
     private final PartialPacketJoiner bitfilePacketJoiner = new PartialPacketJoiner(BITFILE_SIZE);
+
+    private int protocolErrorCount = 0;
 
     public PandaLightProtocol(SerialConnection connection) {
         serialConnection = connection;
@@ -168,15 +172,24 @@ public class PandaLightProtocol {
         Class<? extends PandaLightPacket> nextExpectedPacket = expectedPackets.get(0);
         PandaLightPacket packet = null;
 
-        if (nextExpectedPacket == PandaLightSysinfoPacket.class) {
-            byte[] data = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
-            packet = new PandaLightSysinfoPacket(data);
-        } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
-            byte[] data = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
-            packet = new PandaLightSettingsPacket(data);
-        } else if (nextExpectedPacket == PandaLightBitfilePacket.class) {
-            byte[] data = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
-            packet = new PandaLightBitfilePacket(data);
+        try {
+            if (nextExpectedPacket == PandaLightSysinfoPacket.class) {
+                byte[] data = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+                packet = new PandaLightSysinfoPacket(data);
+            } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
+                byte[] data = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+                packet = new PandaLightSettingsPacket(data);
+            } else if (nextExpectedPacket == PandaLightBitfilePacket.class) {
+                byte[] data = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
+                packet = new PandaLightBitfilePacket(data);
+            }
+        } catch (PandaLightProtocolException e) {
+            if (++protocolErrorCount == MAX_PROTOCOL_ERRORS)
+                // TODO error message
+                serialConnection.disconnect();
+
+            // try again
+            repeatCommand(nextExpectedPacket);
         }
 
         if (packet != null) {
@@ -185,6 +198,19 @@ public class PandaLightProtocol {
             for (ConnectionListener l : connectionListeners)
                 l.gotPacket(packet);
         }
+    }
+
+    private void repeatCommand(Class<? extends PandaLightPacket> expectedPacket) {
+        try {
+            if (expectedPacket == PandaLightSysinfoPacket.class) {
+                sendCommand(PandaLightCommand.SYSINFO);
+            } else if (expectedPacket == PandaLightSettingsPacket.class) {
+                sendCommand(PandaLightCommand.WRITE_SETTINGS_TO_UART);
+            } else if (expectedPacket == PandaLightBitfilePacket.class) {
+                sendCommand(PandaLightCommand.WRITE_BITFILE_TO_UART);
+            }
+        }
+        catch (IOException ignored) { }
     }
 
     private synchronized void sendAcknowledge(int packetNumber) {
