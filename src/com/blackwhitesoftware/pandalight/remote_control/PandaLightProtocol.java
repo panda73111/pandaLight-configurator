@@ -48,9 +48,6 @@ public class PandaLightProtocol {
                 expectedPackets.clear();
                 Arrays.fill(inPayloadBuffer, null);
                 Arrays.fill(outPacketBuffer, null);
-                for (Timer t : resendTimers)
-                    if (t != null)
-                        t.cancel();
                 Arrays.fill(resendTimers, null);
                 outPacketNumber = 0;
                 prevSettingsPacketNumber = -1;
@@ -63,6 +60,10 @@ public class PandaLightProtocol {
             public void disconnected() {
                 for (ConnectionListener l : connectionListeners)
                     l.disconnected();
+
+                for (Timer t : resendTimers)
+                    if (t != null)
+                        t.cancel();
             }
 
             @Override
