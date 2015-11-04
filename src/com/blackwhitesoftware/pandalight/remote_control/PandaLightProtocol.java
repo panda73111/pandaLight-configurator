@@ -257,7 +257,8 @@ public class PandaLightProtocol {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
 
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
-            int partialPacketLength = ((length - 1) % 256) + 1;
+            int partialPayloadLength = ((length - 1) % 256) + 1;
+            int partialPacketLength = partialPayloadLength + 4;
             byte[] wrappedData = new byte[partialPacketLength];
 
             wrappedData[0] = DATA_MAGIC;
@@ -268,14 +269,14 @@ public class PandaLightProtocol {
             System.arraycopy(
                     data, offset + packetI * 256, // from data
                     wrappedData, 3, // to wrappedData
-                    partialPacketLength
+                    partialPayloadLength
                     );
 
             for (byte b : wrappedData) {
                 checksum += b;
             }
             checksum = checksum % 256;
-            wrappedData[partialPacketLength + 3] = (byte) checksum;
+            wrappedData[partialPayloadLength + 3] = (byte) checksum;
 
             outPacketBuffer[outPacketNumber] = wrappedData;
             serialConnection.sendData(wrappedData);
