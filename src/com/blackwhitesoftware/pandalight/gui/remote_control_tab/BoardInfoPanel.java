@@ -40,17 +40,18 @@ public class BoardInfoPanel extends JPanel implements Observer {
 
             @Override
             public void disconnected() {
+            }
 
+            @Override
+            public void sendingData(byte[] data, int offset, int length) {
             }
 
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
-
             }
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
-
             }
 
             @Override

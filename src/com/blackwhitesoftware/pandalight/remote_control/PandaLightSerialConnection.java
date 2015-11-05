@@ -40,6 +40,14 @@ public class PandaLightSerialConnection extends Observable {
             }
 
             @Override
+            public void sendingData(byte[] data, int offset, int length) {
+                Logger.debug("sending {} bytes of serial data: {}",
+                        length, bytesToHex(data, offset, length));
+
+                super.sendingData(data, offset, length);
+            }
+
+            @Override
             public void sendingCommand(PandaLightCommand cmd) {
                 Logger.debug("sending serial command: {}",
                         bytesToHex(new byte[]{cmd.byteCommand()}));
@@ -49,8 +57,8 @@ public class PandaLightSerialConnection extends Observable {
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
-                Logger.debug("got serial data: {}",
-                        bytesToHex(data, offset, length));
+                Logger.debug("got {} bytes of serial data: {}",
+                        length, bytesToHex(data, offset, length));
 
                 super.gotData(data, offset, length);
             }

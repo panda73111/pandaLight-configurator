@@ -1,5 +1,7 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
+import org.pmw.tinylog.Logger;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -65,6 +67,10 @@ public class PandaLightProtocol {
 
                 for (ConnectionListener l : connectionListeners)
                     l.disconnected();
+            }
+
+            @Override
+            public void sendingData(byte[] data, int offset, int length) {
             }
 
             @Override
@@ -263,6 +269,10 @@ public class PandaLightProtocol {
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
             int partialPayloadLength = ((length - 1) % 256) + 1;
             int partialPacketLength = partialPayloadLength + 4;
+
+            Logger.debug("sending partial packet {}/{} with size {}",
+                    packetI, partialPacketCount, partialPacketLength);
+
             byte[] wrappedData = new byte[partialPacketLength];
 
             wrappedData[0] = DATA_MAGIC;
@@ -299,9 +309,15 @@ public class PandaLightProtocol {
 
             @Override
             public void run() {
+                Logger.debug("resend attempt {}/{} of packet {}",
+                        runCount + 1, MAX_TIMEOUT_RESENDS, packetNumber);
+
                 resendPacket(packetNumber);
 
                 if (++runCount == MAX_TIMEOUT_RESENDS) {
+                    Logger.debug("ending resend attempts of packet {}",
+                            packetNumber);
+
                     cancel();
                     resendTimers[packetNumber] = null;
                 }

@@ -104,6 +104,10 @@ public class SerialConnection {
         if (!isConnected())
             return;
 
+        for (ConnectionListener listener : connectionListeners) {
+            listener.sendingData(data, offset, length);
+        }
+
         try {
             out.write(data, offset, length);
         } catch (IOException e) {
@@ -120,16 +124,18 @@ public class SerialConnection {
         if (!isConnected())
             return -1;
 
+        int readCount;
         try {
-            int readCount = in.read(buffer, offset, length);
-            for (ConnectionListener listener : connectionListeners) {
-                listener.gotData(buffer, offset, readCount);
-            }
-            return readCount;
+            readCount = in.read(buffer, offset, length);
         } catch (IOException e) {
             disconnect();
             throw e;
         }
+
+        for (ConnectionListener listener : connectionListeners) {
+            listener.gotData(buffer, offset, readCount);
+        }
+        return readCount;
     }
 
     public void addConnectionListener(ConnectionListener listener) {
