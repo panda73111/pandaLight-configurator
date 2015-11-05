@@ -10,6 +10,10 @@ public abstract class ConnectionAdapter implements ConnectionListener {
     }
 
     @Override
+    public void sendingData(byte[] data, int offset, int length) {
+    }
+
+    @Override
     public void sendingCommand(PandaLightCommand cmd) {
     }
 
