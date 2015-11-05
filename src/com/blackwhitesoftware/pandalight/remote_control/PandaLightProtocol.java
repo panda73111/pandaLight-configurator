@@ -263,7 +263,7 @@ public class PandaLightProtocol {
 
             wrappedData[0] = DATA_MAGIC;
             wrappedData[1] = (byte) outPacketNumber;
-            wrappedData[2] = (byte) (partialPacketLength - 1);
+            wrappedData[2] = (byte) (partialPayloadLength - 1);
             int checksum = 0;
 
             System.arraycopy(
