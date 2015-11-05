@@ -72,11 +72,11 @@ public class PandaLightSerialConnection extends Observable {
         });
     }
 
-    private String bytesToHex(byte[] bytes) {
+    private static String bytesToHex(byte[] bytes) {
         return bytesToHex(bytes, 0, bytes.length);
     }
 
-    private String bytesToHex(byte[] bytes, int offset, int length) {
+    private static String bytesToHex(byte[] bytes, int offset, int length) {
         Formatter formatter = new Formatter();
         for (int i = offset; i < length; i++) {
             formatter.format("%02x", bytes[i]);
