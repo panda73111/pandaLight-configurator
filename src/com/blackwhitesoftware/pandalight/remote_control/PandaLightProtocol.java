@@ -11,9 +11,9 @@ import java.util.*;
 public class PandaLightProtocol {
     //TODO Refactoring!!!
 
-    private static final byte DATA_MAGIC = 0x66;
-    private static final byte ACK_MAGIC = 0x67;
-    private static final byte RESEND_MAGIC = 0x68;
+    private static final byte DATA_MAGIC = 0x65;
+    private static final byte ACK_MAGIC = 0x66;
+    private static final byte RESEND_MAGIC = 0x67;
 
     private static final int SYSINFO_SIZE = 12;
     private static final int SETTINGS_SIZE = 1024;
