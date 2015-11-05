@@ -42,32 +42,33 @@ public class PandaLightProtocol {
         ConnectionListener listener = new ConnectionListener() {
             @Override
             public void connected() {
-                for (ConnectionListener l : connectionListeners)
-                    l.connected();
-
                 inDataBuffer.clear();
                 expectedPackets.clear();
                 Arrays.fill(inPayloadBuffer, null);
                 Arrays.fill(outPacketBuffer, null);
                 Arrays.fill(resendTimers, null);
                 outPacketNumber = 0;
+
+                for (ConnectionListener l : connectionListeners)
+                    l.connected();
             }
 
             @Override
             public void disconnected() {
+                for (int i = 0; i < resendTimers.length; i++) {
+                    Timer t = resendTimers[i];
+                    if (t != null) {
+                        t.cancel();
+                        resendTimers[i] = null;
+                    }
+                }
+
                 for (ConnectionListener l : connectionListeners)
                     l.disconnected();
-
-                for (Timer t : resendTimers)
-                    if (t != null)
-                        t.cancel();
             }
 
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
-                for (ConnectionListener l : connectionListeners)
-                    l.sendingCommand(cmd);
-
                 switch (cmd) {
                     case SYSINFO:
                         expectedPackets.add(PandaLightSysinfoPacket.class);
@@ -79,17 +80,20 @@ public class PandaLightProtocol {
                         expectedPackets.add(PandaLightBitfilePacket.class);
                         break;
                 }
+
+                for (ConnectionListener l : connectionListeners)
+                    l.sendingCommand(cmd);
             }
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
-                for (ConnectionListener l : connectionListeners)
-                    l.gotData(data, offset, length);
-
                 for (int i = offset; i < offset + length; i++)
                     inDataBuffer.add(data[i]);
 
                 tryPopNextPacket();
+
+                for (ConnectionListener l : connectionListeners)
+                    l.gotData(data, offset, length);
             }
 
             @Override
@@ -297,8 +301,10 @@ public class PandaLightProtocol {
             public void run() {
                 resendPacket(packetNumber);
 
-                if (++runCount == MAX_TIMEOUT_RESENDS)
+                if (++runCount == MAX_TIMEOUT_RESENDS) {
                     cancel();
+                    resendTimers[packetNumber] = null;
+                }
             }
         }, RESEND_TIMEOUT_MILLIS, RESEND_TIMEOUT_MILLIS);
         resendTimers[outPacketNumber] = t;
