@@ -71,6 +71,8 @@ public class PandaLightProtocol {
 
             @Override
             public void sendingData(byte[] data, int offset, int length) {
+                for (ConnectionListener l : connectionListeners)
+                    l.sendingData(data, offset, length);
             }
 
             @Override
