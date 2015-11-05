@@ -255,6 +255,30 @@ public class PandaLightProtocol {
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
         sendData(new byte[] {cmd.byteCommand()});
+        readResponsePackets(cmd);
+    }
+
+    private void readResponsePackets(PandaLightCommand cmd) throws IOException {
+        int payloadLength;
+
+        switch (cmd) {
+            case SYSINFO:
+                payloadLength = SYSINFO_SIZE;
+                break;
+            case WRITE_SETTINGS_TO_UART:
+                payloadLength = SETTINGS_SIZE;
+                break;
+            case WRITE_BITFILE_TO_UART:
+                payloadLength = BITFILE_SIZE;
+                break;
+            default:
+                return;
+        }
+
+        int partialPacketCount = (payloadLength - 1) / 256 + 1;  // 256 bytes per packet
+        int bufferSize = partialPacketCount * 4 + payloadLength; // 4 bytes header per packet
+        byte[] buffer = new byte[bufferSize];
+        serialConnection.read(buffer);
     }
 
     private synchronized void incrementOutPacketNumber() {
