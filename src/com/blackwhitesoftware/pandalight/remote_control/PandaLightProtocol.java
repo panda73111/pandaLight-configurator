@@ -166,7 +166,7 @@ public class PandaLightProtocol {
 
         removeFromInDataBuffer(3);
 
-        checksum = (checksum + length) % 256;
+        checksum = (checksum + length - 1) % 256;
 
         byte[] payload = new byte[length];
         for (int i = 0; i < length; i++) {
