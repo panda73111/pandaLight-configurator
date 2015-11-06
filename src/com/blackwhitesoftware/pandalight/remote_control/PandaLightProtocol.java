@@ -126,11 +126,13 @@ public class PandaLightProtocol {
                         magic != ACK_MAGIC &&
                         magic != RESEND_MAGIC);
 
-        int packetNumber = inDataBuffer.getFirst();
+        int packetNumber = inDataBuffer.get(1);
         int checksum = (magic + packetNumber) % 256;
 
         switch (magic) {
             case ACK_MAGIC:
+                removeFromInDataBuffer(2);
+
                 if (!isChecksumValid(checksum))
                     return false;
 
@@ -143,6 +145,8 @@ public class PandaLightProtocol {
                 }
                 return true;
             case RESEND_MAGIC:
+                removeFromInDataBuffer(2);
+
                 if (!isChecksumValid(checksum))
                     return false;
 
@@ -154,20 +158,19 @@ public class PandaLightProtocol {
 
         // it's a data packet
 
-        byte length = (byte) (inDataBuffer.getFirst() + 1);
+        byte length = (byte) (inDataBuffer.get(2) + 1);
         if (inDataBuffer.size() < length + 1) {
             // the packet was not yet read completely
-            inDataBuffer.addFirst(length);
-            inDataBuffer.addFirst((byte) packetNumber);
-            inDataBuffer.addFirst(magic);
             return false;
         }
+
+        removeFromInDataBuffer(3);
 
         checksum = (checksum + length) % 256;
 
         byte[] payload = new byte[length];
         for (int i = 0; i < length; i++) {
-            byte b = inDataBuffer.getFirst();
+            byte b = inDataBuffer.pop();
             payload[i] = b;
             checksum = (checksum + b) % 256;
         }
@@ -182,7 +185,12 @@ public class PandaLightProtocol {
         return true;
     }
 
-    private void tryCombinePayloads() {
+    private synchronized void removeFromInDataBuffer(int count) {
+        for (int i = 0; i < count; i++)
+            inDataBuffer.removeFirst();
+    }
+
+    private synchronized void tryCombinePayloads() {
         Class<? extends PandaLightPacket> nextExpectedPacket = expectedPackets.get(0);
         PandaLightPacket packet = null;
 
@@ -239,7 +247,7 @@ public class PandaLightProtocol {
     }
 
     private synchronized boolean isChecksumValid(int checksum) {
-        if (inDataBuffer.getFirst() == checksum)
+        if (inDataBuffer.pop() == checksum) {
             Logger.debug("checksum matches");
             return true;
         }
