@@ -6,10 +6,7 @@ import org.pmw.tinylog.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 public class SerialConnection {
 
@@ -38,7 +35,9 @@ public class SerialConnection {
         return ports.toArray(new String[ports.size()]);
     }
 
-    public synchronized void connect(String portName) throws PortInUseException, IOException, NoSuchPortException, UnsupportedCommOperationException {
+    public synchronized void connect(String portName) throws
+            PortInUseException, IOException, NoSuchPortException,
+            UnsupportedCommOperationException, TooManyListenersException {
         if (isConnected())
             return;
 
@@ -65,10 +64,15 @@ public class SerialConnection {
             in = serialPort.getInputStream();
             out = serialPort.getOutputStream();
 
+            serialPort.addEventListener(new SerialEventListener(in, connectionListeners));
+            serialPort.notifyOnDataAvailable(true);
+
             for (ConnectionListener listener : connectionListeners) {
                 listener.connected();
             }
-        } catch (NoSuchPortException | PortInUseException | UnsupportedCommOperationException | IOException e) {
+        } catch (
+                NoSuchPortException | PortInUseException | UnsupportedCommOperationException |
+                        TooManyListenersException | IOException e) {
             Logger.error("error while opening serial port: {}", e.getClass().getSimpleName());
             throw e;
         }
