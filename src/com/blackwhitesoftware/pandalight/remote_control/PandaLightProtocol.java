@@ -134,6 +134,8 @@ public class PandaLightProtocol {
                 if (!isChecksumValid(checksum))
                     return false;
 
+                Logger.debug("got acknowledge for packet {}, cancelling resend timer", packetNumber);
+
                 Timer timer = resendTimers[packetNumber];
                 if (timer != null) {
                     timer.cancel();
@@ -143,6 +145,8 @@ public class PandaLightProtocol {
             case RESEND_MAGIC:
                 if (!isChecksumValid(checksum))
                     return false;
+
+                Logger.debug("got resend request for packet {}", packetNumber);
 
                 resendPacket(packetNumber);
                 return true;
@@ -224,6 +228,7 @@ public class PandaLightProtocol {
     }
 
     private synchronized void sendAcknowledge(int packetNumber) {
+        Logger.debug("sending acknowledge for packet {}", packetNumber);
         try {
             serialConnection.sendData(new byte[] {
                     ACK_MAGIC,
@@ -235,7 +240,10 @@ public class PandaLightProtocol {
 
     private synchronized boolean isChecksumValid(int checksum) {
         if (inDataBuffer.getFirst() == checksum)
+            Logger.debug("checksum matches");
             return true;
+        }
+        Logger.debug("checksum does NOT match");
 
         // bit error in packet, flush the buffer
         // to get a new packet beginning
@@ -244,6 +252,7 @@ public class PandaLightProtocol {
     }
 
     private synchronized void resendPacket(int packetNumber) {
+        Logger.debug("resending packet {}", packetNumber);
         byte[] data = outPacketBuffer[packetNumber];
         if (data == null)
             return;
