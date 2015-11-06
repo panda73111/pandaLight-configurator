@@ -127,7 +127,7 @@ public class BoardInfoPanel extends JPanel implements Observer {
     }
 
     private static String versionToString(int major, int minor) {
-        return String.format("%d.%02d", major, minor);
+        return String.format("%d.%d", major, minor);
     }
 
     /**
