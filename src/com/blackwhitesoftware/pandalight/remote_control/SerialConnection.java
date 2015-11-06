@@ -57,6 +57,10 @@ public class SerialConnection {
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
+            serialPort.setFlowControlMode(
+                    SerialPort.FLOWCONTROL_RTSCTS_IN |
+                            SerialPort.FLOWCONTROL_RTSCTS_OUT
+            );
 
             in = serialPort.getInputStream();
             out = serialPort.getOutputStream();
