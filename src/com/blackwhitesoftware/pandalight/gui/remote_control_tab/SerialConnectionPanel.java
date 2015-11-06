@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.TooManyListenersException;
 
 /**
  * @author Sebastian Hüther
@@ -43,7 +44,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
                 ErrorHandling.ShowMessage("Serial port is already in use!");
             } catch (NoSuchPortException e1) {
                 ErrorHandling.ShowMessage("This serial port could not be found!");
-            } catch (UnsupportedCommOperationException | IOException e1) {
+            } catch (UnsupportedCommOperationException | TooManyListenersException | IOException e1) {
                 ErrorHandling.ShowMessage("Error while opening serial port:\n" + e1.getLocalizedMessage());
             }
             connectButton.setEnabled(true);
