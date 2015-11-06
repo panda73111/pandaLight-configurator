@@ -73,7 +73,7 @@ public class SerialConnection {
         } catch (
                 NoSuchPortException | PortInUseException | UnsupportedCommOperationException |
                         TooManyListenersException | IOException e) {
-            Logger.error("error while opening serial port: {}", e.getClass().getSimpleName());
+            Logger.trace(e, "error while opening serial port");
             throw e;
         }
     }
