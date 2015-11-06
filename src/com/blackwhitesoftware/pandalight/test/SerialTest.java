@@ -28,36 +28,32 @@ public class SerialTest {
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
+            // serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+            serialPort.setFlowControlMode(
+                    SerialPort.FLOWCONTROL_RTSCTS_IN |
+                            SerialPort.FLOWCONTROL_RTSCTS_OUT);
 
-            InputStream in = serialPort.getInputStream();
-            OutputStream out = serialPort.getOutputStream();
+            final InputStream in = serialPort.getInputStream();
+            final OutputStream out = serialPort.getOutputStream();
 
             serialPort.addEventListener(new SerialPortEventListener() {
                 @Override
                 public void serialEvent(SerialPortEvent serialPortEvent) {
-                    System.out.println("Event: " + serialPortEvent + " " + serialPortEvent.getEventType());
+                    try {
+                        System.out.println("new byte: " + in.read());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
             serialPort.notifyOnDataAvailable(true);
-            serialPort.notifyOnBreakInterrupt(true);
-            serialPort.notifyOnCarrierDetect(true);
-            serialPort.notifyOnCTS(true);
-            serialPort.notifyOnDSR(true);
-            serialPort.notifyOnFramingError(true);
-            serialPort.notifyOnOutputEmpty(true);
-            serialPort.notifyOnOverrunError(true);
-            serialPort.notifyOnParityError(true);
-            serialPort.notifyOnRingIndicator(true);
 
-            out.write(new byte[] {0x65, 0x00, 0x00, 0x00, 0x65});
+            Thread.sleep(2000);
+
+            out.write(new byte[]{0x65, 0x00, 0x00, 0x00, 0x65});
             out.flush();
 
-            byte[] buffer = new byte[16];
-            int readCount = in.read(buffer);
-            System.out.println("read " + readCount + " bytes");
-            System.out.println(bytesToHex(buffer));
-
-            Thread.sleep(1000);
+            Thread.sleep(2000);
 
             serialPort.close();
         } catch (NoSuchPortException | PortInUseException | IOException | UnsupportedCommOperationException | InterruptedException e) {
