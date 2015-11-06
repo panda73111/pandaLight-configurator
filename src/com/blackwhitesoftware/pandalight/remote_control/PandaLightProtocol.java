@@ -273,7 +273,7 @@ public class PandaLightProtocol {
             int partialPacketLength = partialPayloadLength + 4;
 
             Logger.debug("sending partial packet {}/{} with size {}",
-                    packetI, partialPacketCount, partialPacketLength);
+                    packetI + 1, partialPacketCount, partialPacketLength);
 
             byte[] wrappedData = new byte[partialPacketLength];
 
