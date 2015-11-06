@@ -77,18 +77,6 @@ public class PandaLightProtocol {
 
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
-                switch (cmd) {
-                    case SYSINFO:
-                        expectedPackets.add(PandaLightSysinfoPacket.class);
-                        break;
-                    case WRITE_SETTINGS_TO_UART:
-                        expectedPackets.add(PandaLightSettingsPacket.class);
-                        break;
-                    case WRITE_BITFILE_TO_UART:
-                        expectedPackets.add(PandaLightBitfilePacket.class);
-                        break;
-                }
-
                 for (ConnectionListener l : connectionListeners)
                     l.sendingCommand(cmd);
             }
@@ -271,6 +259,21 @@ public class PandaLightProtocol {
     }
 
     public void sendCommand(PandaLightCommand cmd) throws IOException {
+        switch (cmd) {
+            case SYSINFO:
+                expectedPackets.add(PandaLightSysinfoPacket.class);
+                break;
+            case WRITE_SETTINGS_TO_UART:
+                expectedPackets.add(PandaLightSettingsPacket.class);
+                break;
+            case WRITE_BITFILE_TO_UART:
+                expectedPackets.add(PandaLightBitfilePacket.class);
+                break;
+        }
+
+        for (ConnectionListener l : connectionListeners)
+            l.sendingCommand(cmd);
+
         sendData(new byte[] {cmd.byteCommand()});
     }
 
