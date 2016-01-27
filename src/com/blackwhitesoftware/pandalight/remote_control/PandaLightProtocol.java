@@ -277,6 +277,16 @@ public class PandaLightProtocol {
         sendData(new byte[] {cmd.byteCommand()});
     }
 
+    public void sendBitfile(byte bitfileIndex, byte[] data) throws IOException {
+        sendBitfile(bitfileIndex, data, 0, data.length);
+    }
+
+    public void sendBitfile(byte bitfileIndex, byte[] data, int offset, int length) throws IOException {
+        sendCommand(PandaLightCommand.LOAD_BITFILE_FROM_UART);
+        sendData(new byte[] {bitfileIndex});
+        sendData(data, offset, length);
+    }
+
     private synchronized void incrementOutPacketNumber() {
         outPacketNumber = (outPacketNumber + 1) % 256;
     }

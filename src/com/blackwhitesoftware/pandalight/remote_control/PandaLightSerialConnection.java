@@ -125,6 +125,14 @@ public class PandaLightSerialConnection extends Observable {
         throw new NotImplementedException();
     }
 
+    public void sendBitfile(byte bitfileIndex, byte[] bytes) throws IOException {
+        protocol.sendBitfile(bitfileIndex, bytes);
+    }
+
+    public void sendBitfile(byte bitfileIndex, byte[] bytes, int offset, int length) throws IOException {
+        protocol.sendBitfile(bitfileIndex, bytes, offset, length);
+    }
+
     /**
      * Get connection status
      *
