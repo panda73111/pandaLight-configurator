@@ -3,6 +3,7 @@ package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightProtocol;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.spec.MiscConfig;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -27,6 +28,7 @@ public class UploadBitfilePanel extends JPanel implements Observer {
     private JButton uploadButton;
     private JComboBox<String> bitfileIndexComboBox;
     private File selectedFile;
+    private MiscConfig miscConfig;
     private final ActionListener uploadButtonListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -54,8 +56,11 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         @Override
         public void actionPerformed(ActionEvent e) {
             JFileChooser chooser = new JFileChooser();
+
+            chooser.setCurrentDirectory(selectedFile);
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.setFileFilter(new FileNameExtensionFilter("Bitfile", "bit"));
+
             int answer = chooser.showOpenDialog(getParent());
             if (answer != JFileChooser.APPROVE_OPTION)
                 return;
@@ -63,8 +68,16 @@ public class UploadBitfilePanel extends JPanel implements Observer {
             selectedFile = chooser.getSelectedFile();
             fileDisplay.setText(selectedFile.getName());
 
+            miscConfig.mUploadBitfilePath = selectedFile.getAbsolutePath();
+
             boolean connected = serialConnection.isConnected();
             setConnectionFieldsAccess(connected);
+        }
+    };
+    private final ActionListener bitfileIndexComboBoxListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            miscConfig.mUploadBitfileIndex = bitfileIndexComboBox.getSelectedIndex();
         }
     };
     /**
@@ -72,11 +85,17 @@ public class UploadBitfilePanel extends JPanel implements Observer {
      *
      * @param serialConnection
      */
-    public UploadBitfilePanel(PandaLightSerialConnection serialConnection) {
+    public UploadBitfilePanel(MiscConfig miscConfig, PandaLightSerialConnection serialConnection) {
         super();
         this.serialConnection = serialConnection;
         this.serialConnection.addObserver(this);
         this.selectedFile = null;
+        this.miscConfig = miscConfig;
+
+        File bitfile = new File(miscConfig.mUploadBitfilePath);
+        if (bitfile.exists())
+            selectedFile = bitfile;
+
         initialise();
     }
 
@@ -111,6 +130,8 @@ public class UploadBitfilePanel extends JPanel implements Observer {
 
         fileDisplay = new JLabel("", JLabel.CENTER);
         fileDisplay.setMinimumSize(new Dimension(100, 0));
+        if (selectedFile != null)
+            fileDisplay.setText(selectedFile.getName());
         add(fileDisplay);
 
         browseButton = new JButton("browse");
@@ -118,6 +139,9 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         add(browseButton);
 
         bitfileIndexComboBox = new JComboBox<>(new String[]{"0", "1"});
+        if (miscConfig.mUploadBitfileIndex <= bitfileIndexComboBox.getItemCount())
+            bitfileIndexComboBox.setSelectedIndex(miscConfig.mUploadBitfileIndex);
+        bitfileIndexComboBox.addActionListener(bitfileIndexComboBoxListener);
         add(bitfileIndexComboBox);
 
         uploadButton = new JButton("upload");
