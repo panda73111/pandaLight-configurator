@@ -1,7 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightProtocol;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.MiscConfig;
 
@@ -11,9 +10,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -33,9 +33,9 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         @Override
         public void actionPerformed(ActionEvent e) {
             byte bitfileIndex = (byte) bitfileIndexComboBox.getSelectedIndex();
-            byte[] bitfile = new byte[PandaLightProtocol.BITFILE_SIZE];
+            byte[] bitfile = readBitfile();
 
-            if (!readBitfile(bitfile)) return;
+            if (bitfile == null) return;
 
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             browseButton.setEnabled(false);
@@ -99,23 +99,15 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         initialise();
     }
 
-    private boolean readBitfile(byte[] bitfile) {
+    private byte[] readBitfile() {
         try {
-            FileInputStream stream = new FileInputStream(selectedFile);
-            int bytesRead = stream.read(bitfile);
-
-            if (bytesRead < PandaLightProtocol.BITFILE_SIZE) {
-                ErrorHandling.ShowMessage("The selected bitfile is too small!");
-                return false;
-            }
+            return Files.readAllBytes(Paths.get(selectedFile.toURI()));
         } catch (FileNotFoundException e1) {
             ErrorHandling.ShowMessage("The selected bitfile could not be found!");
-            return false;
         } catch (IOException e1) {
             ErrorHandling.ShowMessage("Could not read bitfile!");
-            return false;
         }
-        return true;
+        return null;
     }
 
     /**

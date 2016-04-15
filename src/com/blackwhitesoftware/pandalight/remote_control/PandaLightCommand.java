@@ -10,8 +10,7 @@ public enum PandaLightCommand {
     WRITE_SETTINGS_TO_FLASH((byte) 0x21),
     LOAD_SETTINGS_FROM_UART((byte) 0x22),
     WRITE_SETTINGS_TO_UART((byte) 0x23),
-    LOAD_BITFILE_FROM_UART((byte) 0x40),
-    WRITE_BITFILE_TO_UART((byte) 0x41);
+    LOAD_BITFILE_FROM_UART((byte) 0x40);
 
     private final byte byteCommand;
 

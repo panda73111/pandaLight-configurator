@@ -17,7 +17,6 @@ public class PandaLightProtocol {
 
     public static final int SYSINFO_SIZE = 12;
     public static final int SETTINGS_SIZE = 1024;
-    public static final int BITFILE_SIZE = 342816;
 
     public static final long RESEND_TIMEOUT_MILLIS = 100;
     public static final int MAX_TIMEOUT_RESENDS = 10;
@@ -35,7 +34,6 @@ public class PandaLightProtocol {
 
     private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);
     private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
-    private final PartialPacketJoiner bitfilePacketJoiner = new PartialPacketJoiner(BITFILE_SIZE);
 
     private int protocolErrorCount = 0;
 
@@ -189,9 +187,6 @@ public class PandaLightProtocol {
             } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
                 byte[] data = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
                 packet = new PandaLightSettingsPacket(data);
-            } else if (nextExpectedPacket == PandaLightBitfilePacket.class) {
-                byte[] data = bitfilePacketJoiner.tryCombinePayloads(inPayloadBuffer);
-                packet = new PandaLightBitfilePacket(data);
             }
         } catch (PandaLightProtocolException e) {
             if (++protocolErrorCount == MAX_PROTOCOL_ERRORS)
@@ -216,8 +211,6 @@ public class PandaLightProtocol {
                 sendCommand(PandaLightCommand.SYSINFO);
             } else if (expectedPacket == PandaLightSettingsPacket.class) {
                 sendCommand(PandaLightCommand.WRITE_SETTINGS_TO_UART);
-            } else if (expectedPacket == PandaLightBitfilePacket.class) {
-                sendCommand(PandaLightCommand.WRITE_BITFILE_TO_UART);
             }
         }
         catch (IOException ignored) { }
@@ -265,9 +258,6 @@ public class PandaLightProtocol {
                 break;
             case WRITE_SETTINGS_TO_UART:
                 expectedPackets.add(PandaLightSettingsPacket.class);
-                break;
-            case WRITE_BITFILE_TO_UART:
-                expectedPackets.add(PandaLightBitfilePacket.class);
                 break;
         }
 
