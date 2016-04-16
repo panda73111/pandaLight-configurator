@@ -1,5 +1,6 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
+import com.blackwhitesoftware.pandalight.Bitfile;
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
 import gnu.io.UnsupportedCommOperationException;
@@ -51,7 +52,7 @@ public class PandaLightSerialConnection extends Observable {
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
                 Logger.debug("sending serial command: {}",
-                        bytesToHex(new byte[]{cmd.byteCommand()}));
+                        bytesToHex(new byte[]{cmd.getByteCommand()}));
 
                 super.sendingCommand(cmd);
             }
@@ -125,12 +126,8 @@ public class PandaLightSerialConnection extends Observable {
         throw new NotImplementedException();
     }
 
-    public void sendBitfile(byte bitfileIndex, byte[] bytes) throws IOException {
-        protocol.sendBitfile(bitfileIndex, bytes);
-    }
-
-    public void sendBitfile(byte bitfileIndex, byte[] bytes, int offset, int length) throws IOException {
-        protocol.sendBitfile(bitfileIndex, bytes, offset, length);
+    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws IOException {
+        protocol.sendBitfile(bitfileIndex, bitfile);
     }
 
     /**
@@ -149,6 +146,4 @@ public class PandaLightSerialConnection extends Observable {
     public void removeConnectionListener(ConnectionListener listener) {
         protocol.removeConnectionListener(listener);
     }
-
-
 }

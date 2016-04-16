@@ -18,7 +18,7 @@ public enum PandaLightCommand {
         this.byteCommand = byteCommand;
     }
 
-    public byte byteCommand() {
+    public byte getByteCommand() {
         return byteCommand;
     }
 }

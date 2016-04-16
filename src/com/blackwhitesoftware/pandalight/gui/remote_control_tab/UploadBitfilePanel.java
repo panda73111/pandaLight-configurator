@@ -1,5 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
+import com.blackwhitesoftware.pandalight.Bitfile;
 import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.MiscConfig;
@@ -12,8 +13,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -33,7 +32,7 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         @Override
         public void actionPerformed(ActionEvent e) {
             byte bitfileIndex = (byte) bitfileIndexComboBox.getSelectedIndex();
-            byte[] bitfile = readBitfile();
+            Bitfile bitfile = readBitfile();
 
             if (bitfile == null) return;
 
@@ -99,9 +98,9 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         initialise();
     }
 
-    private byte[] readBitfile() {
+    private Bitfile readBitfile() {
         try {
-            return Files.readAllBytes(Paths.get(selectedFile.toURI()));
+            return new Bitfile(selectedFile);
         } catch (FileNotFoundException e1) {
             ErrorHandling.ShowMessage("The selected bitfile could not be found!");
         } catch (IOException e1) {

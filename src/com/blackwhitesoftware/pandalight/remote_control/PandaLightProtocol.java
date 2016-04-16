@@ -1,5 +1,6 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
+import com.blackwhitesoftware.pandalight.Bitfile;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
@@ -264,17 +265,20 @@ public class PandaLightProtocol {
         for (ConnectionListener l : connectionListeners)
             l.sendingCommand(cmd);
 
-        sendData(new byte[] {cmd.byteCommand()});
+        sendData(new byte[] {cmd.getByteCommand()});
     }
 
-    public void sendBitfile(byte bitfileIndex, byte[] data) throws IOException {
-        sendBitfile(bitfileIndex, data, 0, data.length);
-    }
-
-    public void sendBitfile(byte bitfileIndex, byte[] data, int offset, int length) throws IOException {
+    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws IOException {
         sendCommand(PandaLightCommand.LOAD_BITFILE_FROM_UART);
-        sendData(new byte[] {bitfileIndex});
-        sendData(data, offset, length);
+
+        int length = bitfile.getLength();
+        sendData(new byte[] {
+                bitfileIndex,
+                (byte) ((length & 0xFF0000) >> 16),
+                (byte) ((length & 0xFF00) >> 8),
+                (byte) (length & 0xFF)});
+
+        sendData(bitfile.getData());
     }
 
     private synchronized void incrementOutPacketNumber() {
