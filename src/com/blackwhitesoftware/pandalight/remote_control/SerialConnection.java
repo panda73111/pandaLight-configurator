@@ -66,6 +66,7 @@ public class SerialConnection {
 
             serialPort.addEventListener(new SerialEventListener(in, connectionListeners));
             serialPort.notifyOnDataAvailable(true);
+            serialPort.notifyOnCTS(true);
 
             for (ConnectionListener listener : connectionListeners) {
                 listener.connected();

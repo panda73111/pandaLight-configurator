@@ -22,6 +22,11 @@ public class SerialEventListener implements SerialPortEventListener {
 
     @Override
     public void serialEvent(SerialPortEvent serialPortEvent) {
+        if (serialPortEvent.getEventType() == SerialPortEvent.CTS) {
+            Logger.debug("Serial port CTS Event: " + serialPortEvent.getNewValue());
+            return;
+        }
+
         try {
             byte[] buffer = new byte[in.available()];
             int readCount = in.read(buffer);
