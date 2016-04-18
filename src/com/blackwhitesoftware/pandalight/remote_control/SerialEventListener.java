@@ -27,6 +27,16 @@ public class SerialEventListener implements SerialPortEventListener {
             return;
         }
 
+        if (serialPortEvent.getEventType() == SerialPortEvent.DSR) {
+            Logger.debug("Serial port DSR Event: " + serialPortEvent.getNewValue());
+            return;
+        }
+
+        if (serialPortEvent.getEventType() == SerialPortEvent.OE) {
+            Logger.debug("Serial port Overrun Event: " + serialPortEvent.getNewValue());
+            return;
+        }
+
         try {
             byte[] buffer = new byte[in.available()];
             int readCount = in.read(buffer);
