@@ -4,9 +4,7 @@ import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.UnsupportedCommOperationException;
+import jssc.SerialPortException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,11 +13,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.Transient;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.TooManyListenersException;
 
 /**
  * @author Sebastian Hüther
@@ -40,11 +36,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
             connectButton.setEnabled(false);
             try {
                 serialConnection.connect((String) portComboBox.getSelectedItem());
-            } catch (PortInUseException e1) {
-                ErrorHandling.ShowMessage("Serial port is already in use!");
-            } catch (NoSuchPortException e1) {
-                ErrorHandling.ShowMessage("This serial port could not be found!");
-            } catch (UnsupportedCommOperationException | TooManyListenersException | IOException e1) {
+            } catch (SerialPortException e1) {
                 ErrorHandling.ShowMessage("Error while opening serial port:\n" + e1.getLocalizedMessage());
             }
             connectButton.setEnabled(true);

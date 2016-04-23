@@ -1,81 +1,53 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
-import gnu.io.*;
+import jssc.SerialPort;
+import jssc.SerialPortException;
+import jssc.SerialPortList;
 import org.pmw.tinylog.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 public class SerialConnection {
 
-    private final static int BAUDRATE = 115200;
+    private final static int BAUDRATE = SerialPort.BAUDRATE_115200;
     private final static int TIMELIMIT = 2000;
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private SerialPort serialPort = null;
-    private InputStream in = null;
-    private OutputStream out = null;
 
     public SerialConnection() {
     }
 
     public static String[] getSerialPorts() {
-        ArrayList<String> ports = new ArrayList<>();
-
-        Enumeration enumComm = CommPortIdentifier.getPortIdentifiers();
-        while (enumComm.hasMoreElements()) {
-            CommPortIdentifier serialPortId = (CommPortIdentifier) enumComm.nextElement();
-            if (serialPortId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                ports.add(serialPortId.getName());
-            }
-        }
-
-        return ports.toArray(new String[ports.size()]);
+        return SerialPortList.getPortNames();
     }
 
-    public synchronized void connect(String portName) throws
-            PortInUseException, IOException, NoSuchPortException,
-            UnsupportedCommOperationException, TooManyListenersException {
+    public synchronized void connect(String portName) throws SerialPortException {
         if (isConnected())
             return;
 
         Logger.debug("connecting serial port '{}'", portName);
         try {
-            CommPortIdentifier identifier = CommPortIdentifier.getPortIdentifier(portName);
-            CommPort port = identifier.open(this.getClass().getName(), TIMELIMIT);
-            if (!(port instanceof SerialPort)) {
-                Logger.error("the target device is no serial port");
-                throw new IOException("Not a serial port");
-            }
+            serialPort = new SerialPort(portName);
+            serialPort.openPort();
 
-            serialPort = (SerialPort) port;
-            serialPort.setSerialPortParams(
+            serialPort.setParams(
                     BAUDRATE,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
+
             serialPort.setFlowControlMode(
-                    SerialPort.FLOWCONTROL_RTSCTS_IN |
-                            SerialPort.FLOWCONTROL_RTSCTS_OUT
-            );
+                    SerialPort.FLOWCONTROL_RTSCTS_IN | SerialPort.FLOWCONTROL_RTSCTS_OUT);
 
-            in = serialPort.getInputStream();
-            out = serialPort.getOutputStream();
-
-            serialPort.addEventListener(new SerialEventListener(in, connectionListeners));
-            serialPort.notifyOnDataAvailable(true);
-            serialPort.notifyOnCTS(true);
-            serialPort.notifyOnDSR(true);
-            serialPort.notifyOnOverrunError(true);
+            serialPort.addEventListener(new SerialEventListener(serialPort, connectionListeners));
 
             for (ConnectionListener listener : connectionListeners) {
                 listener.connected();
             }
-        } catch (
-                NoSuchPortException | PortInUseException | UnsupportedCommOperationException |
-                        TooManyListenersException | IOException e) {
+        } catch (SerialPortException e) {
             Logger.trace(e, "error while opening serial port");
             throw e;
         }
@@ -90,28 +62,23 @@ public class SerialConnection {
             return;
 
         Logger.debug("disconnecting serial port");
-        serialPort.close();
+        try {
+            serialPort.closePort();
+        } catch (SerialPortException ignored) {
+        }
+
         serialPort = null;
-        try {
-            in.close();
-        } catch (IOException ignored) {
-        }
-        try {
-            out.close();
-        } catch (IOException ignored) {
-        }
-        in = null;
-        out = null;
+
         for (ConnectionListener listener : connectionListeners) {
             listener.disconnected();
         }
     }
 
-    public void sendData(byte[] data) throws IOException {
+    public void sendData(byte[] data) throws SerialPortException {
         sendData(data, 0, data.length);
     }
 
-    public synchronized void sendData(byte[] data, int offset, int length) throws IOException {
+    public synchronized void sendData(byte[] data, int offset, int length) throws SerialPortException {
         if (!isConnected())
             return;
 
@@ -119,34 +86,40 @@ public class SerialConnection {
             listener.sendingData(data, offset, length);
         }
 
+        data = Arrays.copyOfRange(data, offset, length);
+
         try {
-            out.write(data, offset, length);
-        } catch (IOException e) {
+            serialPort.writeBytes(data);
+        } catch (SerialPortException e) {
             disconnect();
             throw e;
         }
     }
 
-    public int read(byte[] buffer) throws IOException {
+    public int read(byte[] buffer) throws SerialPortException {
         return read(buffer, 0, buffer.length);
     }
 
-    public synchronized int read(byte[] buffer, int offset, int length) throws IOException {
+    public synchronized int read(byte[] buffer, int offset, int length) throws SerialPortException {
         if (!isConnected())
             return -1;
 
-        int readCount;
+        byte[] read;
+
         try {
-            readCount = in.read(buffer, offset, length);
-        } catch (IOException e) {
+            read = serialPort.readBytes(length);
+        } catch (SerialPortException e) {
             disconnect();
             throw e;
         }
 
+        length = Math.min(length, read.length);
+        System.arraycopy(read, 0, buffer, offset, length);
+
         for (ConnectionListener listener : connectionListeners) {
-            listener.gotData(buffer, offset, readCount);
+            listener.gotData(buffer, offset, length);
         }
-        return readCount;
+        return length;
     }
 
     public void addConnectionListener(ConnectionListener listener) {

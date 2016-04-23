@@ -1,16 +1,13 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.Bitfile;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.UnsupportedCommOperationException;
+import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.util.Formatter;
 import java.util.Observable;
-import java.util.TooManyListenersException;
 
 /**
  * @author Sebastian Hüther
@@ -92,9 +89,7 @@ public class PandaLightSerialConnection extends Observable {
      * @param portName
      * @return true if the connection is established
      */
-    public boolean connect(String portName) throws
-            PortInUseException, UnsupportedCommOperationException,
-            NoSuchPortException, IOException, TooManyListenersException {
+    public boolean connect(String portName) throws SerialPortException {
         serialConnection.connect(portName);
         return isConnected();
     }
