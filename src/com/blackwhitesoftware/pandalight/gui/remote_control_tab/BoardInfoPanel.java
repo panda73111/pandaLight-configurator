@@ -1,15 +1,11 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightCommand;
-import com.blackwhitesoftware.pandalight.remote_control.ConnectionListener;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightPacket;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightSysinfoPacket;
+import com.blackwhitesoftware.pandalight.remote_control.*;
+import jssc.SerialPortException;
 
 import javax.swing.*;
 import java.awt.*;
 import java.beans.Transient;
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -35,7 +31,7 @@ public class BoardInfoPanel extends JPanel implements Observer {
             public void connected() {
                 try {
                     serialConnection.sendCommand(PandaLightCommand.SYSINFO);
-                } catch (IOException ignored) { }
+                } catch (SerialPortException ignored) { }
             }
 
             @Override

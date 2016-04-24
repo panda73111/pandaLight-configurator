@@ -5,7 +5,6 @@ import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.IOException;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -101,7 +100,7 @@ public class PandaLightSerialConnection extends Observable {
         serialConnection.disconnect();
     }
 
-    public void sendCommand(PandaLightCommand cmd) throws IOException {
+    public void sendCommand(PandaLightCommand cmd) throws SerialPortException {
         protocol.sendCommand(cmd);
     }
 
@@ -121,7 +120,7 @@ public class PandaLightSerialConnection extends Observable {
         throw new NotImplementedException();
     }
 
-    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws IOException {
+    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws SerialPortException {
         protocol.sendBitfile(bitfileIndex, bitfile);
     }
 

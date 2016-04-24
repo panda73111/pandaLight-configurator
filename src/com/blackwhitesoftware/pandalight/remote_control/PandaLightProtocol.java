@@ -1,9 +1,9 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.Bitfile;
+import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -85,7 +85,10 @@ public class PandaLightProtocol {
                 for (int i = offset; i < offset + length; i++)
                     inDataBuffer.add(data[i]);
 
-                tryPopNextPacket();
+                try {
+                    tryPopNextPacket();
+                } catch (SerialPortException ignored) {
+                }
 
                 for (ConnectionListener l : connectionListeners)
                     l.gotData(data, offset, length);
@@ -100,7 +103,7 @@ public class PandaLightProtocol {
         serialConnection.addConnectionListener(listener);
     }
 
-    private synchronized boolean tryPopNextPacket() {
+    private synchronized boolean tryPopNextPacket() throws SerialPortException {
         if (inDataBuffer.size() < 3)
             // the packet was not yet read completely
             return false;
@@ -166,8 +169,19 @@ public class PandaLightProtocol {
             return false;
 
         inPayloadBuffer[packetNumber] = payload;
-        sendAcknowledge(packetNumber);
-        tryCombinePayloads();
+
+        try {
+            sendAcknowledge(packetNumber);
+            tryCombinePayloads();
+        } catch (PandaLightProtocolException e) {
+            if (++protocolErrorCount == MAX_PROTOCOL_ERRORS) {
+                Logger.error("Too many protocol errors, disconnecting");
+                serialConnection.disconnect();
+            }
+
+            repeatCommand(expectedPackets.get(0));
+            return false;
+        }
 
         return true;
     }
@@ -177,25 +191,16 @@ public class PandaLightProtocol {
             inDataBuffer.removeFirst();
     }
 
-    private synchronized void tryCombinePayloads() {
+    private synchronized void tryCombinePayloads() throws PandaLightProtocolException {
         Class<? extends PandaLightPacket> nextExpectedPacket = expectedPackets.get(0);
         PandaLightPacket packet = null;
 
-        try {
-            if (nextExpectedPacket == PandaLightSysinfoPacket.class) {
-                byte[] data = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
-                packet = new PandaLightSysinfoPacket(data);
-            } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
-                byte[] data = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
-                packet = new PandaLightSettingsPacket(data);
-            }
-        } catch (PandaLightProtocolException e) {
-            if (++protocolErrorCount == MAX_PROTOCOL_ERRORS)
-                // TODO error message
-                serialConnection.disconnect();
-
-            // try again
-            repeatCommand(nextExpectedPacket);
+        if (nextExpectedPacket == PandaLightSysinfoPacket.class) {
+            byte[] data = sysinfoPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            packet = new PandaLightSysinfoPacket(data);
+        } else if (nextExpectedPacket == PandaLightSettingsPacket.class) {
+            byte[] data = settingsPacketJoiner.tryCombinePayloads(inPayloadBuffer);
+            packet = new PandaLightSettingsPacket(data);
         }
 
         if (packet != null) {
@@ -206,7 +211,7 @@ public class PandaLightProtocol {
         }
     }
 
-    private void repeatCommand(Class<? extends PandaLightPacket> expectedPacket) {
+    private void repeatCommand(Class<? extends PandaLightPacket> expectedPacket) throws SerialPortException {
         try {
             if (expectedPacket == PandaLightSysinfoPacket.class) {
                 sendCommand(PandaLightCommand.SYSINFO);
@@ -214,10 +219,13 @@ public class PandaLightProtocol {
                 sendCommand(PandaLightCommand.WRITE_SETTINGS_TO_UART);
             }
         }
-        catch (IOException ignored) { }
+        catch (SerialPortException e) {
+            Logger.error("Repeating command failed: " + e.getLocalizedMessage());
+            throw e;
+        }
     }
 
-    private synchronized void sendAcknowledge(int packetNumber) {
+    private synchronized void sendAcknowledge(int packetNumber) throws SerialPortException {
         Logger.debug("sending acknowledge for packet {}", packetNumber);
         try {
             serialConnection.sendData(new byte[] {
@@ -225,7 +233,10 @@ public class PandaLightProtocol {
                     (byte) packetNumber,
                     (byte) ((ACK_MAGIC + packetNumber) % 256)
             });
-        } catch (IOException ignored) { }
+        } catch (SerialPortException e) {
+            Logger.error("Sending acknowledge failed: " + e.getLocalizedMessage());
+            throw e;
+        }
     }
 
     private synchronized boolean isChecksumValid(int checksum) {
@@ -241,7 +252,7 @@ public class PandaLightProtocol {
         return false;
     }
 
-    private synchronized void resendPacket(int packetNumber) {
+    private synchronized void resendPacket(int packetNumber) throws SerialPortException {
         Logger.debug("resending packet {}", packetNumber);
         byte[] data = outPacketBuffer[packetNumber];
         if (data == null)
@@ -249,10 +260,13 @@ public class PandaLightProtocol {
 
         try {
             serialConnection.sendData(data);
-        } catch (IOException ignored) { }
+        } catch (SerialPortException e) {
+            Logger.error("Sending acknowledge failed: " + e.getLocalizedMessage());
+            throw e;
+        }
     }
 
-    public void sendCommand(PandaLightCommand cmd) throws IOException {
+    public void sendCommand(PandaLightCommand cmd) throws SerialPortException {
         switch (cmd) {
             case SYSINFO:
                 expectedPackets.add(PandaLightSysinfoPacket.class);
@@ -268,7 +282,7 @@ public class PandaLightProtocol {
         sendData(new byte[] {cmd.getByteCommand()});
     }
 
-    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws IOException {
+    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws SerialPortException {
         sendCommand(PandaLightCommand.LOAD_BITFILE_FROM_UART);
 
         int length = bitfile.getLength();
@@ -285,11 +299,11 @@ public class PandaLightProtocol {
         outPacketNumber = (outPacketNumber + 1) % 256;
     }
 
-    public void sendData(byte[] data) throws IOException {
+    public void sendData(byte[] data) throws SerialPortException {
         sendData(data, 0, data.length);
     }
 
-    public synchronized void sendData(byte[] data, int offset, int length) throws IOException {
+    public synchronized void sendData(byte[] data, int offset, int length) throws SerialPortException {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
 
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
@@ -338,7 +352,10 @@ public class PandaLightProtocol {
                 Logger.debug("resend attempt {}/{} of packet {}",
                         runCount + 1, MAX_TIMEOUT_RESENDS, packetNumber);
 
-                resendPacket(packetNumber);
+                try {
+                    resendPacket(packetNumber);
+                } catch (SerialPortException ignored) {
+                }
 
                 if (++runCount == MAX_TIMEOUT_RESENDS) {
                     Logger.debug("ending resend attempts of packet {}",

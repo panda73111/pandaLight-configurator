@@ -4,6 +4,7 @@ import com.blackwhitesoftware.pandalight.Bitfile;
 import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.MiscConfig;
+import jssc.SerialPortException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -42,7 +43,7 @@ public class UploadBitfilePanel extends JPanel implements Observer {
 
             try {
                 serialConnection.sendBitfile(bitfileIndex, bitfile);
-            } catch (IOException e1) {
+            } catch (SerialPortException e1) {
                 ErrorHandling.ShowMessage("Error while sending bitfile:\n" + e1.getLocalizedMessage());
             }
 
