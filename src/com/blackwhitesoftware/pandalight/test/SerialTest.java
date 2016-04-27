@@ -50,16 +50,17 @@ public class SerialTest {
             System.out.println("sending acknowledge for packet 0x00");
             serialPort.writeBytes(new byte[]{0x66, 0x00, 0x66});
             Thread.sleep(2000);
-            System.out.println("sending 2KB bitfile");
+            System.out.println("sending 100KB bitfile");
             serialPort.writeBytes(new byte[]{
                     0x65, 0x01,
-                    0x04,             // payload length
-                    0x40,             // command
-                    0x00,             // bitfile index
-                    0x00, 0x08, 0x00, // bitfile size
-                    (byte) 0xB2       // checksum
+                    0x04,                    // payload length
+                    0x40,                    // command
+                    0x00,                    // bitfile index
+                    0x01, (byte) 0x90, 0x00, // bitfile size
+                    (byte) 0x3B              // checksum
             });
-            for (byte packetNumber = 2; packetNumber < 2 + 8; packetNumber++) {
+
+            for (int packetNumber = 2; packetNumber < 2 + 400; packetNumber++) {
                 if (paused) {
                     System.out.println("paused sending");
                     while (paused)
@@ -69,7 +70,7 @@ public class SerialTest {
 
                 System.out.println("sending packet " + packetNumber);
                 int checksum = 0x65 + packetNumber + 0xFF;
-                serialPort.writeBytes(new byte[]{0x65, packetNumber, (byte) 0xFF});
+                serialPort.writeBytes(new byte[]{0x65, (byte) (packetNumber & 0xFF), (byte) 0xFF});
 
                 for (int i = 0; i < 256; i++) {
                     byte data = (byte) (((packetNumber - 2) & 0x07) << 5);
