@@ -51,9 +51,14 @@ public class SerialTest {
             serialPort.writeBytes(new byte[]{0x66, 0x00, 0x66});
             Thread.sleep(2000);
             System.out.println("sending 2KB bitfile");
-            serialPort.writeBytes(new byte[]{0x65, 0x01, 0x00, 0x40, (byte) 0xA6});
-            serialPort.writeBytes(new byte[]{0x00}); // bitfile index
-            serialPort.writeBytes(new byte[]{0x08, 0x00, 0x00}); // bitfile size
+            serialPort.writeBytes(new byte[]{
+                    0x65, 0x01,
+                    0x04,             // payload length
+                    0x40,             // command
+                    0x00,             // bitfile index
+                    0x00, 0x08, 0x00, // bitfile size
+                    (byte) 0xB2       // checksum
+            });
             for (byte packetNumber = 2; packetNumber < 2 + 8; packetNumber++) {
                 if (paused) {
                     System.out.println("paused sending");
@@ -63,11 +68,11 @@ public class SerialTest {
                 }
 
                 System.out.println("sending packet " + packetNumber);
-                int checksum = 0x65 + packetNumber - 2 + 0xFF;
-                serialPort.writeBytes(new byte[]{0x65, (byte) (packetNumber - 2), (byte) 0xFF});
+                int checksum = 0x65 + packetNumber + 0xFF;
+                serialPort.writeBytes(new byte[]{0x65, packetNumber, (byte) 0xFF});
 
                 for (int i = 0; i < 256; i++) {
-                    byte data = (byte) ((packetNumber & 0x07) << 5);
+                    byte data = (byte) (((packetNumber - 2) & 0x07) << 5);
                     data |= i & 0x1F;
 
                     // 3 bit packet number + 5 bit counter
