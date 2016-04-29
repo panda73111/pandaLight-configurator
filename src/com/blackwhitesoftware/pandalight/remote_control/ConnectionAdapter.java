@@ -10,6 +10,14 @@ public abstract class ConnectionAdapter implements ConnectionListener {
     }
 
     @Override
+    public void pause() {
+    }
+
+    @Override
+    public void unpause() {
+    }
+
+    @Override
     public void sendingData(byte[] data, int offset, int length) {
     }
 

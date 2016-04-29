@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import jssc.SerialPort;
+import jssc.SerialPortEvent;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 import org.pmw.tinylog.Logger;
@@ -12,12 +13,41 @@ import java.util.Vector;
 public class SerialConnection {
 
     private final static int BAUDRATE = SerialPort.BAUDRATE_115200;
-    private final static int TIMELIMIT = 2000;
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private SerialPort serialPort = null;
+    private boolean paused = false;
 
     public SerialConnection() {
+        connectionListeners.add(new ConnectionListener() {
+            @Override
+            public void connected() { }
+
+            @Override
+            public void disconnected() { }
+
+            @Override
+            public void pause() {
+                paused = true;
+            }
+
+            @Override
+            public void unpause() {
+                paused = false;
+            }
+
+            @Override
+            public void sendingData(byte[] data, int offset, int length) { }
+
+            @Override
+            public void sendingCommand(PandaLightCommand cmd) { }
+
+            @Override
+            public void gotData(byte[] data, int offset, int length) { }
+
+            @Override
+            public void gotPacket(PandaLightPacket packet) { }
+        });
     }
 
     public static String[] getSerialPorts() {
@@ -42,6 +72,7 @@ public class SerialConnection {
             serialPort.setFlowControlMode(
                     SerialPort.FLOWCONTROL_RTSCTS_IN | SerialPort.FLOWCONTROL_RTSCTS_OUT);
 
+            serialPort.setEventsMask(SerialPortEvent.RXCHAR | SerialPortEvent.CTS);
             serialPort.addEventListener(new SerialEventListener(serialPort, connectionListeners));
 
             for (ConnectionListener listener : connectionListeners) {
@@ -81,6 +112,15 @@ public class SerialConnection {
     public synchronized void sendData(byte[] data, int offset, int length) throws SerialPortException {
         if (!isConnected())
             return;
+
+        try {
+            if (paused) {
+                Logger.debug("paused sending serial data");
+                while (paused)
+                    Thread.sleep(100);
+                Logger.debug("resumed sending serial data");
+            }
+        } catch (InterruptedException ignored) { }
 
         for (ConnectionListener listener : connectionListeners) {
             listener.sendingData(data, offset, length);

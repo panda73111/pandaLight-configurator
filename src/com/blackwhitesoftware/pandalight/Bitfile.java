@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -87,8 +86,6 @@ public class Bitfile {
         int length = buffer.getInt();
         data = new byte[length];
         buffer.get(data);
-
-        data = Arrays.copyOfRange(data, 0, 2048);
     }
 
     private void parseField(BitfileField field, ByteBuffer buffer) throws IOException, ParseException {

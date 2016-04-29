@@ -39,6 +39,12 @@ public class BoardInfoPanel extends JPanel implements Observer {
             }
 
             @Override
+            public void pause() { }
+
+            @Override
+            public void unpause() { }
+
+            @Override
             public void sendingData(byte[] data, int offset, int length) {
             }
 

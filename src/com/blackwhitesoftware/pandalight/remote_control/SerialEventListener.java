@@ -23,12 +23,16 @@ public class SerialEventListener implements SerialPortEventListener {
     @Override
     public void serialEvent(SerialPortEvent serialPortEvent) {
         if (serialPortEvent.isCTS()) {
-            Logger.debug("Serial port CTS Event: " + serialPortEvent.getEventValue());
-            return;
-        }
+            int value = serialPortEvent.getEventValue();
+            Logger.debug("Serial port CTS Event: " + value);
 
-        if (serialPortEvent.isDSR()) {
-            Logger.debug("Serial port DSR Event: " + serialPortEvent.getEventValue());
+            if (value == 0)
+                for (ConnectionListener l : connectionListeners)
+                    l.pause();
+            else
+                for (ConnectionListener l : connectionListeners)
+                    l.unpause();
+
             return;
         }
 

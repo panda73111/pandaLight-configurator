@@ -69,6 +69,12 @@ public class PandaLightProtocol {
             }
 
             @Override
+            public void pause() { }
+
+            @Override
+            public void unpause() { }
+
+            @Override
             public void sendingData(byte[] data, int offset, int length) {
                 for (ConnectionListener l : connectionListeners)
                     l.sendingData(data, offset, length);
@@ -111,10 +117,7 @@ public class PandaLightProtocol {
         byte magic;
         do {
             magic = inDataBuffer.getFirst();
-        } while (
-                magic != DATA_MAGIC &&
-                        magic != ACK_MAGIC &&
-                        magic != RESEND_MAGIC);
+        } while (magic != DATA_MAGIC && magic != ACK_MAGIC && magic != RESEND_MAGIC);
 
         int packetNumber = inDataBuffer.get(1);
         int checksum = (magic + packetNumber) % 256;
@@ -165,6 +168,8 @@ public class PandaLightProtocol {
             checksum = (checksum + b) % 256;
         }
 
+        Logger.debug("got data packet: " + bytesToHex(payload));
+
         if (!isChecksumValid(checksum))
             return false;
 
@@ -192,6 +197,12 @@ public class PandaLightProtocol {
     }
 
     private synchronized void tryCombinePayloads() throws PandaLightProtocolException {
+        if (expectedPackets.size() == 0)
+        {
+            Logger.error("not expecting a packet, can't combine payloads!");
+            return;
+        }
+
         Class<? extends PandaLightPacket> nextExpectedPacket = expectedPackets.get(0);
         PandaLightPacket packet = null;
 
@@ -375,5 +386,17 @@ public class PandaLightProtocol {
 
     public void removeConnectionListener(ConnectionListener listener) {
         connectionListeners.remove(listener);
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        return bytesToHex(bytes, 0, bytes.length);
+    }
+
+    private static String bytesToHex(byte[] bytes, int offset, int length) {
+        Formatter formatter = new Formatter();
+        for (int i = offset; i < length; i++) {
+            formatter.format("%02x", bytes[i]);
+        }
+        return formatter.toString();
     }
 }

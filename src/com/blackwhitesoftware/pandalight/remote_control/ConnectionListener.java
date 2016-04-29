@@ -6,6 +6,10 @@ public interface ConnectionListener {
 
     void disconnected();
 
+    void pause();
+
+    void unpause();
+
     void sendingData(byte[] data, int offset, int length);
 
     void sendingCommand(PandaLightCommand cmd);
