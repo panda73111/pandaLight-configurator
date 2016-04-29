@@ -107,19 +107,14 @@ public class BoardInfoPanel extends JPanel implements Observer {
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createSequentialGroup()
-                                .addComponent(versionLabel)
-                                .addComponent(filler)
-                                .addComponent(versionDisplay)
-                ));
+                        .addComponent(versionLabel)
+                        .addComponent(filler)
+                        .addComponent(versionDisplay)));
 
         layout.setVerticalGroup(layout.createParallelGroup()
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(versionLabel))
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(filler))
-                .addGroup(layout.createSequentialGroup()
-                                .addComponent(versionDisplay)
-                ));
+                .addComponent(versionLabel)
+                .addComponent(filler)
+                .addComponent(versionDisplay));
     }
 
     private static String versionToString(int major, int minor) {

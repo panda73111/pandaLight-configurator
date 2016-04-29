@@ -121,7 +121,6 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         add(fileLabel);
 
         fileDisplay = new JLabel("", JLabel.CENTER);
-        fileDisplay.setMinimumSize(new Dimension(100, 0));
         if (selectedFile != null)
             fileDisplay.setText(selectedFile.getName());
         add(fileDisplay);
@@ -131,6 +130,7 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         add(browseButton);
 
         bitfileIndexComboBox = new JComboBox<>(new String[]{"0", "1"});
+        bitfileIndexComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 0));
         if (miscConfig.mUploadBitfileIndex <= bitfileIndexComboBox.getItemCount())
             bitfileIndexComboBox.setSelectedIndex(miscConfig.mUploadBitfileIndex);
         bitfileIndexComboBox.addActionListener(bitfileIndexComboBoxListener);
@@ -142,39 +142,38 @@ public class UploadBitfilePanel extends JPanel implements Observer {
 
         setConnectionFieldsAccess(false);
 
+        Component filler1 = Box.createHorizontalGlue();
+        Component filler2 = Box.createHorizontalGlue();
+        add(filler1);
+        add(filler2);
+
         //The Layout
 
         GroupLayout layout = new GroupLayout(this);
         layout.setAutoCreateGaps(true);
         setLayout(layout);
 
-        Component filler = Box.createHorizontalGlue();
-        add(filler);
-
         layout.setHorizontalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup()
-                        .addComponent(fileLabel))
-                .addGroup(layout.createParallelGroup()
-                        .addComponent(filler))
+                .addComponent(fileLabel)
+                .addComponent(filler1)
                 .addGroup(layout.createParallelGroup()
                         .addComponent(fileDisplay)
                         .addComponent(bitfileIndexComboBox))
+                .addComponent(filler2)
                 .addGroup(layout.createParallelGroup()
                         .addComponent(browseButton)
-                        .addComponent(uploadButton))
-                );
+                        .addComponent(uploadButton)));
 
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup()
                         .addComponent(fileLabel)
-                        .addComponent(filler)
-                        .addComponent(fileDisplay))
-                .addGroup(layout.createParallelGroup()
+                        .addComponent(filler1)
+                        .addComponent(fileDisplay)
+                        .addComponent(filler2)
                         .addComponent(browseButton))
                 .addGroup(layout.createParallelGroup()
                         .addComponent(bitfileIndexComboBox)
-                        .addComponent(uploadButton))
-        );
+                        .addComponent(uploadButton)));
     }
 
     /**

@@ -107,17 +107,13 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
                 .addGroup(layout.createParallelGroup()
                         .addComponent(portLabel)
                         .addComponent(connectButton))
-                .addGroup(layout.createParallelGroup()
-                                .addComponent(portComboBox)
-                ));
+                .addComponent(portComboBox));
 
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup()
                         .addComponent(portLabel)
                         .addComponent(portComboBox))
-                .addGroup(layout.createParallelGroup()
-                                .addComponent(connectButton)
-                ));
+                .addComponent(connectButton));
     }
 
     /**

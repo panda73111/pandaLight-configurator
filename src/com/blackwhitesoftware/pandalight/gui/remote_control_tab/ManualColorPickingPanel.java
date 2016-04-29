@@ -133,29 +133,20 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 
         layout.setHorizontalGroup(layout.createParallelGroup()
                 .addGroup(layout.createSequentialGroup()
-                                .addComponent(showColorWheelCheckbox)
-                                .addComponent(expertViewCheckBox)
-                )
-                .addGroup(layout.createParallelGroup()
-                        .addComponent(colorPicker))
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(autoUpdateCheckbox))
-                .addGroup(layout.createSequentialGroup()
-                                .addComponent(setLedColorButton)
-                ));
+                        .addComponent(showColorWheelCheckbox)
+                        .addComponent(expertViewCheckBox))
+                .addComponent(colorPicker)
+                .addComponent(autoUpdateCheckbox)
+                .addComponent(setLedColorButton));
+
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup()
-                                .addComponent(showColorWheelCheckbox)
-                                .addComponent(expertViewCheckBox)
-                )
+                        .addComponent(showColorWheelCheckbox)
+                        .addComponent(expertViewCheckBox))
                 .addGroup(layout.createSequentialGroup()
-                                .addComponent(colorPicker)
-                                .addComponent(autoUpdateCheckbox)
-
-                )
-
-                .addGroup(layout.createParallelGroup()
-                        .addComponent(setLedColorButton)));
+                        .addComponent(colorPicker)
+                        .addComponent(autoUpdateCheckbox))
+                .addComponent(setLedColorButton));
     }
 
     /**
@@ -165,11 +156,9 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
     public void update(Observable arg0, Object arg1) {
         if (serialConnection.isConnected()) {
             setGuiElementsEnabled(true);
-
         } else {
             setGuiElementsEnabled(false);
         }
-
     }
 
     /**
@@ -181,7 +170,6 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
             int[] chosenColor = colorPicker.getRGB();
             serialConnection.sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
         }
-
     }
 
     /**

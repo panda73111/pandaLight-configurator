@@ -149,11 +149,8 @@ public class ConfigPanel extends JPanel {
             mRemoteControlPanel.add(new BoardInfoPanel(serialConnection));
             mRemoteControlPanel.add(new UploadBitfilePanel(pandaLightConfig.mMiscConfig, serialConnection));
             mRemoteControlPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
-
             mRemoteControlPanel.add(Box.createVerticalGlue());
-
         }
-
         return mRemoteControlPanel;
     }
 
