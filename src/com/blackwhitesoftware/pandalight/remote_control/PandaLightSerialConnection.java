@@ -1,11 +1,11 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.Bitfile;
+import com.blackwhitesoftware.pandalight.Helpers;
 import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.Formatter;
 import java.util.Observable;
 
 /**
@@ -48,19 +48,19 @@ public class PandaLightSerialConnection extends Observable {
             @Override
             public void sendingData(byte[] data, int offset, int length) {
                 Logger.debug("sending {} bytes of serial data: {}",
-                        length, bytesToHex(data, offset, length));
+                        length, Helpers.bytesToHex(data, offset, length));
             }
 
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
                 Logger.debug("sending serial command: {}",
-                        bytesToHex(new byte[]{cmd.getByteCommand()}));
+                        Helpers.bytesToHex(new byte[]{cmd.getByteCommand()}));
             }
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
                 Logger.debug("got {} bytes of serial data: {}",
-                        length, bytesToHex(data, offset, length));
+                        length, Helpers.bytesToHex(data, offset, length));
             }
 
             @Override
@@ -68,18 +68,6 @@ public class PandaLightSerialConnection extends Observable {
                 Logger.debug("got packet: {}", packet);
             }
         });
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-        return bytesToHex(bytes, 0, bytes.length);
-    }
-
-    private static String bytesToHex(byte[] bytes, int offset, int length) {
-        Formatter formatter = new Formatter();
-        for (int i = offset; i < length; i++) {
-            formatter.format("%02x", bytes[i]);
-        }
-        return formatter.toString();
     }
 
     /**

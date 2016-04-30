@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.Bitfile;
+import com.blackwhitesoftware.pandalight.Helpers;
 import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 
@@ -195,7 +196,7 @@ public class PandaLightProtocol {
             checksum = (checksum + b) % 256;
         }
 
-        Logger.debug("got data packet: " + bytesToHex(payload));
+        Logger.debug("got data packet: " + Helpers.bytesToHex(payload));
 
         if (!isChecksumValid(checksum))
             return false;
@@ -413,17 +414,5 @@ public class PandaLightProtocol {
 
     public void removeConnectionListener(ConnectionListener listener) {
         connectionListeners.remove(listener);
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-        return bytesToHex(bytes, 0, bytes.length);
-    }
-
-    private static String bytesToHex(byte[] bytes, int offset, int length) {
-        Formatter formatter = new Formatter();
-        for (int i = offset; i < length; i++) {
-            formatter.format("%02x", bytes[i]);
-        }
-        return formatter.toString();
     }
 }
