@@ -30,12 +30,18 @@ public class PandaLightProtocol {
     private final Timer[] resendTimers = new Timer[256];
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
+    private volatile boolean gotNewData = false;
+    private final Object receiveLock = new Object();
+    private final Thread receiveThread = new Thread(new ReceiveThread());
+
     private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);
     private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
 
     private int protocolErrorCount = 0;
 
     public PandaLightProtocol(SerialConnection connection) {
+        receiveThread.start();
+
         serialConnection = connection;
         ConnectionListener listener = new ConnectionListener() {
             @Override
@@ -82,9 +88,9 @@ public class PandaLightProtocol {
                 for (int i = offset; i < offset + length; i++)
                     inDataBuffer.add(data[i]);
 
-                try {
-                    tryPopNextPacket();
-                } catch (SerialPortException ignored) {
+                synchronized (receiveLock) {
+                    gotNewData = true;
+                    receiveLock.notify();
                 }
 
                 for (ConnectionListener l : connectionListeners)
@@ -98,6 +104,34 @@ public class PandaLightProtocol {
             }
         };
         serialConnection.addConnectionListener(listener);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        receiveThread.interrupt();
+        receiveThread.join();
+        super.finalize();
+    }
+
+    private class ReceiveThread implements Runnable {
+        @Override
+        public void run() {
+            Logger.debug("receive thread started");
+            while (true) {
+                try {
+                    synchronized (receiveLock) {
+                        while (!gotNewData)
+                            receiveLock.wait();
+                        tryPopNextPacket();
+                        gotNewData = false;
+                    }
+                } catch (SerialPortException ignored) {
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            Logger.debug("receive thread ended");
+        }
     }
 
     private synchronized boolean tryPopNextPacket() throws SerialPortException {
