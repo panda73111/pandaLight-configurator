@@ -6,12 +6,12 @@ import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 
 import java.util.*;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Created by sebastian on 29.10.15.
  */
 public class PandaLightProtocol {
+    //TODO: _REFACTORING_
     private static final byte DATA_MAGIC = 0x65;
     private static final byte ACK_MAGIC = 0x66;
 
@@ -34,22 +34,22 @@ public class PandaLightProtocol {
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private volatile boolean newDataReceived = false;
+    private volatile boolean newDataToSend = false;
     private volatile boolean paused = false;
     private final Object receiveLock = new Object();
     private final Object sendLock = new Object();
-    private final Thread receiveThread = new Thread(new ReceiveThread());
-    private final Thread sendThread = new Thread(new SendThread());
-    private final LinkedBlockingDeque<byte[]> sendQueue = new LinkedBlockingDeque<>();
+    private Thread receiveThread;
+    private Thread sendThread;
+    private final LinkedList<Packet> sendQueue = new LinkedList<>();
 
     private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);
     private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
 
     private int protocolErrorCount = 0;
+    private int minAcknowledgedPacketNumber = 0;
+    private int packetsToSendTillPausing = BUFFERED_PACKETS;
 
     public PandaLightProtocol(SerialConnection connection) {
-        receiveThread.start();
-        sendThread.start();
-
         serialConnection = connection;
         ConnectionListener listener = new ConnectionListener() {
             @Override
@@ -59,7 +59,10 @@ public class PandaLightProtocol {
                 Arrays.fill(inPayloadBuffer, null);
                 Arrays.fill(outPacketBuffer, null);
                 Arrays.fill(resendTimers, null);
+                sendQueue.clear();
                 outPacketNumber = 0;
+
+                startThreads();
 
                 for (ConnectionListener l : connectionListeners)
                     l.connected();
@@ -75,15 +78,15 @@ public class PandaLightProtocol {
                     }
                 }
 
+                stopThreads();
+
                 for (ConnectionListener l : connectionListeners)
                     l.disconnected();
             }
 
             @Override
             public void pause() {
-                synchronized (sendLock) {
-                    paused = true;
-                }
+                pauseSending();
 
                 for (ConnectionListener l : connectionListeners)
                     l.pause();
@@ -91,10 +94,7 @@ public class PandaLightProtocol {
 
             @Override
             public void unpause() {
-                synchronized (sendLock) {
-                    paused = false;
-                    sendLock.notify();
-                }
+                unpauseSending();
 
                 for (ConnectionListener l : connectionListeners)
                     l.unpause();
@@ -135,13 +135,52 @@ public class PandaLightProtocol {
         serialConnection.addConnectionListener(listener);
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        receiveThread.interrupt();
-        sendThread.interrupt();
-        receiveThread.join();
-        sendThread.join();
-        super.finalize();
+    private void startThreads() {
+        receiveThread = new Thread(new ReceiveThread(), "receive thread");
+        sendThread = new Thread(new SendThread(), "send thread");
+        receiveThread.start();
+        sendThread.start();
+    }
+
+    private void stopThreads() {
+        if (receiveThread != null) {
+            receiveThread.interrupt();
+
+            try {
+                receiveThread.join();
+            } catch (InterruptedException ignored) { }
+
+            receiveThread = null;
+        }
+
+        if (sendThread != null) {
+            sendThread.interrupt();
+
+            try {
+                sendThread.join();
+            } catch (InterruptedException ignored) {
+            }
+
+            sendThread = null;
+        }
+    }
+
+    private class Packet {
+        final int number;
+        final byte[] data;
+        final boolean prioritized;
+        final boolean scheduleResends;
+
+        Packet(int number, byte[] data, boolean prioritized) {
+            this(number, data, prioritized, false);
+        }
+
+        Packet(int number, byte[] data, boolean prioritized, boolean scheduleResends) {
+            this.number = number;
+            this.data = data;
+            this.prioritized = prioritized;
+            this.scheduleResends = scheduleResends;
+        }
     }
 
     private class ReceiveThread implements Runnable {
@@ -153,10 +192,9 @@ public class PandaLightProtocol {
                     synchronized (receiveLock) {
                         while (!newDataReceived)
                             receiveLock.wait();
-                        tryPopNextPacket();
+                        while (tryPopNextPacket()) { }
                         newDataReceived = false;
                     }
-                } catch (SerialPortException ignored) {
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -172,13 +210,37 @@ public class PandaLightProtocol {
             while (true) {
                 try {
                     synchronized (sendLock) {
-                        while (paused)
+                        while (!newDataToSend || paused)
                             sendLock.wait();
-                        serialConnection.sendData(
-                                sendQueue.takeFirst()
-                        );
+
+                        boolean foundPrioritizedPacket = false;
+
+                        for (int i = 0; i < sendQueue.size(); i++) {
+                            Packet packet = sendQueue.get(i);
+
+                            if (packet.prioritized) {
+                                if (packet.scheduleResends)
+                                    scheduleResendTimer(packet.number);
+                                serialConnection.sendData(packet.data);
+                                sendQueue.remove(i);
+
+                                newDataToSend = false;
+                                foundPrioritizedPacket = true;
+                                break;
+                            }
+                        }
+
+                        if (foundPrioritizedPacket || paused)
+                            continue;
+
+                        Packet packet = sendQueue.pop();
+                        if (packet.scheduleResends)
+                            scheduleResendTimer(packet.number);
+                        serialConnection.sendData(packet.data);
+                        newDataToSend = false;
                     }
-                } catch (SerialPortException ignored) {
+                } catch (SerialPortException e) {
+                    Logger.error("Sending data failed: {}", e.getLocalizedMessage());
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -187,7 +249,22 @@ public class PandaLightProtocol {
         }
     }
 
-    private synchronized boolean tryPopNextPacket() throws SerialPortException {
+    private void pauseSending() {
+        Logger.debug("pausing sending unprioritized data");
+        synchronized (sendLock) {
+            paused = true;
+        }
+    }
+
+    private void unpauseSending() {
+        Logger.debug("unpausing sending unprioritized data");
+        synchronized (sendLock) {
+            paused = false;
+            sendLock.notify();
+        }
+    }
+
+    private boolean tryPopNextPacket() {
         if (inDataBuffer.size() < 3)
             // the packet was not yet read completely
             return false;
@@ -200,21 +277,24 @@ public class PandaLightProtocol {
         int packetNumber = inDataBuffer.get(1);
         int checksum = (magic + packetNumber) % 256;
 
-        switch (magic) {
-            case ACK_MAGIC:
-                removeFromInDataBuffer(2);
+        if (magic == ACK_MAGIC) {
+            removeFromInDataBuffer(2);
 
-                if (!isChecksumValid(checksum))
-                    return false;
+            if (!isChecksumValid(checksum))
+                return false;
 
-                Logger.debug("got acknowledge for packet {}, cancelling resend timer", packetNumber);
+            Logger.debug("got acknowledge for packet {}, cancelling resend timer", packetNumber);
 
-                Timer timer = resendTimers[packetNumber];
-                if (timer != null) {
-                    timer.cancel();
-                    resendTimers[packetNumber] = null;
-                }
-                return true;
+            Timer timer = resendTimers[packetNumber];
+            if (timer != null) {
+                timer.cancel();
+                resendTimers[packetNumber] = null;
+            }
+
+            if (packetNumber == minAcknowledgedPacketNumber)
+                unpauseSending();
+
+            return true;
         }
 
         // it's a data packet
@@ -236,7 +316,7 @@ public class PandaLightProtocol {
             checksum = (checksum + b) % 256;
         }
 
-        Logger.debug("got data packet: " + Helpers.bytesToHex(payload));
+        Logger.debug("got data packet: {}", Helpers.bytesToHex(payload));
 
         if (!isChecksumValid(checksum))
             return false;
@@ -259,12 +339,12 @@ public class PandaLightProtocol {
         return true;
     }
 
-    private synchronized void removeFromInDataBuffer(int count) {
+    private void removeFromInDataBuffer(int count) {
         for (int i = 0; i < count; i++)
             inDataBuffer.removeFirst();
     }
 
-    private synchronized void tryCombinePayloads() throws PandaLightProtocolException {
+    private void tryCombinePayloads() throws PandaLightProtocolException {
         if (expectedPackets.size() == 0)
         {
             Logger.error("not expecting a packet, can't combine payloads!");
@@ -290,35 +370,31 @@ public class PandaLightProtocol {
         }
     }
 
-    private void repeatCommand(Class<? extends PandaLightPacket> expectedPacket) throws SerialPortException {
-        try {
-            if (expectedPacket == PandaLightSysinfoPacket.class) {
-                sendCommand(PandaLightCommand.SYSINFO);
-            } else if (expectedPacket == PandaLightSettingsPacket.class) {
-                sendCommand(PandaLightCommand.WRITE_SETTINGS_TO_UART);
-            }
-        }
-        catch (SerialPortException e) {
-            Logger.error("Repeating command failed: " + e.getLocalizedMessage());
-            throw e;
+    private void repeatCommand(Class<? extends PandaLightPacket> expectedPacket) {
+        if (expectedPacket == PandaLightSysinfoPacket.class) {
+            sendCommand(PandaLightCommand.SYSINFO, true);
+        } else if (expectedPacket == PandaLightSettingsPacket.class) {
+            sendCommand(PandaLightCommand.WRITE_SETTINGS_TO_UART, true);
         }
     }
 
-    private synchronized void sendAcknowledge(int packetNumber) throws SerialPortException {
+    private void sendAcknowledge(int packetNumber) {
         Logger.debug("sending acknowledge for packet {}", packetNumber);
-        try {
-            serialConnection.sendData(new byte[] {
-                    ACK_MAGIC,
-                    (byte) packetNumber,
-                    (byte) ((ACK_MAGIC + packetNumber) % 256)
-            });
-        } catch (SerialPortException e) {
-            Logger.error("Sending acknowledge failed: " + e.getLocalizedMessage());
-            throw e;
+
+        byte[] data = new byte[] {
+                ACK_MAGIC,
+                (byte) packetNumber,
+                (byte) ((ACK_MAGIC + packetNumber) % 256)
+        };
+
+        synchronized (sendLock) {
+            sendQueue.add(new Packet(packetNumber, data, true));
+            newDataToSend = true;
+            sendLock.notify();
         }
     }
 
-    private synchronized boolean isChecksumValid(int checksum) {
+    private boolean isChecksumValid(int checksum) {
         if (inDataBuffer.pop() == checksum) {
             Logger.debug("checksum matches");
             return true;
@@ -331,21 +407,24 @@ public class PandaLightProtocol {
         return false;
     }
 
-    private synchronized void resendPacket(int packetNumber) throws SerialPortException {
+    private void resendPacket(int packetNumber) {
         Logger.debug("resending packet {}", packetNumber);
         byte[] data = outPacketBuffer[packetNumber];
         if (data == null)
             return;
 
-        try {
-            serialConnection.sendData(data);
-        } catch (SerialPortException e) {
-            Logger.error("Sending acknowledge failed: " + e.getLocalizedMessage());
-            throw e;
+        synchronized (sendLock) {
+            sendQueue.add(new Packet(packetNumber, data, true));
+            newDataToSend = true;
+            sendLock.notify();
         }
     }
 
-    public void sendCommand(PandaLightCommand cmd) throws SerialPortException {
+    public void sendCommand(PandaLightCommand cmd) {
+        sendCommand(cmd, false);
+    }
+
+    private void sendCommand(PandaLightCommand cmd, boolean prioritized) {
         switch (cmd) {
             case SYSINFO:
                 expectedPackets.add(PandaLightSysinfoPacket.class);
@@ -358,10 +437,10 @@ public class PandaLightProtocol {
         for (ConnectionListener l : connectionListeners)
             l.sendingCommand(cmd);
 
-        sendData(new byte[] {cmd.getByteCommand()});
+        sendData(new byte[] {cmd.getByteCommand()}, prioritized);
     }
 
-    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws SerialPortException {
+    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) {
         sendCommand(PandaLightCommand.LOAD_BITFILE_FROM_UART);
 
         int length = bitfile.getLength();
@@ -374,23 +453,42 @@ public class PandaLightProtocol {
         sendData(bitfile.getData());
     }
 
-    private synchronized void incrementOutPacketNumber() {
+    private void incrementOutPacketNumber() {
         outPacketNumber = (outPacketNumber + 1) % 256;
+
+        if (packetsToSendTillPausing > 0)
+            packetsToSendTillPausing--;
+        else
+            minAcknowledgedPacketNumber = (minAcknowledgedPacketNumber + 1) % 256;
     }
 
-    public void sendData(byte[] data) throws SerialPortException {
-        sendData(data, 0, data.length);
+    public void sendData(byte[] data) {
+        sendData(data, false);
     }
 
-    public synchronized void sendData(byte[] data, int offset, int length) throws SerialPortException {
+    private void sendData(byte[] data, boolean prioritized) {
+        sendData(data, 0, data.length, prioritized);
+    }
+
+    public void sendData(byte[] data, int offset, int length) {
+        sendData(data, offset, length, false);
+    }
+
+    private synchronized void sendData(byte[] data, int offset, int length, boolean prioritized) {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
 
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
+            if (packetsToSendTillPausing == 0 && resendTimers[minAcknowledgedPacketNumber] != null) {
+                Logger.debug("pausing until packet {} is acknowledged", minAcknowledgedPacketNumber);
+                pauseSending();
+            }
+
             int partialPayloadLength = ((length - 1) % 256) + 1;
             int partialPacketLength = partialPayloadLength + 4;
 
-            Logger.debug("sending partial packet {}/{} with size {}",
-                    packetI + 1, partialPacketCount, partialPacketLength);
+            Logger.debug("sending partial packet {}/{} #{} with size {}",
+                    packetI + 1, partialPacketCount,
+                    outPacketNumber, partialPacketLength);
 
             byte[] wrappedData = new byte[partialPacketLength];
 
@@ -412,9 +510,14 @@ public class PandaLightProtocol {
             wrappedData[partialPayloadLength + 3] = (byte) checksum;
 
             outPacketBuffer[outPacketNumber] = wrappedData;
-            sendQueue.offer(wrappedData);
 
-            scheduleResendTimer(outPacketNumber);
+            Packet packet = new Packet(outPacketNumber, wrappedData, prioritized, true);
+
+            synchronized (sendLock) {
+                sendQueue.add(packet);
+                newDataToSend = true;
+                sendLock.notify();
+            }
 
             length -= 256;
             incrementOutPacketNumber();
@@ -422,8 +525,7 @@ public class PandaLightProtocol {
     }
 
     private void scheduleResendTimer(final int packetNumber) {
-        Timer t = new Timer();
-        t.scheduleAtFixedRate(new TimerTask() {
+        TimerTask task = new TimerTask() {
             private int runCount = 0;
 
             @Override
@@ -431,10 +533,7 @@ public class PandaLightProtocol {
                 Logger.debug("resend attempt {}/{} of packet {}",
                         runCount + 1, MAX_TIMEOUT_RESENDS, packetNumber);
 
-                try {
-                    resendPacket(packetNumber);
-                } catch (SerialPortException ignored) {
-                }
+                resendPacket(packetNumber);
 
                 if (++runCount == MAX_TIMEOUT_RESENDS) {
                     Logger.debug("ending resend attempts of packet {}",
@@ -444,8 +543,11 @@ public class PandaLightProtocol {
                     resendTimers[packetNumber] = null;
                 }
             }
-        }, RESEND_TIMEOUT_MILLIS, RESEND_TIMEOUT_MILLIS);
-        resendTimers[outPacketNumber] = t;
+        };
+
+        Timer t = new Timer("resend timer " + packetNumber);
+        t.scheduleAtFixedRate(task, RESEND_TIMEOUT_MILLIS, RESEND_TIMEOUT_MILLIS);
+        resendTimers[packetNumber] = t;
     }
 
     public void addConnectionListener(ConnectionListener listener) {
