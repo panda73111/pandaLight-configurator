@@ -16,18 +16,15 @@ public class SerialConnection {
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private SerialPort serialPort = null;
-    private boolean paused = false;
 
     public SerialConnection() {
         connectionListeners.add(new ConnectionListener() {
             @Override
             public void pause() {
-                paused = true;
             }
 
             @Override
             public void unpause() {
-                paused = false;
             }
 
             @Override
@@ -106,15 +103,6 @@ public class SerialConnection {
     public synchronized void sendData(byte[] data, int offset, int length) throws SerialPortException {
         if (!isConnected())
             return;
-
-        try {
-            if (paused) {
-                Logger.debug("paused sending serial data");
-                while (paused)
-                    Thread.sleep(100);
-                Logger.debug("resumed sending serial data");
-            }
-        } catch (InterruptedException ignored) { }
 
         for (ConnectionListener listener : connectionListeners) {
             listener.sendingData(data, offset, length);
