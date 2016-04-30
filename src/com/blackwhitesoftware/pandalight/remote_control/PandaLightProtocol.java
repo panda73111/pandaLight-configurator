@@ -72,6 +72,18 @@ public class PandaLightProtocol {
             }
 
             @Override
+            public void pause() {
+                for (ConnectionListener l : connectionListeners)
+                    l.pause();
+            }
+
+            @Override
+            public void unpause() {
+                for (ConnectionListener l : connectionListeners)
+                    l.unpause();
+            }
+
+            @Override
             public void sendingData(byte[] data, int offset, int length) {
                 for (ConnectionListener l : connectionListeners)
                     l.sendingData(data, offset, length);
