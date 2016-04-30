@@ -34,7 +34,9 @@ public class PandaLightProtocol {
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private volatile boolean newDataReceived = false;
+    private volatile boolean paused = false;
     private final Object receiveLock = new Object();
+    private final Object sendLock = new Object();
     private final Thread receiveThread = new Thread(new ReceiveThread());
     private final Thread sendThread = new Thread(new SendThread());
     private final LinkedBlockingDeque<byte[]> sendQueue = new LinkedBlockingDeque<>();
@@ -79,12 +81,21 @@ public class PandaLightProtocol {
 
             @Override
             public void pause() {
+                synchronized (sendLock) {
+                    paused = true;
+                }
+
                 for (ConnectionListener l : connectionListeners)
                     l.pause();
             }
 
             @Override
             public void unpause() {
+                synchronized (sendLock) {
+                    paused = false;
+                    sendLock.notify();
+                }
+
                 for (ConnectionListener l : connectionListeners)
                     l.unpause();
             }
@@ -160,9 +171,13 @@ public class PandaLightProtocol {
             Logger.debug("send thread started");
             while (true) {
                 try {
-                    serialConnection.sendData(
-                            sendQueue.takeFirst()
-                    );
+                    synchronized (sendLock) {
+                        while (paused)
+                            sendLock.wait();
+                        serialConnection.sendData(
+                                sendQueue.takeFirst()
+                        );
+                    }
                 } catch (SerialPortException ignored) {
                 } catch (InterruptedException e) {
                     break;
