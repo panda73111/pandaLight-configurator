@@ -12,7 +12,6 @@ import java.util.*;
 public class PandaLightProtocol {
     private static final byte DATA_MAGIC = 0x65;
     private static final byte ACK_MAGIC = 0x66;
-    private static final byte RESEND_MAGIC = 0x67;
 
     private static final int SYSINFO_SIZE = 12;
     private static final int SETTINGS_SIZE = 1024;
@@ -109,7 +108,7 @@ public class PandaLightProtocol {
         byte magic;
         do {
             magic = inDataBuffer.getFirst();
-        } while (magic != DATA_MAGIC && magic != ACK_MAGIC && magic != RESEND_MAGIC);
+        } while (magic != DATA_MAGIC && magic != ACK_MAGIC);
 
         int packetNumber = inDataBuffer.get(1);
         int checksum = (magic + packetNumber) % 256;
@@ -128,16 +127,6 @@ public class PandaLightProtocol {
                     timer.cancel();
                     resendTimers[packetNumber] = null;
                 }
-                return true;
-            case RESEND_MAGIC:
-                removeFromInDataBuffer(2);
-
-                if (!isChecksumValid(checksum))
-                    return false;
-
-                Logger.debug("got resend request for packet {}", packetNumber);
-
-                resendPacket(packetNumber);
                 return true;
         }
 
