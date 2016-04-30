@@ -57,7 +57,7 @@ public class SerialTest {
                     0x40,             // command
                     0x00,             // bitfile index
                     0x06, 0x40, 0x00, // bitfile size
-                    (byte) 0x3B       // checksum
+                    (byte) 0xF0       // checksum
             });
 
             for (int packetNumber = 2; packetNumber < 2 + 1600; packetNumber++) {
@@ -82,6 +82,7 @@ public class SerialTest {
                 }
 
                 serialPort.writeByte((byte) (checksum & 0xFF));
+                Thread.sleep(100);
             }
             Thread.sleep(2000);
 
