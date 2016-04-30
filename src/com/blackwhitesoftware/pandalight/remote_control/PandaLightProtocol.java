@@ -6,6 +6,7 @@ import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 
 import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Created by sebastian on 29.10.15.
@@ -17,6 +18,7 @@ public class PandaLightProtocol {
     private static final int SYSINFO_SIZE = 12;
     private static final int SETTINGS_SIZE = 1024;
 
+    private static final int BUFFERED_PACKETS = 8;
     private static final long RESEND_TIMEOUT_MILLIS = 200;
     private static final int MAX_TIMEOUT_RESENDS = 10;
 
@@ -31,9 +33,11 @@ public class PandaLightProtocol {
     private final Timer[] resendTimers = new Timer[256];
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
-    private volatile boolean gotNewData = false;
+    private volatile boolean newDataReceived = false;
     private final Object receiveLock = new Object();
     private final Thread receiveThread = new Thread(new ReceiveThread());
+    private final Thread sendThread = new Thread(new SendThread());
+    private final LinkedBlockingDeque<byte[]> sendQueue = new LinkedBlockingDeque<>();
 
     private final PartialPacketJoiner sysinfoPacketJoiner = new PartialPacketJoiner(SYSINFO_SIZE);
     private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
@@ -42,6 +46,7 @@ public class PandaLightProtocol {
 
     public PandaLightProtocol(SerialConnection connection) {
         receiveThread.start();
+        sendThread.start();
 
         serialConnection = connection;
         ConnectionListener listener = new ConnectionListener() {
@@ -102,7 +107,7 @@ public class PandaLightProtocol {
                     inDataBuffer.add(data[i]);
 
                 synchronized (receiveLock) {
-                    gotNewData = true;
+                    newDataReceived = true;
                     receiveLock.notify();
                 }
 
@@ -122,7 +127,9 @@ public class PandaLightProtocol {
     @Override
     protected void finalize() throws Throwable {
         receiveThread.interrupt();
+        sendThread.interrupt();
         receiveThread.join();
+        sendThread.join();
         super.finalize();
     }
 
@@ -133,10 +140,10 @@ public class PandaLightProtocol {
             while (true) {
                 try {
                     synchronized (receiveLock) {
-                        while (!gotNewData)
+                        while (!newDataReceived)
                             receiveLock.wait();
                         tryPopNextPacket();
-                        gotNewData = false;
+                        newDataReceived = false;
                     }
                 } catch (SerialPortException ignored) {
                 } catch (InterruptedException e) {
@@ -144,6 +151,24 @@ public class PandaLightProtocol {
                 }
             }
             Logger.debug("receive thread ended");
+        }
+    }
+
+    private class SendThread implements Runnable {
+        @Override
+        public void run() {
+            Logger.debug("send thread started");
+            while (true) {
+                try {
+                    serialConnection.sendData(
+                            sendQueue.takeFirst()
+                    );
+                } catch (SerialPortException ignored) {
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            Logger.debug("send thread ended");
         }
     }
 
@@ -372,7 +397,7 @@ public class PandaLightProtocol {
             wrappedData[partialPayloadLength + 3] = (byte) checksum;
 
             outPacketBuffer[outPacketNumber] = wrappedData;
-            serialConnection.sendData(wrappedData);
+            sendQueue.offer(wrappedData);
 
             scheduleResendTimer(outPacketNumber);
 
