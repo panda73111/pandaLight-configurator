@@ -20,11 +20,10 @@ public class PandaLightSerialConnection extends Observable {
     public PandaLightSerialConnection() {
         serialConnection = new SerialConnection();
         protocol = new PandaLightProtocol(serialConnection);
-        protocol.addConnectionListener(new ConnectionAdapter() {
+        protocol.addConnectionListener(new ConnectionListener() {
             @Override
             public void connected() {
                 Logger.debug("serial port connected");
-                super.connected();
                 setChanged();
                 notifyObservers();
             }
@@ -32,40 +31,41 @@ public class PandaLightSerialConnection extends Observable {
             @Override
             public void disconnected() {
                 Logger.debug("serial port disconnected");
-                super.disconnected();
                 setChanged();
                 notifyObservers();
+            }
+
+            @Override
+            public void pause() {
+                Logger.debug("pausing serial port");
+            }
+
+            @Override
+            public void unpause() {
+                Logger.debug("unpausing serial port");
             }
 
             @Override
             public void sendingData(byte[] data, int offset, int length) {
                 Logger.debug("sending {} bytes of serial data: {}",
                         length, bytesToHex(data, offset, length));
-
-                super.sendingData(data, offset, length);
             }
 
             @Override
             public void sendingCommand(PandaLightCommand cmd) {
                 Logger.debug("sending serial command: {}",
                         bytesToHex(new byte[]{cmd.getByteCommand()}));
-
-                super.sendingCommand(cmd);
             }
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
                 Logger.debug("got {} bytes of serial data: {}",
                         length, bytesToHex(data, offset, length));
-
-                super.gotData(data, offset, length);
             }
 
             @Override
             public void gotPacket(PandaLightPacket packet) {
                 Logger.debug("got packet: {}", packet);
-
-                super.gotPacket(packet);
             }
         });
     }

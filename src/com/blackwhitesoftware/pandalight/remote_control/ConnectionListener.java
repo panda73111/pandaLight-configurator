@@ -1,20 +1,20 @@
 package com.blackwhitesoftware.pandalight.remote_control;
 
-public interface ConnectionListener {
+public abstract class ConnectionListener {
 
-    void connected();
+    public void connected() {}
 
-    void disconnected();
+    public void disconnected() {}
 
-    void pause();
+    public void pause() {}
 
-    void unpause();
+    public void unpause() {}
 
-    void sendingData(byte[] data, int offset, int length);
+    public void sendingData(byte[] data, int offset, int length) {}
 
-    void sendingCommand(PandaLightCommand cmd);
+    public void sendingCommand(PandaLightCommand cmd) {}
 
-    void gotData(byte[] data, int offset, int length);
+    public void gotData(byte[] data, int offset, int length) {}
 
-    void gotPacket(PandaLightPacket packet);
+    public void gotPacket(PandaLightPacket packet) {}
 }

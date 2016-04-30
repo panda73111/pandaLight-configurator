@@ -21,12 +21,6 @@ public class SerialConnection {
     public SerialConnection() {
         connectionListeners.add(new ConnectionListener() {
             @Override
-            public void connected() { }
-
-            @Override
-            public void disconnected() { }
-
-            @Override
             public void pause() {
                 paused = true;
             }

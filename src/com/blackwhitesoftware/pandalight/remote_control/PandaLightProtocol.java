@@ -10,19 +10,17 @@ import java.util.*;
  * Created by sebastian on 29.10.15.
  */
 public class PandaLightProtocol {
-    //TODO Refactoring!!!
+    private static final byte DATA_MAGIC = 0x65;
+    private static final byte ACK_MAGIC = 0x66;
+    private static final byte RESEND_MAGIC = 0x67;
 
-    public static final byte DATA_MAGIC = 0x65;
-    public static final byte ACK_MAGIC = 0x66;
-    public static final byte RESEND_MAGIC = 0x67;
+    private static final int SYSINFO_SIZE = 12;
+    private static final int SETTINGS_SIZE = 1024;
 
-    public static final int SYSINFO_SIZE = 12;
-    public static final int SETTINGS_SIZE = 1024;
+    private static final long RESEND_TIMEOUT_MILLIS = 200;
+    private static final int MAX_TIMEOUT_RESENDS = 10;
 
-    public static final long RESEND_TIMEOUT_MILLIS = 200;
-    public static final int MAX_TIMEOUT_RESENDS = 10;
-
-    public static final int MAX_PROTOCOL_ERRORS = 10;
+    private static final int MAX_PROTOCOL_ERRORS = 10;
 
     private final SerialConnection serialConnection;
     private final LinkedList<Byte> inDataBuffer = new LinkedList<>();
@@ -67,12 +65,6 @@ public class PandaLightProtocol {
                 for (ConnectionListener l : connectionListeners)
                     l.disconnected();
             }
-
-            @Override
-            public void pause() { }
-
-            @Override
-            public void unpause() { }
 
             @Override
             public void sendingData(byte[] data, int offset, int length) {

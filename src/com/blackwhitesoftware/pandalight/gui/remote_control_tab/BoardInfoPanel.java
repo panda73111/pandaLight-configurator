@@ -35,28 +35,6 @@ public class BoardInfoPanel extends JPanel implements Observer {
             }
 
             @Override
-            public void disconnected() {
-            }
-
-            @Override
-            public void pause() { }
-
-            @Override
-            public void unpause() { }
-
-            @Override
-            public void sendingData(byte[] data, int offset, int length) {
-            }
-
-            @Override
-            public void sendingCommand(PandaLightCommand cmd) {
-            }
-
-            @Override
-            public void gotData(byte[] data, int offset, int length) {
-            }
-
-            @Override
             public void gotPacket(PandaLightPacket packet) {
                 if (!(packet instanceof PandaLightSysinfoPacket))
                     return;
