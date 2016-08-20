@@ -4,7 +4,7 @@ import com.blackwhitesoftware.pandalight.ConfigurationFile;
 import com.blackwhitesoftware.pandalight.Main;
 import com.blackwhitesoftware.pandalight.spec.*;
 
-public class TesConfigWriter {
+public class TestConfigWriter {
 
     public static void main(String[] pArgs) {
         DeviceConfig deviceConfig = new DeviceConfig();
