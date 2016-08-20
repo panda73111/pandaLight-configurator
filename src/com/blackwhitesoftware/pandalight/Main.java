@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight;
 
 import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
+import com.blackwhitesoftware.pandalight.gui.DebugDialog;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 import com.blackwhitesoftware.pandalight.spec.TransformConfig;
@@ -84,6 +85,8 @@ public class Main {
 
         // Show the frame
         frame.setVisible(true);
+
+        new DebugDialog(serialConnection).setVisible(true);
     }
 
     static void ShowError(String message) {

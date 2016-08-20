@@ -2,15 +2,12 @@ package com.blackwhitesoftware.pandalight.gui;
 
 import com.blackwhitesoftware.pandalight.LedFrameFactory;
 import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.UploadBitfilePanel;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.led_simulation.LedSimulationComponent;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.BoardInfoPanel;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.ManualColorPickingPanel;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.SerialConnectionPanel;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.*;
+import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;
@@ -51,8 +48,8 @@ public class ConfigPanel extends JPanel {
      * Constructs the configuration panel with a default initialised led-frame and configuration
      */
     public ConfigPanel(
-            final PandaLightConfigurationContainer pandaLightConfig,
-            final SerialAndColorPickerConfig serialConfig,
+            PandaLightConfigurationContainer pandaLightConfig,
+            SerialAndColorPickerConfig serialConfig,
             PandaLightSerialConnection serialConnection) {
         super();
 
@@ -151,9 +148,8 @@ public class ConfigPanel extends JPanel {
             mRemoteControlPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
             mRemoteControlPanel.add(Box.createVerticalGlue());
         }
+
         return mRemoteControlPanel;
     }
-
-
 }
 
