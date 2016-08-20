@@ -460,6 +460,10 @@ public class PandaLightProtocol {
             packetsToSendTillPausing--;
         else
             minAcknowledgedPacketNumber = (minAcknowledgedPacketNumber + 1) % 256;
+
+        Logger.debug(
+                "incrementing out packet number to: " + outPacketNumber +
+                ", min ack. packet number: " + minAcknowledgedPacketNumber);
     }
 
     public void sendData(byte[] data) {
