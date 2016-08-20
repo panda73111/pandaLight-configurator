@@ -46,7 +46,7 @@ public class PandaLightProtocol {
     private final PartialPacketJoiner settingsPacketJoiner = new PartialPacketJoiner(SETTINGS_SIZE);
 
     private int protocolErrorCount = 0;
-    private int minAcknowledgedPacketNumber = 0;
+    private volatile int minAcknowledgedPacketNumber = 0;
     private int packetsToSendTillPausing = BUFFERED_PACKETS;
 
     public PandaLightProtocol(SerialConnection connection) {
