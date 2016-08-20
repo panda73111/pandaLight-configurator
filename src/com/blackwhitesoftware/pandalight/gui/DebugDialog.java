@@ -7,7 +7,12 @@ import org.pmw.tinylog.writers.LogEntryValue;
 import org.pmw.tinylog.writers.Writer;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -15,29 +20,24 @@ import java.util.Set;
  */
 public class DebugDialog extends JFrame {
     private final PandaLightSerialConnection mSerialConnection;
-    private final JTextArea mTestTextArea;
     private final JPanel mContentPanel;
+    private final JTabbedPane mTabs;
+    private final HashMap<String, JTable> logBoxes;
 
     public DebugDialog(PandaLightSerialConnection serialConnection) {
         mSerialConnection = serialConnection;
         mContentPanel = new JPanel();
-        mTestTextArea = new JTextArea();
+        mTabs = new JTabbedPane();
+        logBoxes = new HashMap<>();
         initialize();
         setLogger();
     }
 
     private void initialize() {
-        mContentPanel.add(mTestTextArea);
-
-        GroupLayout layout = new GroupLayout(mContentPanel);
-        layout.setAutoCreateGaps(true);
-        layout.setHorizontalGroup(layout.createSequentialGroup().addComponent(mTestTextArea));
-        layout.setVerticalGroup(layout.createSequentialGroup().addComponent(mTestTextArea));
-
-        mContentPanel.setLayout(layout);
+        mContentPanel.setLayout(new BorderLayout());
+        mContentPanel.add(mTabs);
 
         setContentPane(mContentPanel);
-
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 800);
         setTitle("Debug");
@@ -48,15 +48,22 @@ public class DebugDialog extends JFrame {
         Writer writer = new LogWriter();
         Configurator config = Logger.getConfiguration();
         config.addWriter(writer, Level.TRACE);
+        config.activate();
     }
 
     private class LogWriter implements Writer {
+        private final DateFormat mDateFormat;
+
         public LogWriter() {
+            mDateFormat = new SimpleDateFormat("HH:mm:ss:SSS");
         }
 
         @Override
         public Set<LogEntryValue> getRequiredLogEntryValues() {
-            return EnumSet.of(LogEntryValue.MESSAGE);
+            return EnumSet.of(
+                    LogEntryValue.MESSAGE,
+                    LogEntryValue.THREAD,
+                    LogEntryValue.DATE);
         }
 
         @Override
@@ -66,7 +73,31 @@ public class DebugDialog extends JFrame {
 
         @Override
         public synchronized void write(LogEntry logEntry) throws Exception {
-            mTestTextArea.setText(mTestTextArea.getText() + "\n" + logEntry.getMessage());
+            String threadName = logEntry.getThread().getName();
+            JTable table;
+            DefaultTableModel model;
+
+            if (logBoxes.containsKey(threadName)) {
+                table = logBoxes.get(threadName);
+                model = (DefaultTableModel)table.getModel();
+            }
+            else
+            {
+                model = new DefaultTableModel(new Object[] {"Time", "Message"}, 0);
+                table = new JTable(model);
+                table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                table.getColumnModel().getColumn(0).setMaxWidth(100);
+
+                JScrollPane tab = new JScrollPane(table);
+                mTabs.add(threadName, tab);
+
+                logBoxes.put(threadName, table);
+            }
+
+            model.addRow(new Object[] {
+                    mDateFormat.format(logEntry.getDate()),
+                    logEntry.getMessage()
+            });
         }
 
         @Override
