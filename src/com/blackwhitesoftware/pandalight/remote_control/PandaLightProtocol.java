@@ -274,7 +274,7 @@ public class PandaLightProtocol {
             magic = inDataBuffer.getFirst();
         } while (magic != DATA_MAGIC && magic != ACK_MAGIC);
 
-        int packetNumber = inDataBuffer.get(1);
+        int packetNumber = inDataBuffer.get(1) & 0xFF;
         int checksum = (magic + packetNumber) % 256;
 
         if (magic == ACK_MAGIC) {
@@ -299,9 +299,9 @@ public class PandaLightProtocol {
 
         // it's a data packet
 
-        byte length = (byte) (inDataBuffer.get(2) + 1);
+        int length = (inDataBuffer.get(2) & 0xFF) + 1;
         if (inDataBuffer.size() < length + 1) {
-            // the packet was not yet read completely
+            // the packet was not yet read completely (+1 for checksum)
             return false;
         }
 
@@ -395,7 +395,7 @@ public class PandaLightProtocol {
     }
 
     private boolean isChecksumValid(int checksum) {
-        if (inDataBuffer.pop() == checksum) {
+        if ((inDataBuffer.pop() & 0xFF) == checksum) {
             Logger.debug("checksum matches");
             return true;
         }
