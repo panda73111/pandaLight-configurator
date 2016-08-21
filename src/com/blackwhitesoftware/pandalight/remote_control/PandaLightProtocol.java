@@ -34,7 +34,6 @@ public class PandaLightProtocol {
     private final List<ConnectionListener> connectionListeners = new Vector<>();
 
     private volatile boolean newDataReceived = false;
-    private volatile boolean newDataToSend = false;
     private volatile boolean paused = false;
     private final Object receiveLock = new Object();
     private final Object sendLock = new Object();
@@ -47,19 +46,22 @@ public class PandaLightProtocol {
 
     private int protocolErrorCount = 0;
     private volatile int minAcknowledgedPacketNumber = 0;
-    private int packetsToSendTillPausing = BUFFERED_PACKETS;
 
     public PandaLightProtocol(SerialConnection connection) {
         serialConnection = connection;
         ConnectionListener listener = new ConnectionListener() {
             @Override
             public void connected() {
-                inDataBuffer.clear();
+                synchronized (receiveLock) {
+                    inDataBuffer.clear();
+                }
+                synchronized (sendLock) {
+                    sendQueue.clear();
+                }
                 expectedPackets.clear();
                 Arrays.fill(inPayloadBuffer, null);
                 Arrays.fill(outPacketBuffer, null);
                 Arrays.fill(resendTimers, null);
-                sendQueue.clear();
                 outPacketNumber = 0;
 
                 startThreads();
@@ -114,10 +116,10 @@ public class PandaLightProtocol {
 
             @Override
             public void gotData(byte[] data, int offset, int length) {
-                for (int i = offset; i < offset + length; i++)
-                    inDataBuffer.add(data[i]);
-
                 synchronized (receiveLock) {
+                    for (int i = offset; i < offset + length; i++)
+                        inDataBuffer.add(data[i]);
+
                     newDataReceived = true;
                     receiveLock.notify();
                 }
@@ -207,10 +209,13 @@ public class PandaLightProtocol {
         @Override
         public void run() {
             Logger.debug("send thread started");
+
+            int packetsToSendTillPausing = BUFFERED_PACKETS;
+
             while (true) {
                 try {
                     synchronized (sendLock) {
-                        while (!newDataToSend || paused)
+                        while (sendQueue.size() == 0 || paused)
                             sendLock.wait();
 
                         boolean foundPrioritizedPacket = false;
@@ -220,11 +225,10 @@ public class PandaLightProtocol {
 
                             if (packet.prioritized) {
                                 if (packet.scheduleResends)
-                                    scheduleResendTimer(packet.number);
+                                    scheduleResendTimer(packet);
                                 serialConnection.sendData(packet.data);
                                 sendQueue.remove(i);
 
-                                newDataToSend = false;
                                 foundPrioritizedPacket = true;
                                 break;
                             }
@@ -235,9 +239,20 @@ public class PandaLightProtocol {
 
                         Packet packet = sendQueue.pop();
                         if (packet.scheduleResends)
-                            scheduleResendTimer(packet.number);
+                            scheduleResendTimer(packet);
                         serialConnection.sendData(packet.data);
-                        newDataToSend = false;
+                    }
+
+                    synchronized (receiveLock) {
+                        if (packetsToSendTillPausing > 0)
+                            packetsToSendTillPausing--;
+                        else
+                            minAcknowledgedPacketNumber = (minAcknowledgedPacketNumber + 1) % 256;
+
+                        if (packetsToSendTillPausing == 0 && resendTimers[minAcknowledgedPacketNumber] != null) {
+                            Logger.debug("pausing until packet #{} is acknowledged", minAcknowledgedPacketNumber);
+                            pauseSending();
+                        }
                     }
                 } catch (SerialPortException e) {
                     Logger.error("Sending data failed: {}", e.getLocalizedMessage());
@@ -389,7 +404,6 @@ public class PandaLightProtocol {
 
         synchronized (sendLock) {
             sendQueue.add(new Packet(packetNumber, data, true));
-            newDataToSend = true;
             sendLock.notify();
         }
     }
@@ -415,7 +429,6 @@ public class PandaLightProtocol {
 
         synchronized (sendLock) {
             sendQueue.add(new Packet(packetNumber, data, true));
-            newDataToSend = true;
             sendLock.notify();
         }
     }
@@ -453,19 +466,6 @@ public class PandaLightProtocol {
         sendData(bitfile.getData());
     }
 
-    private void incrementOutPacketNumber() {
-        outPacketNumber = (outPacketNumber + 1) % 256;
-
-        if (packetsToSendTillPausing > 0)
-            packetsToSendTillPausing--;
-        else
-            minAcknowledgedPacketNumber = (minAcknowledgedPacketNumber + 1) % 256;
-
-        Logger.debug(
-                "incrementing out packet number to: " + outPacketNumber +
-                ", min ack. packet number: " + minAcknowledgedPacketNumber);
-    }
-
     public void sendData(byte[] data) {
         sendData(data, false);
     }
@@ -482,15 +482,10 @@ public class PandaLightProtocol {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
 
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
-            if (packetsToSendTillPausing == 0 && resendTimers[minAcknowledgedPacketNumber] != null) {
-                Logger.debug("pausing until packet {} is acknowledged", minAcknowledgedPacketNumber);
-                pauseSending();
-            }
-
             int partialPayloadLength = ((length - 1) % 256) + 1;
             int partialPacketLength = partialPayloadLength + 4;
 
-            Logger.debug("sending partial packet {}/{} #{} with size {}",
+            Logger.debug("queueing partial packet {}/{} #{} with size {}",
                     packetI + 1, partialPacketCount,
                     outPacketNumber, partialPacketLength);
 
@@ -519,12 +514,11 @@ public class PandaLightProtocol {
 
             synchronized (sendLock) {
                 sendQueue.add(packet);
-                newDataToSend = true;
                 sendLock.notify();
             }
 
             length -= 256;
-            incrementOutPacketNumber();
+            outPacketNumber = (outPacketNumber + 1) % 256;
         }
     }
 
