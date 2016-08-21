@@ -503,7 +503,7 @@ public class PandaLightProtocol {
         int partialPacketCount = (length - 1) / 256 + 1; // 256 bytes per packet
 
         for (int packetI = 0; packetI < partialPacketCount; packetI++) {
-            int partialPayloadLength = ((length - 1) % 256) + 1;
+            int partialPayloadLength = Math.min(length, 256);
             int partialPacketLength = partialPayloadLength + 4;
 
             Logger.debug("queueing partial packet {}/{} #{} with size {}",
