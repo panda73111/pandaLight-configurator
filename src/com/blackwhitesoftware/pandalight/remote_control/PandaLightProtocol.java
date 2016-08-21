@@ -19,7 +19,7 @@ public class PandaLightProtocol {
     private static final int SETTINGS_SIZE = 1024;
 
     private static final int BUFFERED_PACKETS = 8;
-    private static final long RESEND_TIMEOUT_MILLIS = 200;
+    private static final long RESEND_TIMEOUT_MILLIS = 500;
     private static final int MAX_TIMEOUT_RESENDS = 10;
 
     private static final int MAX_PROTOCOL_ERRORS = 10;
