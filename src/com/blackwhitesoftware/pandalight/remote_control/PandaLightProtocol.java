@@ -172,16 +172,22 @@ public class PandaLightProtocol {
         final byte[] data;
         final boolean prioritized;
         final boolean scheduleResends;
+        final int partialPacketIndex;
 
         Packet(int number, byte[] data, boolean prioritized) {
-            this(number, data, prioritized, false);
+            this(number, data, prioritized, false, 0);
         }
 
-        Packet(int number, byte[] data, boolean prioritized, boolean scheduleResends) {
+        Packet(int number, byte[] data, boolean prioritized, int partialPacketIndex) {
+            this(number, data, prioritized, false, partialPacketIndex);
+        }
+
+        Packet(int number, byte[] data, boolean prioritized, boolean scheduleResends, int partialPacketIndex) {
             this.number = number;
             this.data = data;
             this.prioritized = prioritized;
             this.scheduleResends = scheduleResends;
+            this.partialPacketIndex = partialPacketIndex;
         }
     }
 
@@ -226,6 +232,11 @@ public class PandaLightProtocol {
                             if (packet.prioritized) {
                                 if (packet.scheduleResends)
                                     scheduleResendTimer(packet);
+
+                                Logger.debug(
+                                        "sending prioritized packet #{}, partial packet #{}",
+                                        packet.number, packet.partialPacketIndex);
+
                                 serialConnection.sendData(packet.data);
                                 sendQueue.remove(i);
 
@@ -240,6 +251,11 @@ public class PandaLightProtocol {
                         Packet packet = sendQueue.pop();
                         if (packet.scheduleResends)
                             scheduleResendTimer(packet);
+
+                        Logger.debug(
+                                "sending unprioritized packet #{}, partial packet #{}",
+                                packet.number, packet.partialPacketIndex);
+
                         serialConnection.sendData(packet.data);
                     }
 
@@ -298,7 +314,7 @@ public class PandaLightProtocol {
             if (!isChecksumValid(checksum))
                 return false;
 
-            Logger.debug("got acknowledge for packet {}, cancelling resend timer", packetNumber);
+            Logger.debug("got acknowledge for packet #{}, cancelling resend timer", packetNumber);
 
             Timer timer = resendTimers[packetNumber];
             if (timer != null) {
@@ -394,7 +410,7 @@ public class PandaLightProtocol {
     }
 
     private void sendAcknowledge(int packetNumber) {
-        Logger.debug("sending acknowledge for packet {}", packetNumber);
+        Logger.debug("sending acknowledge for packet #{}", packetNumber);
 
         byte[] data = new byte[] {
                 ACK_MAGIC,
@@ -421,8 +437,13 @@ public class PandaLightProtocol {
         return false;
     }
 
-    private void resendPacket(int packetNumber) {
-        Logger.debug("resending packet {}", packetNumber);
+    private void resendPacket(Packet packet) {
+        int packetNumber = packet.number;
+
+        Logger.debug(
+                "resending packet #{}, partial packet #{}",
+                packetNumber, packet.partialPacketIndex);
+
         byte[] data = outPacketBuffer[packetNumber];
         if (data == null)
             return;
@@ -510,7 +531,9 @@ public class PandaLightProtocol {
 
             outPacketBuffer[outPacketNumber] = wrappedData;
 
-            Packet packet = new Packet(outPacketNumber, wrappedData, prioritized, true);
+            Packet packet = new Packet(
+                    outPacketNumber, wrappedData,
+                    prioritized, true, packetI + 1);
 
             synchronized (sendLock) {
                 sendQueue.add(packet);
@@ -522,19 +545,22 @@ public class PandaLightProtocol {
         }
     }
 
-    private void scheduleResendTimer(final int packetNumber) {
+    private void scheduleResendTimer(final Packet packet) {
+        final int packetNumber = packet.number;
+
         TimerTask task = new TimerTask() {
             private int runCount = 0;
 
             @Override
             public void run() {
-                Logger.debug("resend attempt {}/{} of packet {}",
-                        runCount + 1, MAX_TIMEOUT_RESENDS, packetNumber);
+                Logger.debug("resend attempt {}/{} of packet #{}, partial packet #{}",
+                        runCount + 1, MAX_TIMEOUT_RESENDS,
+                        packetNumber, packet.partialPacketIndex);
 
-                resendPacket(packetNumber);
+                resendPacket(packet);
 
                 if (++runCount == MAX_TIMEOUT_RESENDS) {
-                    Logger.debug("ending resend attempts of packet {}",
+                    Logger.debug("ending resend attempts of packet #{}",
                             packetNumber);
 
                     cancel();
