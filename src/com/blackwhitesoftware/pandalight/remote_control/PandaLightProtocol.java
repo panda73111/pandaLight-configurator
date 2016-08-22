@@ -35,6 +35,7 @@ public class PandaLightProtocol {
 
     private volatile boolean newDataReceived = false;
     private volatile boolean paused = false;
+    private volatile boolean serialPaused = false;
     private final Object receiveLock = new Object();
     private final Object sendLock = new Object();
     private Thread receiveThread;
@@ -88,6 +89,7 @@ public class PandaLightProtocol {
 
             @Override
             public void pause() {
+                serialPaused = true;
                 pauseSending();
 
                 for (ConnectionListener l : connectionListeners)
@@ -96,6 +98,7 @@ public class PandaLightProtocol {
 
             @Override
             public void unpause() {
+                serialPaused = false;
                 unpauseSending();
 
                 for (ConnectionListener l : connectionListeners)
@@ -221,7 +224,7 @@ public class PandaLightProtocol {
             while (true) {
                 try {
                     synchronized (sendLock) {
-                        while (sendQueue.size() == 0 || paused)
+                        while (sendQueue.size() == 0 || paused || serialPaused)
                             sendLock.wait();
 
                         boolean foundPrioritizedPacket = false;
@@ -245,7 +248,7 @@ public class PandaLightProtocol {
                             }
                         }
 
-                        if (foundPrioritizedPacket || paused)
+                        if (foundPrioritizedPacket)
                             continue;
 
                         Packet packet = sendQueue.pop();
