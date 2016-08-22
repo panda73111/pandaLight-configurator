@@ -176,21 +176,21 @@ public class PandaLightProtocol {
         final boolean prioritized;
         final boolean scheduleResends;
         final int partialPacketIndex;
+        final int maxPartialPacketIndex;
 
         Packet(int number, byte[] data, boolean prioritized) {
-            this(number, data, prioritized, false, 0);
+            this(number, data, prioritized, false, 0, 0);
         }
 
-        Packet(int number, byte[] data, boolean prioritized, int partialPacketIndex) {
-            this(number, data, prioritized, false, partialPacketIndex);
-        }
-
-        Packet(int number, byte[] data, boolean prioritized, boolean scheduleResends, int partialPacketIndex) {
+        Packet(
+                int number, byte[] data, boolean prioritized, boolean scheduleResends,
+                int partialPacketIndex, int maxPartialPacketIndex) {
             this.number = number;
             this.data = data;
             this.prioritized = prioritized;
             this.scheduleResends = scheduleResends;
             this.partialPacketIndex = partialPacketIndex;
+            this.maxPartialPacketIndex = maxPartialPacketIndex;
         }
     }
 
@@ -223,6 +223,8 @@ public class PandaLightProtocol {
 
             while (true) {
                 try {
+                    Packet packet;
+
                     synchronized (sendLock) {
                         while (sendQueue.size() == 0 || paused || serialPaused)
                             sendLock.wait();
@@ -230,7 +232,7 @@ public class PandaLightProtocol {
                         boolean foundPrioritizedPacket = false;
 
                         for (int i = 0; i < sendQueue.size(); i++) {
-                            Packet packet = sendQueue.get(i);
+                            packet = sendQueue.get(i);
 
                             if (packet.prioritized) {
                                 if (packet.scheduleResends)
@@ -251,7 +253,7 @@ public class PandaLightProtocol {
                         if (foundPrioritizedPacket)
                             continue;
 
-                        Packet packet = sendQueue.pop();
+                        packet = sendQueue.pop();
                         if (packet.scheduleResends)
                             scheduleResendTimer(packet);
 
@@ -268,7 +270,10 @@ public class PandaLightProtocol {
                         else
                             minAcknowledgedPacketNumber = (minAcknowledgedPacketNumber + 1) % 256;
 
-                        if (packetsToSendTillPausing == 0 && resendTimers[minAcknowledgedPacketNumber] != null) {
+                        if (packet.partialPacketIndex == packet.maxPartialPacketIndex) {
+                            Logger.debug("finished sending partial packets");
+                            packetsToSendTillPausing = BUFFERED_PACKETS;
+                        } else if (packetsToSendTillPausing == 0 && resendTimers[minAcknowledgedPacketNumber] != null) {
                             Logger.debug("pausing until packet #{} is acknowledged", minAcknowledgedPacketNumber);
                             pauseSending();
                         }
@@ -536,7 +541,8 @@ public class PandaLightProtocol {
 
             Packet packet = new Packet(
                     outPacketNumber, wrappedData,
-                    prioritized, true, packetI + 1);
+                    prioritized, true, packetI,
+                    partialPacketCount - 1);
 
             synchronized (sendLock) {
                 sendQueue.add(packet);
