@@ -49,7 +49,6 @@ public class Main {
                     configFile.store(pandaLightConfig.mDeviceConfig);
                     configFile.store(pandaLightConfig.mLedFrameConfig);
                     configFile.store(pandaLightConfig.mProcessConfig);
-                    configFile.store(pandaLightConfig.mColorConfig);
                     configFile.store(pandaLightConfig.mMiscConfig);
                     configFile.store(serialConfig);
                     configFile.save(configFilename);
@@ -67,7 +66,6 @@ public class Main {
                 configFile.restore(pandaLightConfig.mDeviceConfig);
                 configFile.restore(pandaLightConfig.mLedFrameConfig);
                 configFile.restore(pandaLightConfig.mProcessConfig);
-                configFile.restore(pandaLightConfig.mColorConfig);
                 configFile.restore(pandaLightConfig.mMiscConfig);
                 configFile.restore(serialConfig);
             } catch (Throwable t) {

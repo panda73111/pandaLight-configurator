@@ -1,20 +1,9 @@
 package com.blackwhitesoftware.pandalight.spec;
 
-import java.util.Hashtable;
-
 /**
  * The device specific configuration
  */
 public class DeviceConfig {
-
-    /**
-     * Device (specific) properties
-     */
-    public final Hashtable<String, Object> mDeviceProperties = new Hashtable<String, Object>();
-    /**
-     * The name of the device
-     */
-    public String mName = "MyPi";
     /**
      * The type specification of the device
      */
@@ -23,5 +12,4 @@ public class DeviceConfig {
      * The order of the color bytes
      */
     public ColorByteOrder mColorByteOrder = ColorByteOrder.RGB;
-
 }

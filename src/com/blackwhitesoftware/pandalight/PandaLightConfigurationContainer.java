@@ -24,11 +24,6 @@ public class PandaLightConfigurationContainer {
     public final ImageProcessConfig mProcessConfig = new ImageProcessConfig();
 
     /**
-     * The color adjustment configuration
-     */
-    public final ColorConfig mColorConfig = new ColorConfig();
-
-    /**
      * The miscellaneous configuration (bootsequence, blackborder detector, etc)
      */
     public final MiscConfig mMiscConfig = new MiscConfig();
