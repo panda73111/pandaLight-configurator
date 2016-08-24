@@ -14,7 +14,7 @@ public class TestConfigWriter {
         MiscConfig miscConfig = new MiscConfig();
 
         deviceConfig.mName = "DAG";
-        deviceConfig.mType = DeviceType.lpd6803;
+        deviceConfig.mType = DeviceType.ws2801;
         deviceConfig.mDeviceProperties.put("output", "/dev/null");
         deviceConfig.mDeviceProperties.put("baudrate", 4800);
         deviceConfig.mColorByteOrder = ColorByteOrder.BGR;
