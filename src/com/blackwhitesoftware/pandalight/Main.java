@@ -3,7 +3,6 @@ package com.blackwhitesoftware.pandalight;
 import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
-import com.blackwhitesoftware.pandalight.spec.TransformConfig;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -73,9 +72,6 @@ public class Main {
                 configFile.restore(serialConfig);
             } catch (Throwable t) {
                 System.err.println("Failed to load " + configFilename);
-            }
-            if (pandaLightConfig.mColorConfig.mTransforms.isEmpty()) {
-                pandaLightConfig.mColorConfig.mTransforms.add(new TransformConfig());
             }
         }
 
