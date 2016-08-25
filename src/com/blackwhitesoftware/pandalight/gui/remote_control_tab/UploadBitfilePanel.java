@@ -11,6 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.Transient;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -110,6 +111,14 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         return null;
     }
 
+    @Override
+    @Transient
+    public Dimension getMaximumSize() {
+        Dimension maxSize = super.getMaximumSize();
+        Dimension prefSize = super.getPreferredSize();
+        return new Dimension(maxSize.width, prefSize.height);
+    }
+
     /**
      * Create Gui elements and layout
      */
@@ -130,7 +139,6 @@ public class UploadBitfilePanel extends JPanel implements Observer {
         add(browseButton);
 
         bitfileIndexComboBox = new JComboBox<>(new String[]{"0", "1"});
-        bitfileIndexComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 0));
         if (miscConfig.mUploadBitfileIndex <= bitfileIndexComboBox.getItemCount())
             bitfileIndexComboBox.setSelectedIndex(miscConfig.mUploadBitfileIndex);
         bitfileIndexComboBox.addActionListener(bitfileIndexComboBoxListener);

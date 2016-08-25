@@ -44,7 +44,7 @@ public class DevicePanel extends JPanel {
     private void initialise() {
         setBorder(BorderFactory.createTitledBorder("Device"));
 
-        mTypeLabel = new JLabel("Type: ");
+        mTypeLabel = new JLabel("Type:");
         mTypeLabel.setMinimumSize(new Dimension(80, 10));
         add(mTypeLabel);
 
@@ -53,7 +53,7 @@ public class DevicePanel extends JPanel {
         mTypeCombo.addActionListener(mActionListener);
         add(mTypeCombo);
 
-        mRgbLabel = new JLabel("RGB Byte Order: ");
+        mRgbLabel = new JLabel("RGB Byte Order:");
         mRgbLabel.setMinimumSize(new Dimension(80, 10));
         add(mRgbLabel);
 
@@ -66,19 +66,19 @@ public class DevicePanel extends JPanel {
         layout.setAutoCreateGaps(true);
         setLayout(layout);
 
-        layout.setHorizontalGroup(layout.createParallelGroup()
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(mTypeLabel)
-                        .addComponent(mTypeCombo))
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(mRgbLabel)
-                        .addComponent(mRgbCombo)));
-        layout.setVerticalGroup(layout.createParallelGroup()
-                .addGroup(layout.createSequentialGroup()
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup()
                         .addComponent(mTypeLabel)
                         .addComponent(mRgbLabel))
-                .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup()
                         .addComponent(mTypeCombo)
+                        .addComponent(mRgbCombo)));
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mTypeLabel)
+                        .addComponent(mTypeCombo))
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mRgbLabel)
                         .addComponent(mRgbCombo)));
     }
 }
