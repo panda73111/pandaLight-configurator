@@ -2,6 +2,7 @@ package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.Bitfile;
 import com.blackwhitesoftware.pandalight.Helpers;
+import com.blackwhitesoftware.pandalight.spec.PandaLightSettings;
 import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -110,6 +111,10 @@ public class PandaLightSerialConnection extends Observable {
 
     public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws SerialPortException {
         protocol.sendBitfile(bitfileIndex, bitfile);
+    }
+
+    public void sendSettings(PandaLightSettings settings) throws SerialPortException {
+        protocol.sendSettings(settings);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 import com.blackwhitesoftware.pandalight.ErrorHandling;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
+import com.blackwhitesoftware.pandalight.spec.PandaLightSettings;
 import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 import jssc.SerialPortException;
 
@@ -22,33 +23,44 @@ import java.util.Observer;
  */
 public class SerialConnectionPanel extends JPanel implements Observer, PropertyChangeListener {
 
-    private final ActionListener connectButtonListener = new ActionListener() {
+    private final ActionListener mConnectButtonListener = new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
-            if (connected) {
-                serialConnection.disconnect();
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (mConnected) {
+                mSerialConnection.disconnect();
                 return;
             }
 
-            serialConfig.portName = (String) portComboBox.getSelectedItem();
+            mSerialConfig.portName = (String) mPortComboBox.getSelectedItem();
 
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            connectButton.setEnabled(false);
             try {
-                serialConnection.connect((String) portComboBox.getSelectedItem());
+                mSerialConnection.connect((String) mPortComboBox.getSelectedItem());
             } catch (SerialPortException e1) {
                 ErrorHandling.ShowMessage("Error while opening serial port:\n" + e1.getLocalizedMessage());
             }
-            connectButton.setEnabled(true);
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     };
-    private PandaLightSerialConnection serialConnection;
-    private JLabel portLabel;
-    private JComboBox<String> portComboBox;
-    private JButton connectButton;
-    private SerialAndColorPickerConfig serialConfig;
-    private boolean connected = false;
+    private final ActionListener mUploadSettingsButtonListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                mSerialConnection.sendSettings(new PandaLightSettings());
+            } catch (SerialPortException e1) {
+                ErrorHandling.ShowMessage("Error while sending settings:\n" + e1.getLocalizedMessage());
+            }
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    };
+    private PandaLightSerialConnection mSerialConnection;
+    private JLabel mPortLabel;
+    private JComboBox<String> mPortComboBox;
+    private JButton mConnectButton;
+    private JButton mUploadSettingsButton;
+    private SerialAndColorPickerConfig mSerialConfig;
+    private boolean mConnected = false;
 
     /**
      * Constructor
@@ -58,9 +70,9 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
      */
     public SerialConnectionPanel(SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
         super();
-        this.serialConfig = serialConfig;
-        this.serialConnection = serialConnection;
-        this.serialConnection.addObserver(this);
+        this.mSerialConfig = serialConfig;
+        this.mSerialConnection = serialConnection;
+        this.mSerialConnection.addObserver(this);
         initialise();
     }
 
@@ -83,19 +95,24 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         //All the Gui elements
         setBorder(BorderFactory.createTitledBorder("Serial Connection"));
 
-        portLabel = new JLabel("Port: ");
-        add(portLabel);
+        mPortLabel = new JLabel("Port: ");
+        add(mPortLabel);
 
         String[] ports = SerialConnection.getSerialPorts();
-        portComboBox = new JComboBox<>(ports);
-        if (Arrays.asList(ports).contains(serialConfig.portName)) {
-            portComboBox.setSelectedItem(serialConfig.portName);
+        mPortComboBox = new JComboBox<>(ports);
+        if (Arrays.asList(ports).contains(mSerialConfig.portName)) {
+            mPortComboBox.setSelectedItem(mSerialConfig.portName);
         }
-        add(portComboBox);
+        add(mPortComboBox);
 
-        connectButton = new JButton("Connect");
-        connectButton.addActionListener(connectButtonListener);
-        add(connectButton);
+        mConnectButton = new JButton("Connect");
+        mConnectButton.addActionListener(mConnectButtonListener);
+        add(mConnectButton);
+
+        mUploadSettingsButton = new JButton("Upload Settings");
+        mUploadSettingsButton.addActionListener(mUploadSettingsButtonListener);
+        mUploadSettingsButton.setEnabled(false);
+        add(mUploadSettingsButton);
 
         //The Layout
 
@@ -105,23 +122,29 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup()
-                        .addComponent(portLabel)
-                        .addComponent(connectButton))
-                .addComponent(portComboBox));
+                        .addComponent(mPortLabel)
+                        .addComponent(mConnectButton))
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mPortComboBox)
+                        .addComponent(mUploadSettingsButton)));
 
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup()
-                        .addComponent(portLabel)
-                        .addComponent(portComboBox))
-                .addComponent(connectButton));
+                        .addComponent(mPortLabel)
+                        .addComponent(mPortComboBox))
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mConnectButton)
+                        .addComponent(mUploadSettingsButton)));
     }
 
     /**
-     * Enable or disable the Gui elements which depend on a shh connection
-     * @param enabled
+     * Enable or disable the Gui elements which depend on a COM connection
+     * @param connected
      */
-    private void setConnectionFieldsAccess(boolean enabled) {
-        portComboBox.setEnabled(enabled);
+    private void setConnectionFieldsAccess(boolean connected) {
+        mPortComboBox.setEnabled(!connected);
+        mConnectButton.setEnabled(!connected);
+        mUploadSettingsButton.setEnabled(connected);
     }
 
     /**
@@ -129,9 +152,9 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
      */
     @Override
     public void update(Observable arg0, Object arg1) {
-        connected = serialConnection.isConnected();
-        setConnectionFieldsAccess(!connected);
-        connectButton.setText(connected ? "Disconnect" : "Connect");
+        mConnected = mSerialConnection.isConnected();
+        setConnectionFieldsAccess(mConnected);
+        mConnectButton.setText(mConnected ? "Disconnect" : "Connect");
     }
 
     /**

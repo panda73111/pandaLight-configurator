@@ -2,6 +2,7 @@ package com.blackwhitesoftware.pandalight.remote_control;
 
 import com.blackwhitesoftware.pandalight.Bitfile;
 import com.blackwhitesoftware.pandalight.Helpers;
+import com.blackwhitesoftware.pandalight.spec.PandaLightSettings;
 import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 
@@ -493,6 +494,11 @@ public class PandaLightProtocol {
                 (byte) (length & 0xFF)});
 
         sendData(bitfile.getData());
+    }
+
+    public void sendSettings(PandaLightSettings settings) throws SerialPortException {
+        sendCommand(PandaLightCommand.LOAD_SETTINGS_FROM_UART);
+        sendData(settings.getData());
     }
 
     public void sendData(byte[] data) {
