@@ -44,6 +44,14 @@ public class LedFrameConstruction extends Observable {
      */
     public int firstLedOffset = -16;
 
+    public int getHorizontalLedCount() {
+        return topLedCnt;
+    }
+
+    public int hetVerticalLedCount() {
+        return leftLedCnt;
+    }
+
     /**
      * Returns the total number of leds
      *
