@@ -50,7 +50,7 @@ public class Main {
                     configFile.store(pandaLightConfig.mLedFrameConfig);
                     configFile.store(pandaLightConfig.mProcessConfig);
                     configFile.store(pandaLightConfig.mMiscConfig);
-                    configFile.store(serialConfig);
+                    configFile.store(pandaLightConfig.mSerialConfig);
                     configFile.save(configFilename);
                 } catch (Throwable t) {
                     System.err.println("Failed to save " + configFilename);
@@ -67,14 +67,14 @@ public class Main {
                 configFile.restore(pandaLightConfig.mLedFrameConfig);
                 configFile.restore(pandaLightConfig.mProcessConfig);
                 configFile.restore(pandaLightConfig.mMiscConfig);
-                configFile.restore(serialConfig);
+                configFile.restore(pandaLightConfig.mSerialConfig);
             } catch (Throwable t) {
                 System.err.println("Failed to load " + configFilename);
             }
         }
 
         // Add the configuration panel
-        frame.setContentPane(new ConfigPanel(pandaLightConfig, serialConfig, serialConnection));
+        frame.setContentPane(new ConfigPanel(pandaLightConfig, serialConnection));
 
         // Show the frame
         frame.setVisible(true);

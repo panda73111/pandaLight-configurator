@@ -6,9 +6,11 @@ import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.led_simulation.LedSimulationComponent;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.*;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.BoardInfoPanel;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.ManualColorPickingPanel;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.SerialConnectionPanel;
+import com.blackwhitesoftware.pandalight.gui.remote_control_tab.UploadBitfilePanel;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
-import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +27,6 @@ public class ConfigPanel extends JPanel {
      * The LED configuration information
      */
     private final PandaLightConfigurationContainer pandaLightConfig;
-    private final SerialAndColorPickerConfig serialConfig;
     private final PandaLightSerialConnection serialConnection;
 
     /**
@@ -49,12 +50,10 @@ public class ConfigPanel extends JPanel {
      */
     public ConfigPanel(
             PandaLightConfigurationContainer pandaLightConfig,
-            SerialAndColorPickerConfig serialConfig,
             PandaLightSerialConnection serialConnection) {
         super();
 
         this.pandaLightConfig = pandaLightConfig;
-        this.serialConfig = serialConfig;
         this.serialConnection = serialConnection;
         initialise();
 
@@ -142,10 +141,10 @@ public class ConfigPanel extends JPanel {
         if (mRemoteControlPanel == null) {
             mRemoteControlPanel = new JPanel();
             mRemoteControlPanel.setLayout(new BoxLayout(mRemoteControlPanel, BoxLayout.Y_AXIS));
-            mRemoteControlPanel.add(new SerialConnectionPanel(serialConfig, serialConnection));
+            mRemoteControlPanel.add(new SerialConnectionPanel(pandaLightConfig, serialConnection));
             mRemoteControlPanel.add(new BoardInfoPanel(serialConnection));
             mRemoteControlPanel.add(new UploadBitfilePanel(pandaLightConfig.mMiscConfig, serialConnection));
-            mRemoteControlPanel.add(new ManualColorPickingPanel(serialConfig, serialConnection));
+            mRemoteControlPanel.add(new ManualColorPickingPanel(pandaLightConfig.mSerialConfig, serialConnection));
             mRemoteControlPanel.add(Box.createVerticalGlue());
         }
 

@@ -29,6 +29,11 @@ public class PandaLightConfigurationContainer {
     public final MiscConfig mMiscConfig = new MiscConfig();
 
     /**
+     * The configuration for serial port and color picker
+     */
+    public final SerialAndColorPickerConfig mSerialConfig = new SerialAndColorPickerConfig();
+
+    /**
      * The translation of the led frame construction and image processing to individual led configuration
      */
     public Vector<Led> leds;

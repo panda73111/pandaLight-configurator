@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
+import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
 import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
 import com.blackwhitesoftware.pandalight.remote_control.SerialConnection;
 import com.blackwhitesoftware.pandalight.spec.PandaLightSettings;
@@ -54,6 +55,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     };
+    private PandaLightConfigurationContainer mConfiguration;
     private PandaLightSerialConnection mSerialConnection;
     private JLabel mPortLabel;
     private JComboBox<String> mPortComboBox;
@@ -68,11 +70,14 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
      * @param serialConfig
      * @param serialConnection
      */
-    public SerialConnectionPanel(SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
+    public SerialConnectionPanel(
+            PandaLightConfigurationContainer configuration,
+            PandaLightSerialConnection serialConnection) {
         super();
-        this.mSerialConfig = serialConfig;
-        this.mSerialConnection = serialConnection;
-        this.mSerialConnection.addObserver(this);
+        mConfiguration = configuration;
+        mSerialConfig = configuration.mSerialConfig;
+        mSerialConnection = serialConnection;
+        mSerialConnection.addObserver(this);
         initialise();
     }
 
