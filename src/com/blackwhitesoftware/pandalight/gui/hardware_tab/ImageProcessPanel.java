@@ -84,35 +84,40 @@ public class ImageProcessPanel extends JPanel {
         mHorizontalDepthLabel = new JLabel("Horizontal depth [%]:");
         add(mHorizontalDepthLabel);
 
-        mHorizontalDepthSpinner = new JSpinner(new SpinnerNumberModel(mProcessConfig.mHorizontalDepth * 100.0, 1.0, 100.0, 1.0));
+        mHorizontalDepthSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalDepth() * 100.0, 1.0, 100.0, 1.0));
         mHorizontalDepthSpinner.addChangeListener(mChangeListener);
         add(mHorizontalDepthSpinner);
 
         mVerticalDepthLabel = new JLabel("Vertical depth [%]:");
         add(mVerticalDepthLabel);
 
-        mVerticalDepthSpinner = new JSpinner(new SpinnerNumberModel(mProcessConfig.mVerticalDepth * 100.0, 1.0, 100.0, 1.0));
+        mVerticalDepthSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalDepth() * 100.0, 1.0, 100.0, 1.0));
         mVerticalDepthSpinner.addChangeListener(mChangeListener);
         add(mVerticalDepthSpinner);
 
         mHorizontalGapLabel = new JLabel("Horizontal gap [%]:");
         add(mHorizontalGapLabel);
 
-        mHorizontalGapSpinner = new JSpinner(new SpinnerNumberModel(mProcessConfig.mHorizontalGap * 100.0, 0.0, 50.0, 1.0));
+        mHorizontalGapSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalGap() * 100.0, 0.0, 50.0, 1.0));
         mHorizontalGapSpinner.addChangeListener(mChangeListener);
         add(mHorizontalGapSpinner);
 
         mVerticalGapLabel = new JLabel("Vertical gap [%]:");
         add(mVerticalGapLabel);
 
-        mVerticalGapSpinner = new JSpinner(new SpinnerNumberModel(mProcessConfig.mVerticalGap * 100.0, 0.0, 50.0, 1.0));
+        mVerticalGapSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalGap() * 100.0, 0.0, 50.0, 1.0));
         mVerticalGapSpinner.addChangeListener(mChangeListener);
         add(mVerticalGapSpinner);
 
         mOverlapLabel = new JLabel("Overlap [%]:");
         add(mOverlapLabel);
 
-        mOverlapSpinner = new JSpinner(new SpinnerNumberModel(mProcessConfig.mOverlapFraction * 100.0, -100.0, 100.0, 1.0));
+        mOverlapSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getOverlapFraction() * 100.0, -100.0, 100.0, 1.0));
         mOverlapSpinner.addChangeListener(mChangeListener);
         add(mOverlapSpinner);
 
@@ -120,7 +125,7 @@ public class ImageProcessPanel extends JPanel {
         add(mBlackborderDetectorLabel);
 
         mBlackborderDetectorCombo = new JComboBox<>(new String[]{"On", "Off"});
-        mBlackborderDetectorCombo.setSelectedItem(mProcessConfig.mBlackBorderRemoval ? "On" : "Off");
+        mBlackborderDetectorCombo.setSelectedItem(mProcessConfig.isBlackBorderRemoval() ? "On" : "Off");
         mBlackborderDetectorCombo.setToolTipText("Enables or disables the blackborder detection and removal");
         mBlackborderDetectorCombo.addActionListener(mActionListener);
         add(mBlackborderDetectorCombo);
@@ -128,7 +133,8 @@ public class ImageProcessPanel extends JPanel {
         mBlackborderThresholdLabel = new JLabel("Blackborder Threshold [%]:");
         add(mBlackborderThresholdLabel);
 
-        mBlackborderThresholdSpinner = new JSpinner(new SpinnerNumberModel(mProcessConfig.mBlackBorderThreshold * 100.0, -100.0, 100.0, 0.5));
+        mBlackborderThresholdSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getBlackborderThreshold() * 100.0, -100.0, 100.0, 0.5));
         mBlackborderThresholdSpinner.addChangeListener(mChangeListener);
         add(mBlackborderThresholdSpinner);
 

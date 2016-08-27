@@ -26,11 +26,11 @@ public class LedFrameFactory {
      * @return The counter/index of the next led
      */
     private static int increase(LedFrameConstruction frameSpec, int pLedCounter) {
-        if (frameSpec.clockwiseDirection) {
-            return (pLedCounter + 1) % frameSpec.getLedCount();
+        if (frameSpec.direction == LedFrameConstruction.Direction.clockwise) {
+            return (pLedCounter + 1) % frameSpec.getTotalLedCount();
         } else {
             if (pLedCounter == 0) {
-                return frameSpec.getLedCount() - 1;
+                return frameSpec.getTotalLedCount() - 1;
             }
             return pLedCounter - 1;
         }
@@ -47,7 +47,7 @@ public class LedFrameFactory {
     public static Vector<Led> construct(LedFrameConstruction frameSpec, ImageProcessConfig processConfig) {
         Vector<Led> mLeds = new Vector<>();
 
-        int totalLedCount = frameSpec.getLedCount();
+        int totalLedCount = frameSpec.getTotalLedCount();
         if (totalLedCount <= 0) {
             return mLeds;
         }
@@ -58,16 +58,10 @@ public class LedFrameFactory {
             iLed += totalLedCount;
         }
 
-        // Construct the top-left led (if top-left is enabled)
-        if (frameSpec.topCorners) {
-            mLeds.add(createLed(frameSpec, processConfig, iLed, 0.0, 0.0, processConfig.getOverlapFraction(), BorderSide.top_left));
-            iLed = increase(frameSpec, iLed);
-        }
-
         // Construct all leds along the top of the screen (if any)
-        if (frameSpec.topLedCnt > 0) {
+        if (frameSpec.horizontalLedCount > 0) {
             // Determine the led-spacing
-            int ledCnt = frameSpec.topLedCnt;
+            int ledCnt = frameSpec.horizontalLedCount;
             double ledSpacing = 1.0 / (ledCnt);
 
             for (int iTop = 0; iTop < ledCnt; ++iTop) {
@@ -81,16 +75,10 @@ public class LedFrameFactory {
             }
         }
 
-        // Construct the top-right led (if top-right is enabled)
-        if (frameSpec.topCorners) {
-            mLeds.add(createLed(frameSpec, processConfig, iLed, 1.0, 0.0, processConfig.getOverlapFraction(), BorderSide.top_right));
-            iLed = increase(frameSpec, iLed);
-        }
-
         // Construct all leds along the right of the screen (if any)
-        if (frameSpec.rightLedCnt > 0) {
+        if (frameSpec.verticalLedCount > 0) {
             // Determine the led-spacing
-            int ledCnt = frameSpec.rightLedCnt;
+            int ledCnt = frameSpec.verticalLedCount;
             double ledSpacing = 1.0 / ledCnt;
 
             for (int iRight = 0; iRight < ledCnt; ++iRight) {
@@ -104,23 +92,13 @@ public class LedFrameFactory {
             }
         }
 
-        // Construct the bottom-right led (if bottom-right is enabled)
-        if (frameSpec.bottomCorners) {
-            mLeds.add(createLed(frameSpec, processConfig, iLed, 1.0, 1.0, processConfig.getOverlapFraction(), BorderSide.bottom_right));
-            iLed = increase(frameSpec, iLed);
-        }
-
         // Construct all leds along the bottom of the screen (if any)
-        if (frameSpec.bottomLedCnt > 0) {
+        if (frameSpec.horizontalLedCount > 0) {
             // Determine the led-spacing (based on top-leds [=bottom leds + gap size])
-            int ledCnt = frameSpec.topLedCnt;
+            int ledCnt = frameSpec.horizontalLedCount;
             double ledSpacing = 1.0 / ledCnt;
 
             for (int iBottom = (ledCnt - 1); iBottom >= 0; --iBottom) {
-                // Special case for the bottom-gap
-                if (iBottom > (frameSpec.bottomLedCnt - 1) / 2 && iBottom < ledCnt - frameSpec.bottomLedCnt / 2) {
-                    continue;
-                }
                 // Compute the location of this led
                 double led_x = ledSpacing / 2.0 + iBottom * ledSpacing;
                 double led_y = 1.0;
@@ -131,16 +109,10 @@ public class LedFrameFactory {
             }
         }
 
-        // Construct the bottom-left led (if bottom-left is enabled)
-        if (frameSpec.bottomCorners) {
-            mLeds.add(createLed(frameSpec, processConfig, iLed, 0.0, 1.0, processConfig.getOverlapFraction(), BorderSide.bottom_left));
-            iLed = increase(frameSpec, iLed);
-        }
-
         // Construct all leds along the left of the screen (if any)
-        if (frameSpec.leftLedCnt > 0) {
+        if (frameSpec.verticalLedCount > 0) {
             // Determine the led-spacing
-            int ledCnt = frameSpec.leftLedCnt;
+            int ledCnt = frameSpec.verticalLedCount;
             double ledSpacing = 1.0 / ledCnt;
 
             for (int iRight = (ledCnt - 1); iRight >= 0; --iRight) {
@@ -183,8 +155,8 @@ public class LedFrameFactory {
 
         double xFrac = pProcessSpec.getVerticalGap() + (1.0 - 2 * pProcessSpec.getVerticalGap()) * x_frac;
         double yFrac = pProcessSpec.getHorizontalGap() + (1.0 - 2 * pProcessSpec.getHorizontalGap()) * y_frac;
-        double widthFrac = ((1.0 - 2 * pProcessSpec.getVerticalGap()) / pFrameSpec.topLedCnt * (1.0 + overlap_frac)) / 2.0;
-        double heightFrac = ((1.0 - 2 * pProcessSpec.getHorizontalGap()) / pFrameSpec.leftLedCnt * (1.0 + overlap_frac)) / 2.0;
+        double widthFrac = ((1.0 - 2 * pProcessSpec.getVerticalGap()) / pFrameSpec.horizontalLedCount * (1.0 + overlap_frac)) / 2.0;
+        double heightFrac = ((1.0 - 2 * pProcessSpec.getHorizontalGap()) / pFrameSpec.verticalLedCount * (1.0 + overlap_frac)) / 2.0;
 
         double horizontalDepth = Math.min(1.0 - pProcessSpec.getHorizontalGap(), pProcessSpec.getHorizontalDepth());
         double verticalDepth = Math.min(1.0 - pProcessSpec.getVerticalGap(), pProcessSpec.getVerticalDepth());

@@ -10,7 +10,7 @@ public class PandaLightSettings {
 
     public PandaLightSettings(PandaLightConfigurationContainer configuration) {
         mData = new byte[1024];
-        mData[0x000] = (byte)configuration.mLedFrameConfig.getHorizontalLedCount();
+        mData[0x000] = (byte)configuration.mLedFrameConfig.horizontalLedCount;
     }
 
     public byte[] getData() {
