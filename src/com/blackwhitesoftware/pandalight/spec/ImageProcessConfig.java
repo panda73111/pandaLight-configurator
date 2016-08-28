@@ -8,58 +8,58 @@ import java.util.Observable;
 public class ImageProcessConfig extends Observable {
 
     // Screen percentages
-    public double mHorizontalLedWidth = 0.01;
-    public double mHorizontalLedHeight = 0.01;
-    public double mVerticalLedWidth = 0.01;
-    public double mVerticalLedHeight = 0.01;
-    public double mHorizontalLedStep = 0.1;
-    public double mHorizontalLedPadding = 0.0;
-    public double mHorizontalLedOffset = 0.0;
-    public double mVerticalLedStep = 0.1;
-    public double mVerticalLedPadding = 0.0;
-    public double mVerticalLedOffset = 0.0;
+    public int mHorizontalLedWidth = 96;
+    public int mHorizontalLedHeight = 226;
+    public int mHorizontalLedStep = 128;
+    public int mHorizontalLedPadding = 15;
+    public int mHorizontalLedOffset = 16;
+    public int mVerticalLedWidth = 128;
+    public int mVerticalLedHeight = 169;
+    public int mVerticalLedStep = 226;
+    public int mVerticalLedPadding = 8;
+    public int mVerticalLedOffset = 29;
 
     // Blackborder detection
     public boolean mBlackBorderRemoval = true;
-    public double mBlackBorderThreshold = 0.01;
+    public int mBlackBorderThreshold = 10;
 
-    public double getHorizontalLedWidth() {
+    public int getHorizontalLedWidth() {
         return mHorizontalLedWidth;
     }
 
-    public double getHorizontalLedHeight() {
+    public int getHorizontalLedHeight() {
         return mHorizontalLedHeight;
     }
 
-    public double getVerticalLedWidth() {
+    public int getVerticalLedWidth() {
         return mVerticalLedWidth;
     }
 
-    public double getVerticalLedHeight() {
+    public int getVerticalLedHeight() {
         return mVerticalLedHeight;
     }
 
-    public double getHorizontalLedStep() {
+    public int getHorizontalLedStep() {
         return mHorizontalLedStep;
     }
 
-    public double getHorizontalLedPadding() {
+    public int getHorizontalLedPadding() {
         return mHorizontalLedPadding;
     }
 
-    public double getHorizontalLedOffset() {
+    public int getHorizontalLedOffset() {
         return mHorizontalLedOffset;
     }
 
-    public double getVerticalLedStep() {
+    public int getVerticalLedStep() {
         return mVerticalLedStep;
     }
 
-    public double getVerticalLedPadding() {
+    public int getVerticalLedPadding() {
         return mVerticalLedPadding;
     }
 
-    public double getVerticalLedOffset() {
+    public int getVerticalLedOffset() {
         return mVerticalLedOffset;
     }
 
@@ -67,74 +67,74 @@ public class ImageProcessConfig extends Observable {
         return mBlackBorderRemoval;
     }
 
-    public double getBlackborderThreshold() {
+    public int getBlackborderThreshold() {
         return mBlackBorderThreshold;
     }
 
-    public void setHorizontalLedWidth(double horizontalLedWidth) {
+    public void setHorizontalLedWidth(int horizontalLedWidth) {
         if (mHorizontalLedWidth != horizontalLedWidth) {
             mHorizontalLedWidth = horizontalLedWidth;
             setChanged();
         }
     }
 
-    public void setHorizontalLedHeight(double horizontalLedHeight) {
+    public void setHorizontalLedHeight(int horizontalLedHeight) {
         if (mHorizontalLedHeight != horizontalLedHeight) {
             mHorizontalLedHeight = horizontalLedHeight;
             setChanged();
         }
     }
 
-    public void setVerticalLedWidth(double verticalLedWidth) {
+    public void setVerticalLedWidth(int verticalLedWidth) {
         if (mVerticalLedWidth != verticalLedWidth) {
             mVerticalLedWidth = verticalLedWidth;
             setChanged();
         }
     }
 
-    public void setVerticalLedHeight(double verticalLedHeight) {
+    public void setVerticalLedHeight(int verticalLedHeight) {
         if (mVerticalLedHeight != verticalLedHeight) {
             mVerticalLedHeight = verticalLedHeight;
             setChanged();
         }
     }
 
-    public void setHorizontalLedStep(double horizontalLedStep) {
+    public void setHorizontalLedStep(int horizontalLedStep) {
         if (mHorizontalLedStep != horizontalLedStep) {
             mHorizontalLedStep = horizontalLedStep;
             setChanged();
         }
     }
 
-    public void setHorizontalLedPadding(double horizontalLedPadding) {
+    public void setHorizontalLedPadding(int horizontalLedPadding) {
         if (mHorizontalLedPadding != horizontalLedPadding) {
             mHorizontalLedPadding = horizontalLedPadding;
             setChanged();
         }
     }
 
-    public void setHorizontalLedOffset(double horizontalLedOffset) {
+    public void setHorizontalLedOffset(int horizontalLedOffset) {
         if (mHorizontalLedOffset != horizontalLedOffset) {
             mHorizontalLedOffset = horizontalLedOffset;
             setChanged();
         }
     }
 
-    public void setVerticalLedStep(double verticalLedStep) {
+    public void setVerticalLedStep(int verticalLedStep) {
         if (mVerticalLedStep != verticalLedStep) {
             mVerticalLedStep = verticalLedStep;
             setChanged();
         }
     }
 
-    public void setVerticalLedPadding(double verticalLedPadding) {
+    public void setVerticalLedPadding(int verticalLedPadding) {
         if (mVerticalLedPadding != verticalLedPadding) {
             mVerticalLedPadding = verticalLedPadding;
             setChanged();
         }
     }
 
-    public void setVerticalLedOffset(double verticalLedOffset) {
+    public void setVerticalLedOffset(int verticalLedOffset) {
         if (mVerticalLedOffset != verticalLedOffset) {
             mVerticalLedOffset = verticalLedOffset;
             setChanged();
@@ -148,7 +148,7 @@ public class ImageProcessConfig extends Observable {
         }
     }
 
-    public void setBlackborderThreshold(double pThreshold) {
+    public void setBlackborderThreshold(int pThreshold) {
         if (mBlackBorderThreshold != pThreshold) {
             mBlackBorderThreshold = pThreshold;
             setChanged();
