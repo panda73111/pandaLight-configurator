@@ -7,166 +7,140 @@ import java.util.Observable;
  */
 public class ImageProcessConfig extends Observable {
 
-    /**
-     * The 'integration depth' of the leds along the horizontal axis of the tv
-     */
-    public double mHorizontalDepth = 0.08;
-    /**
-     * The 'integration depth' of the leds along the vertical axis of the tv
-     */
-    public double mVerticalDepth = 0.05;
+    // Screen percentages
+    public double mHorizontalLedWidth = 0.01;
+    public double mHorizontalLedHeight = 0.01;
+    public double mVerticalLedWidth = 0.01;
+    public double mVerticalLedHeight = 0.01;
+    public double mHorizontalLedStep = 0.1;
+    public double mHorizontalLedPadding = 0.0;
+    public double mHorizontalLedOffset = 0.0;
+    public double mVerticalLedStep = 0.1;
+    public double mVerticalLedPadding = 0.0;
+    public double mVerticalLedOffset = 0.0;
 
-    /**
-     * The gap between the border integration area for the horizontal leds
-     */
-    public double mHorizontalGap = 0.0;
-    /**
-     * The gap between the border integration area for the vertical leds
-     */
-    public double mVerticalGap = 0.0;
-
-    /**
-     * The fraction of overlap from one to another led
-     */
-    public double mOverlapFraction = 0.0;
-
-    /**
-     * Flag indicating that black borders are excluded in the image processing
-     */
+    // Blackborder detection
     public boolean mBlackBorderRemoval = true;
-    /**
-     * Threshold for the blackborder detector
-     */
     public double mBlackBorderThreshold = 0.01;
 
-    /**
-     * Returns the horizontal depth (top and bottom) of the image integration as a fraction of the
-     * image [0.0; 1.0]
-     *
-     * @return The horizontal integration depth [0.0; 1.0]
-     */
-    public double getHorizontalDepth() {
-        return mHorizontalDepth;
+    public double getHorizontalLedWidth() {
+        return mHorizontalLedWidth;
     }
 
-    /**
-     * Sets the horizontal depth (top and bottom) of the image integration as a fraction of the
-     * image [0.0; 1.0]
-     *
-     * @param pHorizontalDepth The horizontal integration depth [0.0; 1.0]
-     */
-    public void setHorizontalDepth(double pHorizontalDepth) {
-        if (mHorizontalDepth != pHorizontalDepth) {
-            mHorizontalDepth = pHorizontalDepth;
-            setChanged();
-        }
+    public double getHorizontalLedHeight() {
+        return mHorizontalLedHeight;
     }
 
-    /**
-     * Returns the horizontal gap (top and bottom) of the image integration area from the side of the
-     * screen [0.0; 1.0]
-     *
-     * @return The horizontal gap [0.0; 1.0]
-     */
-    public double getHorizontalGap() {
-        return mHorizontalGap;
+    public double getVerticalLedWidth() {
+        return mVerticalLedWidth;
     }
 
-    /**
-     * Sets the horizontal gap (top and bottom) of the image integration area from the side as a fraction of the
-     * screen [0.0; 1.0]
-     *
-     * @param pHorizontalGap The horizontal integration area gap from the side [0.0; 1.0]
-     */
-    public void setHorizontalGap(double pHorizontalGap) {
-        if (mHorizontalGap != pHorizontalGap) {
-            mHorizontalGap = pHorizontalGap;
-            setChanged();
-        }
+    public double getVerticalLedHeight() {
+        return mVerticalLedHeight;
     }
 
-    /**
-     * Returns the vertical depth (left and right) of the image integration as a fraction of the
-     * image [0.0; 1.0]
-     *
-     * @return The vertical integration depth [0.0; 1.0]
-     */
-    public double getVerticalDepth() {
-        return mVerticalDepth;
+    public double getHorizontalLedStep() {
+        return mHorizontalLedStep;
     }
 
-    /**
-     * Sets the vertical depth (left and right) of the image integration as a fraction of the
-     * image [0.0; 1.0]
-     *
-     * @param pVerticalDepth The vertical integration depth [0.0; 1.0]
-     */
-    public void setVerticalDepth(double pVerticalDepth) {
-        if (mVerticalDepth != pVerticalDepth) {
-            mVerticalDepth = pVerticalDepth;
-            setChanged();
-        }
+    public double getHorizontalLedPadding() {
+        return mHorizontalLedPadding;
     }
 
-    /**
-     * Returns the vertical gap (left and right) of the image integration area from the side of the
-     * screen [0.0; 1.0]
-     *
-     * @return The vertical gap [0.0; 1.0]
-     */
-    public double getVerticalGap() {
-        return mVerticalGap;
+    public double getHorizontalLedOffset() {
+        return mHorizontalLedOffset;
     }
 
-    /**
-     * Sets the horizontal gap (top and bottom) of the image integration area from the side as a fraction of the
-     * screen [0.0; 1.0]
-     *
-     * @param pVerticalGap The vertical integration area gap [0.0; 1.0]
-     */
-    public void setVerticalGap(double pVerticalGap) {
-        if (mVerticalGap != pVerticalGap) {
-            mVerticalGap = pVerticalGap;
-            setChanged();
-        }
+    public double getVerticalLedStep() {
+        return mVerticalLedStep;
     }
 
-
-    /**
-     * Returns the fractional overlap of one integration tile with its neighbors
-     *
-     * @return The fractional overlap of the integration tiles
-     */
-    public double getOverlapFraction() {
-        return mOverlapFraction;
+    public double getVerticalLedPadding() {
+        return mVerticalLedPadding;
     }
 
-    /**
-     * Sets the fractional overlap of one integration tile with its neighbors
-     *
-     * @param pOverlapFraction The fractional overlap of the integration tiles
-     */
-    public void setOverlapFraction(double pOverlapFraction) {
-        if (mOverlapFraction != pOverlapFraction) {
-            mOverlapFraction = pOverlapFraction;
-            setChanged();
-        }
+    public double getVerticalLedOffset() {
+        return mVerticalLedOffset;
     }
 
-    /**
-     * Returns the black border removal flag
-     *
-     * @return True if black border removal is enabled else false
-     */
     public boolean isBlackBorderRemoval() {
         return mBlackBorderRemoval;
     }
 
-    /**
-     * Sets the black border removal flag
-     *
-     * @param pBlackBorderRemoval True if black border removal is enabled else false
-     */
+    public double getBlackborderThreshold() {
+        return mBlackBorderThreshold;
+    }
+
+    public void setHorizontalLedWidth(double horizontalLedWidth) {
+        if (mHorizontalLedWidth != horizontalLedWidth) {
+            mHorizontalLedWidth = horizontalLedWidth;
+            setChanged();
+        }
+    }
+
+    public void setHorizontalLedHeight(double horizontalLedHeight) {
+        if (mHorizontalLedHeight != horizontalLedHeight) {
+            mHorizontalLedHeight = horizontalLedHeight;
+            setChanged();
+        }
+    }
+
+    public void setVerticalLedWidth(double verticalLedWidth) {
+        if (mVerticalLedWidth != verticalLedWidth) {
+            mVerticalLedWidth = verticalLedWidth;
+            setChanged();
+        }
+    }
+
+    public void setVerticalLedHeight(double verticalLedHeight) {
+        if (mVerticalLedHeight != verticalLedHeight) {
+            mVerticalLedHeight = verticalLedHeight;
+            setChanged();
+        }
+    }
+
+    public void setHorizontalLedStep(double horizontalLedStep) {
+        if (mHorizontalLedStep != horizontalLedStep) {
+            mHorizontalLedStep = horizontalLedStep;
+            setChanged();
+        }
+    }
+
+    public void setHorizontalLedPadding(double horizontalLedPadding) {
+        if (mHorizontalLedPadding != horizontalLedPadding) {
+            mHorizontalLedPadding = horizontalLedPadding;
+            setChanged();
+        }
+    }
+
+    public void setHorizontalLedOffset(double horizontalLedOffset) {
+        if (mHorizontalLedOffset != horizontalLedOffset) {
+            mHorizontalLedOffset = horizontalLedOffset;
+            setChanged();
+        }
+    }
+
+    public void setVerticalLedStep(double verticalLedStep) {
+        if (mVerticalLedStep != verticalLedStep) {
+            mVerticalLedStep = verticalLedStep;
+            setChanged();
+        }
+    }
+
+    public void setVerticalLedPadding(double verticalLedPadding) {
+        if (mVerticalLedPadding != verticalLedPadding) {
+            mVerticalLedPadding = verticalLedPadding;
+            setChanged();
+        }
+    }
+
+    public void setVerticalLedOffset(double verticalLedOffset) {
+        if (mVerticalLedOffset != verticalLedOffset) {
+            mVerticalLedOffset = verticalLedOffset;
+            setChanged();
+        }
+    }
+
     public void setBlackBorderRemoval(boolean pBlackBorderRemoval) {
         if (mBlackBorderRemoval != pBlackBorderRemoval) {
             mBlackBorderRemoval = pBlackBorderRemoval;
@@ -174,18 +148,6 @@ public class ImageProcessConfig extends Observable {
         }
     }
 
-    /**
-     * @return The black border threshold
-     */
-    public double getBlackborderThreshold() {
-        return mBlackBorderThreshold;
-    }
-
-    /**
-     * Sets the blackborder threshold
-     *
-     * @param pThreshold the threshold value [0 .. 1]
-     */
     public void setBlackborderThreshold(double pThreshold) {
         if (mBlackBorderThreshold != pThreshold) {
             mBlackBorderThreshold = pThreshold;

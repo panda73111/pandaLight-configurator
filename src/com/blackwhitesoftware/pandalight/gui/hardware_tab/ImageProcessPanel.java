@@ -14,18 +14,35 @@ public class ImageProcessPanel extends JPanel {
 
     private final ImageProcessConfig mProcessConfig;
 
-    private JLabel mHorizontalDepthLabel;
-    private JSpinner mHorizontalDepthSpinner;
-    private JLabel mVerticalDepthLabel;
-    private JSpinner mVerticalDepthSpinner;
+    private JLabel mHorizontalLedWidthLabel;
+    private JSpinner mHorizontalLedWidthSpinner;
 
-    private JLabel mHorizontalGapLabel;
-    private JSpinner mHorizontalGapSpinner;
-    private JLabel mVerticalGapLabel;
-    private JSpinner mVerticalGapSpinner;
+    private JLabel mHorizontalLedHeightLabel;
+    private JSpinner mHorizontalLedHeightSpinner;
 
-    private JLabel mOverlapLabel;
-    private JSpinner mOverlapSpinner;
+    private JLabel mVerticalLedWidthLabel;
+    private JSpinner mVerticalLedWidthSpinner;
+
+    private JLabel mVerticalLedHeightLabel;
+    private JSpinner mVerticalLedHeightSpinner;
+
+    private JLabel mHorizontalLedStepLabel;
+    private JSpinner mHorizontalLedStepSpinner;
+
+    private JLabel mHorizontalLedPaddingLabel;
+    private JSpinner mHorizontalLedPaddingSpinner;
+
+    private JLabel mHorizontalLedOffsetLabel;
+    private JSpinner mHorizontalLedOffsetSpinner;
+
+    private JLabel mVerticalLedStepLabel;
+    private JSpinner mVerticalLedStepSpinner;
+
+    private JLabel mVerticalLedPaddingLabel;
+    private JSpinner mVerticalLedPaddingSpinner;
+
+    private JLabel mVerticalLedOffsetLabel;
+    private JSpinner mVerticalLedOffsetSpinner;
 
     private JLabel mBlackborderDetectorLabel;
     private JComboBox<String> mBlackborderDetectorCombo;
@@ -50,11 +67,16 @@ public class ImageProcessPanel extends JPanel {
         @Override
         public void stateChanged(ChangeEvent e) {
             // Update the processing configuration
-            mProcessConfig.setHorizontalDepth(((Double) mHorizontalDepthSpinner.getValue()) / 100.0);
-            mProcessConfig.setVerticalDepth(((Double) mVerticalDepthSpinner.getValue()) / 100.0);
-            mProcessConfig.setHorizontalGap(((Double) mHorizontalGapSpinner.getValue()) / 100.0);
-            mProcessConfig.setVerticalGap(((Double) mVerticalGapSpinner.getValue()) / 100.0);
-            mProcessConfig.setOverlapFraction(((Double) mOverlapSpinner.getValue()) / 100.0);
+            mProcessConfig.setHorizontalLedWidth(((Double) mHorizontalLedWidthSpinner.getValue()) / 100.0);
+            mProcessConfig.setHorizontalLedHeight(((Double) mHorizontalLedHeightSpinner.getValue()) / 100.0);
+            mProcessConfig.setVerticalLedWidth(((Double) mVerticalLedWidthSpinner.getValue()) / 100.0);
+            mProcessConfig.setVerticalLedHeight(((Double) mVerticalLedHeightSpinner.getValue()) / 100.0);
+            mProcessConfig.setHorizontalLedStep(((Double) mHorizontalLedStepSpinner.getValue()) / 100.0);
+            mProcessConfig.setHorizontalLedPadding(((Double) mHorizontalLedPaddingSpinner.getValue()) / 100.0);
+            mProcessConfig.setHorizontalLedOffset(((Double) mHorizontalLedOffsetSpinner.getValue()) / 100.0);
+            mProcessConfig.setVerticalLedStep(((Double) mVerticalLedStepSpinner.getValue()) / 100.0);
+            mProcessConfig.setVerticalLedPadding(((Double) mVerticalLedPaddingSpinner.getValue()) / 100.0);
+            mProcessConfig.setVerticalLedOffset(((Double) mVerticalLedOffsetSpinner.getValue()) / 100.0);
             mProcessConfig.setBlackborderThreshold(((Double) mBlackborderThresholdSpinner.getValue()) / 100.0);
 
             // Notify observers
@@ -81,45 +103,99 @@ public class ImageProcessPanel extends JPanel {
     private void initialise() {
         setBorder(BorderFactory.createTitledBorder("Image Process"));
 
-        mHorizontalDepthLabel = new JLabel("Horizontal depth [%]:");
-        add(mHorizontalDepthLabel);
+        int maximumScreenWidth = (int) Math.pow(2, 11) - 1;
+        double maximumPercentage = 255.0 * 100.0 / maximumScreenWidth;
+        double percentageStep = 0.5; // maximumPercentage / 255.0;
 
-        mHorizontalDepthSpinner = new JSpinner(new SpinnerNumberModel(
-                mProcessConfig.getHorizontalDepth() * 100.0, 1.0, 100.0, 1.0));
-        mHorizontalDepthSpinner.addChangeListener(mChangeListener);
-        add(mHorizontalDepthSpinner);
+        mHorizontalLedWidthLabel = new JLabel("Horizontal width [%]:");
+        add(mHorizontalLedWidthLabel);
 
-        mVerticalDepthLabel = new JLabel("Vertical depth [%]:");
-        add(mVerticalDepthLabel);
+        mHorizontalLedWidthSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalLedWidth() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mHorizontalLedWidthSpinner.addChangeListener(mChangeListener);
+        add(mHorizontalLedWidthSpinner);
 
-        mVerticalDepthSpinner = new JSpinner(new SpinnerNumberModel(
-                mProcessConfig.getVerticalDepth() * 100.0, 1.0, 100.0, 1.0));
-        mVerticalDepthSpinner.addChangeListener(mChangeListener);
-        add(mVerticalDepthSpinner);
+        mHorizontalLedHeightLabel = new JLabel("Horizontal height [%]:");
+        add(mHorizontalLedHeightLabel);
 
-        mHorizontalGapLabel = new JLabel("Horizontal gap [%]:");
-        add(mHorizontalGapLabel);
+        mHorizontalLedHeightSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalLedHeight() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mHorizontalLedHeightSpinner.addChangeListener(mChangeListener);
+        add(mHorizontalLedHeightSpinner);
 
-        mHorizontalGapSpinner = new JSpinner(new SpinnerNumberModel(
-                mProcessConfig.getHorizontalGap() * 100.0, 0.0, 50.0, 1.0));
-        mHorizontalGapSpinner.addChangeListener(mChangeListener);
-        add(mHorizontalGapSpinner);
+        mVerticalLedWidthLabel = new JLabel("Vertical width [%]:");
+        add(mVerticalLedWidthLabel);
 
-        mVerticalGapLabel = new JLabel("Vertical gap [%]:");
-        add(mVerticalGapLabel);
+        mVerticalLedWidthSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalLedWidth() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mVerticalLedWidthSpinner.addChangeListener(mChangeListener);
+        add(mVerticalLedWidthSpinner);
 
-        mVerticalGapSpinner = new JSpinner(new SpinnerNumberModel(
-                mProcessConfig.getVerticalGap() * 100.0, 0.0, 50.0, 1.0));
-        mVerticalGapSpinner.addChangeListener(mChangeListener);
-        add(mVerticalGapSpinner);
+        mVerticalLedHeightLabel = new JLabel("Vertical height [%]:");
+        add(mVerticalLedHeightLabel);
 
-        mOverlapLabel = new JLabel("Overlap [%]:");
-        add(mOverlapLabel);
+        mVerticalLedHeightSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalLedHeight() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mVerticalLedHeightSpinner.addChangeListener(mChangeListener);
+        add(mVerticalLedHeightSpinner);
 
-        mOverlapSpinner = new JSpinner(new SpinnerNumberModel(
-                mProcessConfig.getOverlapFraction() * 100.0, -100.0, 100.0, 1.0));
-        mOverlapSpinner.addChangeListener(mChangeListener);
-        add(mOverlapSpinner);
+        mHorizontalLedStepLabel = new JLabel("Horizontal step [%]:");
+        add(mHorizontalLedStepLabel);
+
+        mHorizontalLedStepSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalLedStep() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mHorizontalLedStepSpinner.addChangeListener(mChangeListener);
+        add(mHorizontalLedStepSpinner);
+
+        mHorizontalLedPaddingLabel = new JLabel("Horizontal padding [%]:");
+        add(mHorizontalLedPaddingLabel);
+
+        mHorizontalLedPaddingSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalLedPadding() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mHorizontalLedPaddingSpinner.addChangeListener(mChangeListener);
+        add(mHorizontalLedPaddingSpinner);
+
+        mHorizontalLedOffsetLabel = new JLabel("Horizontal offset [%]:");
+        add(mHorizontalLedOffsetLabel);
+
+        mHorizontalLedOffsetSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getHorizontalLedOffset() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mHorizontalLedOffsetSpinner.addChangeListener(mChangeListener);
+        add(mHorizontalLedOffsetSpinner);
+
+        mVerticalLedStepLabel = new JLabel("Vertical step [%]:");
+        add(mVerticalLedStepLabel);
+
+        mVerticalLedStepSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalLedStep() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mVerticalLedStepSpinner.addChangeListener(mChangeListener);
+        add(mVerticalLedStepSpinner);
+
+        mVerticalLedPaddingLabel = new JLabel("Vertical padding [%]:");
+        add(mVerticalLedPaddingLabel);
+
+        mVerticalLedPaddingSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalLedPadding() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mVerticalLedPaddingSpinner.addChangeListener(mChangeListener);
+        add(mVerticalLedPaddingSpinner);
+
+        mVerticalLedOffsetLabel = new JLabel("Vertical offset [%]:");
+        add(mVerticalLedOffsetLabel);
+
+        mVerticalLedOffsetSpinner = new JSpinner(new SpinnerNumberModel(
+                mProcessConfig.getVerticalLedOffset() * 100.0,
+                0.0, maximumPercentage, percentageStep));
+        mVerticalLedOffsetSpinner.addChangeListener(mChangeListener);
+        add(mVerticalLedOffsetSpinner);
 
         mBlackborderDetectorLabel = new JLabel("Blackborder Detector:");
         add(mBlackborderDetectorLabel);
@@ -147,54 +223,84 @@ public class ImageProcessPanel extends JPanel {
         setLayout(layout);
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mHorizontalDepthLabel)
-                                        .addComponent(mVerticalDepthLabel)
-                                        .addComponent(mHorizontalGapLabel)
-                                        .addComponent(mVerticalGapLabel)
-                                        .addComponent(mOverlapLabel)
-                                        .addComponent(mBlackborderDetectorLabel)
-                                        .addComponent(mBlackborderThresholdLabel)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mHorizontalDepthSpinner)
-                                        .addComponent(mVerticalDepthSpinner)
-                                        .addComponent(mHorizontalGapSpinner)
-                                        .addComponent(mVerticalGapSpinner)
-                                        .addComponent(mOverlapSpinner)
-                                        .addComponent(mBlackborderDetectorCombo)
-                                        .addComponent(mBlackborderThresholdSpinner)
-                        )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedWidthLabel)
+                        .addComponent(mHorizontalLedHeightLabel)
+                        .addComponent(mVerticalLedWidthLabel)
+                        .addComponent(mVerticalLedHeightLabel)
+                        .addComponent(mHorizontalLedStepLabel)
+                        .addComponent(mHorizontalLedPaddingLabel)
+                        .addComponent(mHorizontalLedOffsetLabel)
+                        .addComponent(mVerticalLedStepLabel)
+                        .addComponent(mVerticalLedPaddingLabel)
+                        .addComponent(mVerticalLedOffsetLabel)
+                        .addComponent(mBlackborderDetectorLabel)
+                        .addComponent(mBlackborderThresholdLabel)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedWidthSpinner)
+                        .addComponent(mHorizontalLedHeightSpinner)
+                        .addComponent(mVerticalLedWidthSpinner)
+                        .addComponent(mVerticalLedHeightSpinner)
+                        .addComponent(mHorizontalLedStepSpinner)
+                        .addComponent(mHorizontalLedPaddingSpinner)
+                        .addComponent(mHorizontalLedOffsetSpinner)
+                        .addComponent(mVerticalLedStepSpinner)
+                        .addComponent(mVerticalLedPaddingSpinner)
+                        .addComponent(mVerticalLedOffsetSpinner)
+                        .addComponent(mBlackborderDetectorCombo)
+                        .addComponent(mBlackborderThresholdSpinner)
+                )
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mHorizontalDepthLabel)
-                                        .addComponent(mHorizontalDepthSpinner)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mVerticalDepthLabel)
-                                        .addComponent(mVerticalDepthSpinner)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mHorizontalGapLabel)
-                                        .addComponent(mHorizontalGapSpinner)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mVerticalGapLabel)
-                                        .addComponent(mVerticalGapSpinner)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mOverlapLabel)
-                                        .addComponent(mOverlapSpinner)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mBlackborderDetectorLabel)
-                                        .addComponent(mBlackborderDetectorCombo)
-                        )
-                        .addGroup(layout.createParallelGroup()
-                                        .addComponent(mBlackborderThresholdLabel)
-                                        .addComponent(mBlackborderThresholdSpinner)
-                        )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedWidthLabel)
+                        .addComponent(mHorizontalLedWidthSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedHeightLabel)
+                        .addComponent(mHorizontalLedHeightSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mVerticalLedWidthLabel)
+                        .addComponent(mVerticalLedWidthSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mVerticalLedHeightLabel)
+                        .addComponent(mVerticalLedHeightSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedStepLabel)
+                        .addComponent(mHorizontalLedStepSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedPaddingLabel)
+                        .addComponent(mHorizontalLedPaddingSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mHorizontalLedOffsetLabel)
+                        .addComponent(mHorizontalLedOffsetSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mVerticalLedStepLabel)
+                        .addComponent(mVerticalLedStepSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mVerticalLedPaddingLabel)
+                        .addComponent(mVerticalLedPaddingSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mVerticalLedOffsetLabel)
+                        .addComponent(mVerticalLedOffsetSpinner)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mBlackborderDetectorLabel)
+                        .addComponent(mBlackborderDetectorCombo)
+                )
+                .addGroup(layout.createParallelGroup()
+                        .addComponent(mBlackborderThresholdLabel)
+                        .addComponent(mBlackborderThresholdSpinner)
+                )
         );
     }
 }
