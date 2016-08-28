@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight;
+package com.blackwhitesoftware.pandalight.gui;
 
 import com.blackwhitesoftware.pandalight.spec.BorderSide;
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;

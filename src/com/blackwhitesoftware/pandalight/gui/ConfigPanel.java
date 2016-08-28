@@ -1,6 +1,5 @@
 package com.blackwhitesoftware.pandalight.gui;
 
-import com.blackwhitesoftware.pandalight.LedFrameFactory;
 import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;

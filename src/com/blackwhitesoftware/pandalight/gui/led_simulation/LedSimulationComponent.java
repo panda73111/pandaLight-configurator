@@ -1,7 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.led_simulation;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
-import com.blackwhitesoftware.pandalight.LedFrameFactory;
+import com.blackwhitesoftware.pandalight.gui.LedFrameFactory;
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
 import com.blackwhitesoftware.pandalight.spec.Led;
 import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction;
@@ -221,15 +221,6 @@ public class LedSimulationComponent extends JPanel {
                 if (backgroundImage == null) {
                     return;
                 }
-
-                /*
-                try {
-                    File outFile = new File("R:\\saved.png");
-                    ImageIO.write(backgroundImage, "png", outFile);
-                }
-                catch (IOException ex)
-                { }
-                */
 
                 int width = backgroundImage.getWidth();
                 int height = backgroundImage.getHeight();
