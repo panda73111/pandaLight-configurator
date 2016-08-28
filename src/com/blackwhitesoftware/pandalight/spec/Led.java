@@ -12,7 +12,7 @@ public class Led {
     /**
      * The sequence number of the led
      */
-    public int mLedSeqNr;
+    public int mTotalLedIndex;
 
     /**
      * The side along which the led is placed
@@ -36,6 +36,6 @@ public class Led {
      */
     @Override
     public String toString() {
-        return "Led[" + mLedSeqNr + "] Location=" + mLocation + " Rectangle=" + mImageRectangle;
+        return "Led[" + mTotalLedIndex + "] Location=" + mLocation + " Rectangle=" + mImageRectangle;
     }
 }

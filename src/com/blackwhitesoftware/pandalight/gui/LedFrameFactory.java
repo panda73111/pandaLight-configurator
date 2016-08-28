@@ -1,5 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui;
 
+import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
 import com.blackwhitesoftware.pandalight.spec.BorderSide;
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
 import com.blackwhitesoftware.pandalight.spec.Led;
@@ -40,14 +41,15 @@ public class LedFrameFactory {
     /**
      * Translate a 'frame' and picture integration specification to per-led specification
      *
-     * @param frameSpec     The specification of the led frame
-     * @param processConfig The picture integration specification
+     * @param config     The configuration
      * @return The per-led specification
      */
-    public static Vector<Led> construct(LedFrameConstruction frameSpec, ImageProcessConfig processConfig) {
+    public static Vector<Led> construct(PandaLightConfigurationContainer config) {
         Vector<Led> mLeds = new Vector<>();
+        LedFrameConstruction frameSpec = config.mLedFrameConfig;
+        ImageProcessConfig processConfig = config.mProcessConfig;
 
-        int totalLedCount = frameSpec.getTotalLedCount();
+        int totalLedCount = config.mLedFrameConfig.getTotalLedCount();
         if (totalLedCount <= 0) {
             return mLeds;
         }
@@ -58,70 +60,42 @@ public class LedFrameFactory {
             iLed += totalLedCount;
         }
 
-        // Construct all leds along the top of the screen (if any)
         if (frameSpec.horizontalLedCount > 0) {
-            // Determine the led-spacing
             int ledCnt = frameSpec.horizontalLedCount;
-            double ledSpacing = 1.0 / (ledCnt);
+
+            // Construct all leds along the top of the screen (if any)
 
             for (int iTop = 0; iTop < ledCnt; ++iTop) {
-                // Compute the location of this led
-                double led_x = ledSpacing / 2.0 + iTop * ledSpacing;
-                double led_y = 0;
-
                 // Construct and add the single led specification to the list of leds
-                mLeds.add(createLed(frameSpec, processConfig, iLed, led_x, led_y, BorderSide.top));
+                mLeds.add(createLed(iLed, iTop, BorderSide.top, config));
                 iLed = increase(frameSpec, iLed);
             }
-        }
 
-        // Construct all leds along the right of the screen (if any)
-        if (frameSpec.verticalLedCount > 0) {
-            // Determine the led-spacing
-            int ledCnt = frameSpec.verticalLedCount;
-            double ledSpacing = 1.0 / ledCnt;
-
-            for (int iRight = 0; iRight < ledCnt; ++iRight) {
-                // Compute the location of this led
-                double led_x = 1.0;
-                double led_y = ledSpacing / 2.0 + iRight * ledSpacing;
-
-                // Construct and add the single led specification to the list of leds
-                mLeds.add(createLed(frameSpec, processConfig, iLed, led_x, led_y, BorderSide.right));
-                iLed = increase(frameSpec, iLed);
-            }
-        }
-
-        // Construct all leds along the bottom of the screen (if any)
-        if (frameSpec.horizontalLedCount > 0) {
-            // Determine the led-spacing (based on top-leds [=bottom leds + gap size])
-            int ledCnt = frameSpec.horizontalLedCount;
-            double ledSpacing = 1.0 / ledCnt;
+            // Construct all leds along the bottom of the screen (if any)
 
             for (int iBottom = (ledCnt - 1); iBottom >= 0; --iBottom) {
-                // Compute the location of this led
-                double led_x = ledSpacing / 2.0 + iBottom * ledSpacing;
-                double led_y = 1.0;
-
                 // Construct and add the single led specification to the list of leds
-                mLeds.add(createLed(frameSpec, processConfig, iLed, led_x, led_y, BorderSide.bottom));
+                mLeds.add(createLed(iLed, iBottom, BorderSide.bottom, config));
                 iLed = increase(frameSpec, iLed);
             }
         }
 
-        // Construct all leds along the left of the screen (if any)
         if (frameSpec.verticalLedCount > 0) {
-            // Determine the led-spacing
             int ledCnt = frameSpec.verticalLedCount;
-            double ledSpacing = 1.0 / ledCnt;
 
-            for (int iRight = (ledCnt - 1); iRight >= 0; --iRight) {
-                // Compute the location of this led
-                double led_x = 0.0;
-                double led_y = ledSpacing / 2.0 + iRight * ledSpacing;
+            // Construct all leds along the right of the screen (if any)
 
+            for (int iRight = 0; iRight < ledCnt; ++iRight) {
                 // Construct and add the single led specification to the list of leds
-                mLeds.add(createLed(frameSpec, processConfig, iLed, led_x, led_y, BorderSide.left));
+                mLeds.add(createLed(iLed, iRight, BorderSide.right, config));
+                iLed = increase(frameSpec, iLed);
+            }
+
+            // Construct all leds along the left of the screen (if any)
+
+            for (int iLeft = (ledCnt - 1); iLeft >= 0; --iLeft) {
+                // Construct and add the single led specification to the list of leds
+                mLeds.add(createLed(iLed, iLeft, BorderSide.left, config));
                 iLed = increase(frameSpec, iLed);
             }
         }
@@ -129,7 +103,7 @@ public class LedFrameFactory {
         Collections.sort(mLeds, new Comparator<Led>() {
             @Override
             public int compare(Led o1, Led o2) {
-                return Integer.compare(o1.mLedSeqNr, o2.mLedSeqNr);
+                return Integer.compare(o1.mTotalLedIndex, o2.mTotalLedIndex);
             }
         });
         return mLeds;
@@ -138,22 +112,55 @@ public class LedFrameFactory {
     /**
      * Constructs the specification of a single led
      *
-     * @param pFrameSpec   The overall led-frame specification
-     * @param pProcessSpec The overall image-processing specification
-     * @param seqNr        The number of the led
-     * @param x_frac       The x location of the led in fractional range [0.0; 1.0]
-     * @param y_frac       The y location of the led in fractional range [0.0; 1.0]
-     * @param pBorderSide  The side on which the led is located
+     * @param totalLedIndex  The total index of the LED
+     * @param borderLedIndex The index within one side of the frame
+     * @param borderSide     The side on which the led is located
+     * @param config         The configuration
      * @return The image integration specifications of the single led
      */
     private static Led createLed(
-            LedFrameConstruction pFrameSpec, ImageProcessConfig pProcessSpec,
-            int seqNr, double x_frac, double y_frac, BorderSide pBorderSide) {
+            int totalLedIndex, int borderLedIndex,
+            BorderSide borderSide, PandaLightConfigurationContainer config) {
         Led led = new Led();
-        led.mLedSeqNr = seqNr;
-        led.mLocation = new Point2D.Double(x_frac, y_frac);
-        led.mSide = pBorderSide;
-        led.mImageRectangle = new Rectangle2D.Double(0, 0, 1, 1);
+
+        double scale = 255.0 / (256.0 * 8.0);
+
+        int sideLedCount;
+        double width, height, offset, padding, step;
+        double x, y;
+
+        if (borderSide.isHorizontal()) {
+            width = config.mProcessConfig.getHorizontalLedWidth() * scale / 255.0;
+            height = config.mProcessConfig.getHorizontalLedHeight() * scale / 255.0;
+            offset = config.mProcessConfig.getHorizontalLedOffset() * scale / 255.0;
+            padding = config.mProcessConfig.getHorizontalLedPadding() * scale/ 255.0;
+            step = config.mProcessConfig.getHorizontalLedStep() * scale / 255.0;
+            x = offset + borderLedIndex * step;
+            y = padding;
+
+            if (borderSide == BorderSide.bottom)
+                y = 1.0 - height - padding;
+        } else {
+            width = config.mProcessConfig.getVerticalLedWidth() * scale / 255.0;
+            height = config.mProcessConfig.getVerticalLedHeight() * scale / 255.0;
+            offset = config.mProcessConfig.getVerticalLedOffset() * scale / 255.0;
+            padding = config.mProcessConfig.getVerticalLedPadding() * scale / 255.0;
+            step = config.mProcessConfig.getVerticalLedStep() * scale / 255.0;
+            x = padding;
+            y = offset + borderLedIndex * step;
+
+            if (borderSide == BorderSide.right)
+                x = 1.0 - width - padding;
+        }
+
+        x = Math.min(x, 1.0);
+        y = Math.min(y, 1.0);
+
+        led.mTotalLedIndex = totalLedIndex;
+        led.mLocation = new Point2D.Double(x, y);
+        led.mSide = borderSide;
+
+        led.mImageRectangle = new Rectangle2D.Double(x, y, width, height);
         
         return led;
     }

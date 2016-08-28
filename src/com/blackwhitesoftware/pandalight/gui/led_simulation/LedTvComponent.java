@@ -81,29 +81,17 @@ public class LedTvComponent extends JComponent {
             g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
 
             switch (led.mSide) {
-                case top_left:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), 0, 11);
-                    break;
                 case top:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), (int) rect.getCenterX(), 11);
-                    break;
-                case top_right:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), getWidth() - 11, 11);
+                    g2d.drawString(Integer.toString(led.mTotalLedIndex), (int) rect.getCenterX(), 11);
                     break;
                 case right:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), getWidth() - 11, (int) rect.getCenterY());
-                    break;
-                case bottom_right:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), getWidth() - 11, getHeight() - 1);
+                    g2d.drawString(Integer.toString(led.mTotalLedIndex), getWidth() - 11, (int) rect.getCenterY());
                     break;
                 case bottom:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), (int) rect.getCenterX(), getHeight() - 1);
-                    break;
-                case bottom_left:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), 0, getHeight() - 1);
+                    g2d.drawString(Integer.toString(led.mTotalLedIndex), (int) rect.getCenterX(), getHeight() - 1);
                     break;
                 case left:
-                    g2d.drawString(Integer.toString(led.mLedSeqNr), 0, (int) rect.getCenterY());
+                    g2d.drawString(Integer.toString(led.mTotalLedIndex), 0, (int) rect.getCenterY());
                     break;
             }
         }

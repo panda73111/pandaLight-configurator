@@ -57,17 +57,14 @@ public class ConfigPanel extends JPanel {
         initialise();
 
         // Compute the individual leds for the current configuration
-        this.pandaLightConfig.leds = LedFrameFactory.construct(
-                this.pandaLightConfig.mLedFrameConfig, this.pandaLightConfig.mProcessConfig);
+        this.pandaLightConfig.leds = LedFrameFactory.construct(this.pandaLightConfig);
         mLightedTV.setLeds(this.pandaLightConfig.leds);
 
         // Add Observer to update the individual leds if the configuration changes
         final Observer observer = new Observer() {
             @Override
             public void update(Observable o, Object arg) {
-                ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(
-                        ConfigPanel.this.pandaLightConfig.mLedFrameConfig,
-                        ConfigPanel.this.pandaLightConfig.mProcessConfig);
+                ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(ConfigPanel.this.pandaLightConfig);
                 mLightedTV.setLeds(ConfigPanel.this.pandaLightConfig.leds);
                 mLightedTV.repaint();
             }
