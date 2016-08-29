@@ -45,10 +45,24 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
             ledPaint.angle_rad = led.mSide.getAngle_rad();
 
             // Determine the color of the led
-            int xMin = (int) (led.mImageRectangle.getMinX() * (imageWidth - 1));
-            int xMax = (int) (led.mImageRectangle.getMaxX() * (imageWidth - 1));
-            int yMin = (int) (led.mImageRectangle.getMinY() * (imageHeight - 1));
-            int yMax = (int) (led.mImageRectangle.getMaxY() * (imageHeight - 1));
+            double xMinFrac = led.mImageRectangle.getMinX();
+            double xMaxFrac = led.mImageRectangle.getMaxX();
+            double yMinFrac = led.mImageRectangle.getMinY();
+            double yMaxFrac = led.mImageRectangle.getMaxY();
+
+            if (
+                    xMinFrac < 0 || xMaxFrac > 1 ||
+                    yMinFrac < 0 || yMinFrac > 1 ||
+                    xMaxFrac < 0 || xMaxFrac > 1 ||
+                    yMaxFrac < 0 || yMaxFrac > 1 ||
+                    xMaxFrac < xMinFrac ||
+                    yMaxFrac < yMinFrac)
+                continue;
+
+            int xMin = (int) (xMinFrac * (imageWidth - 1));
+            int xMax = (int) (xMaxFrac * (imageWidth - 1));
+            int yMin = (int) (yMinFrac * (imageHeight - 1));
+            int yMax = (int) (yMaxFrac* (imageHeight - 1));
             ledPaint.rgb = determineRGB(xMin, xMax, yMin, yMax);
 
             ledPaints.add(ledPaint);

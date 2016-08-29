@@ -153,9 +153,6 @@ public class LedFrameFactory {
                 x = 1.0 - width - padding;
         }
 
-        x = Math.min(x, 1.0);
-        y = Math.min(y, 1.0);
-
         led.mTotalLedIndex = totalLedIndex;
         led.mLocation = new Point2D.Double(x, y);
         led.mSide = borderSide;
