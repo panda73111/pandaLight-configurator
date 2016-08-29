@@ -47,9 +47,8 @@ public class LedFrameFactory {
     public static Vector<Led> construct(PandaLightConfigurationContainer config) {
         Vector<Led> mLeds = new Vector<>();
         LedFrameConstruction frameSpec = config.mLedFrameConfig;
-        ImageProcessConfig processConfig = config.mProcessConfig;
 
-        int totalLedCount = config.mLedFrameConfig.getTotalLedCount();
+        int totalLedCount = frameSpec.getTotalLedCount();
         if (totalLedCount <= 0) {
             return mLeds;
         }
@@ -100,12 +99,7 @@ public class LedFrameFactory {
             }
         }
 
-        Collections.sort(mLeds, new Comparator<Led>() {
-            @Override
-            public int compare(Led o1, Led o2) {
-                return Integer.compare(o1.mTotalLedIndex, o2.mTotalLedIndex);
-            }
-        });
+        Collections.sort(mLeds, (o1, o2) -> Integer.compare(o1.mTotalLedIndex, o2.mTotalLedIndex));
         return mLeds;
     }
 
@@ -123,29 +117,26 @@ public class LedFrameFactory {
             BorderSide borderSide, PandaLightConfigurationContainer config) {
         Led led = new Led();
 
-        double scale = 255.0 / (256.0 * 8.0);
-
-        int sideLedCount;
         double width, height, offset, padding, step;
         double x, y;
 
         if (borderSide.isHorizontal()) {
-            width = config.mProcessConfig.getHorizontalLedWidth() * scale / 255.0;
-            height = config.mProcessConfig.getHorizontalLedHeight() * scale / 255.0;
-            offset = config.mProcessConfig.getHorizontalLedOffset() * scale / 255.0;
-            padding = config.mProcessConfig.getHorizontalLedPadding() * scale/ 255.0;
-            step = config.mProcessConfig.getHorizontalLedStep() * scale / 255.0;
+            width = config.mProcessConfig.getHorizontalLedWidth();
+            height = config.mProcessConfig.getHorizontalLedHeight();
+            offset = config.mProcessConfig.getHorizontalLedOffset();
+            padding = config.mProcessConfig.getHorizontalLedPadding();
+            step = config.mProcessConfig.getHorizontalLedStep();
             x = offset + borderLedIndex * step;
             y = padding;
 
             if (borderSide == BorderSide.bottom)
                 y = 1.0 - height - padding;
         } else {
-            width = config.mProcessConfig.getVerticalLedWidth() * scale / 255.0;
-            height = config.mProcessConfig.getVerticalLedHeight() * scale / 255.0;
-            offset = config.mProcessConfig.getVerticalLedOffset() * scale / 255.0;
-            padding = config.mProcessConfig.getVerticalLedPadding() * scale / 255.0;
-            step = config.mProcessConfig.getVerticalLedStep() * scale / 255.0;
+            width = config.mProcessConfig.getVerticalLedWidth();
+            height = config.mProcessConfig.getVerticalLedHeight();
+            offset = config.mProcessConfig.getVerticalLedOffset();
+            padding = config.mProcessConfig.getVerticalLedPadding();
+            step = config.mProcessConfig.getVerticalLedStep();
             x = padding;
             y = offset + borderLedIndex * step;
 

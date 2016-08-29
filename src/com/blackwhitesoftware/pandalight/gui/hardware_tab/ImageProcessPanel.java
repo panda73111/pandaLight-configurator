@@ -12,6 +12,7 @@ import java.beans.Transient;
 import java.util.ArrayList;
 
 public class ImageProcessPanel extends JPanel {
+    public static final int SLIDER_SCALE = 200;
 
     private final ImageProcessConfig mProcessConfig;
     private boolean mInitializing;
@@ -58,16 +59,16 @@ public class ImageProcessPanel extends JPanel {
             }
 
             // Update the processing configuration
-            mProcessConfig.setHorizontalLedWidth(mHorizontalLedWidthSlider.getValue());
-            mProcessConfig.setHorizontalLedHeight(mHorizontalLedHeightSlider.getValue());
-            mProcessConfig.setVerticalLedWidth(mVerticalLedWidthSlider.getValue());
-            mProcessConfig.setVerticalLedHeight(mVerticalLedHeightSlider.getValue());
-            mProcessConfig.setHorizontalLedStep(mHorizontalLedStepSlider.getValue());
-            mProcessConfig.setHorizontalLedPadding(mHorizontalLedPaddingSlider.getValue());
-            mProcessConfig.setHorizontalLedOffset(mHorizontalLedOffsetSlider.getValue());
-            mProcessConfig.setVerticalLedStep(mVerticalLedStepSlider.getValue());
-            mProcessConfig.setVerticalLedPadding(mVerticalLedPaddingSlider.getValue());
-            mProcessConfig.setVerticalLedOffset(mVerticalLedOffsetSlider.getValue());
+            mProcessConfig.setHorizontalLedWidth(intToFraction(mHorizontalLedWidthSlider.getValue()));
+            mProcessConfig.setHorizontalLedHeight(intToFraction(mHorizontalLedHeightSlider.getValue()));
+            mProcessConfig.setVerticalLedWidth(intToFraction(mVerticalLedWidthSlider.getValue()));
+            mProcessConfig.setVerticalLedHeight(intToFraction(mVerticalLedHeightSlider.getValue()));
+            mProcessConfig.setHorizontalLedStep(intToFraction(mHorizontalLedStepSlider.getValue()));
+            mProcessConfig.setHorizontalLedPadding(intToFraction(mHorizontalLedPaddingSlider.getValue()));
+            mProcessConfig.setHorizontalLedOffset(intToFraction(mHorizontalLedOffsetSlider.getValue()));
+            mProcessConfig.setVerticalLedStep(intToFraction(mVerticalLedStepSlider.getValue()));
+            mProcessConfig.setVerticalLedPadding(intToFraction(mVerticalLedPaddingSlider.getValue()));
+            mProcessConfig.setVerticalLedOffset(intToFraction(mVerticalLedOffsetSlider.getValue()));
             mProcessConfig.setBlackborderThreshold(mBlackborderThresholdSlider.getValue());
 
             // Notify observers
@@ -171,8 +172,8 @@ public class ImageProcessPanel extends JPanel {
             if (component instanceof JSlider) {
                 JSlider slider = (JSlider) component;
                 slider.setMinimum(0);
-                slider.setMaximum(255);
-                slider.setValue(input.getValue());
+                slider.setMaximum(SLIDER_SCALE);
+                slider.setValue(fractionToInt(input.getValue()));
                 slider.setMaximumSize(new Dimension(100, 0));
                 slider.addChangeListener(input.getChangeListener());
             }
@@ -202,11 +203,19 @@ public class ImageProcessPanel extends JPanel {
         layout.setVerticalGroup(verticalGroup);
     }
 
+    private int fractionToInt(double fraction) {
+        return (int) (fraction * SLIDER_SCALE);
+    }
+
+    private double intToFraction(int integer) {
+        return (double) integer / SLIDER_SCALE;
+    }
+
     private class SettingsInput {
         private final JLabel mLabel;
         private final JComponent mComponent;
         private final String mLabelText;
-        private int mValue;
+        private double mValue;
         private ChangeListener mChangeListener;
         private ActionListener mActionListener;
 
@@ -216,7 +225,7 @@ public class ImageProcessPanel extends JPanel {
             mLabelText = labelText;
         }
 
-        SettingsInput(JLabel label, JComponent input, String labelText, ChangeListener changeListener, int value) {
+        SettingsInput(JLabel label, JComponent input, String labelText, ChangeListener changeListener, double value) {
             this(label, input, labelText);
             mChangeListener = changeListener;
             mValue = value;
@@ -239,7 +248,7 @@ public class ImageProcessPanel extends JPanel {
             return mLabelText;
         }
 
-        public int getValue() {
+        public double getValue() {
             return mValue;
         }
 
