@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.hardware_tab;
 
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
+import sun.swing.SwingAccessor;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -19,16 +20,28 @@ public class ImageProcessPanel extends JPanel {
 
     private JSlider mHorizontalLedWidthSlider;
     private JSlider mHorizontalLedHeightSlider;
-    private JSlider mVerticalLedWidthSlider;
-    private JSlider mVerticalLedHeightSlider;
     private JSlider mHorizontalLedStepSlider;
     private JSlider mHorizontalLedPaddingSlider;
     private JSlider mHorizontalLedOffsetSlider;
+    private JSlider mVerticalLedWidthSlider;
+    private JSlider mVerticalLedHeightSlider;
     private JSlider mVerticalLedStepSlider;
     private JSlider mVerticalLedPaddingSlider;
     private JSlider mVerticalLedOffsetSlider;
 
+    private JLabel mHorizontalLedWidthDisplay;
+    private JLabel mHorizontalLedHeightDisplay;
+    private JLabel mHorizontalLedStepDisplay;
+    private JLabel mHorizontalLedPaddingDisplay;
+    private JLabel mHorizontalLedOffsetDisplay;
+    private JLabel mVerticalLedWidthDisplay;
+    private JLabel mVerticalLedHeightDisplay;
+    private JLabel mVerticalLedStepDisplay;
+    private JLabel mVerticalLedPaddingDisplay;
+    private JLabel mVerticalLedOffsetDisplay;
+
     private JComboBox<String> mBlackborderDetectorCombo;
+    private JLabel mBlackborderThresholdDisplay;
 
     private JLabel mBlackborderThresholdLabel;
     private JSlider mBlackborderThresholdSlider;
@@ -49,30 +62,7 @@ public class ImageProcessPanel extends JPanel {
     private final ChangeListener mChangeListener = new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent e) {
-            if (mInitializing)
-                return;
-
-            if (e.getSource() instanceof JSlider) {
-                JSlider slider = (JSlider) e.getSource();
-                if (slider.getValueIsAdjusting())
-                    return;
-            }
-
-            // Update the processing configuration
-            mProcessConfig.setHorizontalLedWidth(intToFraction(mHorizontalLedWidthSlider.getValue()));
-            mProcessConfig.setHorizontalLedHeight(intToFraction(mHorizontalLedHeightSlider.getValue()));
-            mProcessConfig.setVerticalLedWidth(intToFraction(mVerticalLedWidthSlider.getValue()));
-            mProcessConfig.setVerticalLedHeight(intToFraction(mVerticalLedHeightSlider.getValue()));
-            mProcessConfig.setHorizontalLedStep(intToFraction(mHorizontalLedStepSlider.getValue()));
-            mProcessConfig.setHorizontalLedPadding(intToFraction(mHorizontalLedPaddingSlider.getValue()));
-            mProcessConfig.setHorizontalLedOffset(intToFraction(mHorizontalLedOffsetSlider.getValue()));
-            mProcessConfig.setVerticalLedStep(intToFraction(mVerticalLedStepSlider.getValue()));
-            mProcessConfig.setVerticalLedPadding(intToFraction(mVerticalLedPaddingSlider.getValue()));
-            mProcessConfig.setVerticalLedOffset(intToFraction(mVerticalLedOffsetSlider.getValue()));
-            mProcessConfig.setBlackborderThreshold(mBlackborderThresholdSlider.getValue());
-
-            // Notify observers
-            mProcessConfig.notifyObservers(this);
+            valuesChanged(mInitializing, e.getSource());
         }
     };
 
@@ -94,45 +84,93 @@ public class ImageProcessPanel extends JPanel {
         return new Dimension(maxSize.width, prefSize.height);
     }
 
+    private void valuesChanged(boolean onlyDisplay) {
+        valuesChanged(onlyDisplay, null);
+    }
+
+   private void valuesChanged(boolean onlyDisplay, Object source) {
+        double horizontalLedWidth = intToFraction(mHorizontalLedWidthSlider.getValue());
+        double horizontalLedHeight = intToFraction(mHorizontalLedHeightSlider.getValue());
+        double horizontalLedStep = intToFraction(mHorizontalLedStepSlider.getValue());
+        double horizontalLedPadding = intToFraction(mHorizontalLedPaddingSlider.getValue());
+        double horizontalLedOffset = intToFraction(mHorizontalLedOffsetSlider.getValue());
+        double verticalLedWidth = intToFraction(mVerticalLedWidthSlider.getValue());
+        double verticalLedHeight = intToFraction(mVerticalLedHeightSlider.getValue());
+        double verticalLedStep = intToFraction(mVerticalLedStepSlider.getValue());
+        double verticalLedPadding = intToFraction(mVerticalLedPaddingSlider.getValue());
+        double verticalLedOffset = intToFraction(mVerticalLedOffsetSlider.getValue());
+        double blackborderThreshold = intToFraction(mBlackborderThresholdSlider.getValue());
+
+        String formatString = "[%3.0f%%]";
+        mHorizontalLedWidthDisplay.setText(String.format(formatString, horizontalLedWidth * 100));
+        mHorizontalLedHeightDisplay.setText(String.format(formatString, horizontalLedHeight * 100));
+        mHorizontalLedStepDisplay.setText(String.format(formatString, horizontalLedStep * 100));
+        mHorizontalLedPaddingDisplay.setText(String.format(formatString, horizontalLedPadding * 100));
+        mHorizontalLedOffsetDisplay.setText(String.format(formatString, horizontalLedOffset * 100));
+        mVerticalLedWidthDisplay.setText(String.format(formatString, verticalLedWidth * 100));
+        mVerticalLedHeightDisplay.setText(String.format(formatString, verticalLedHeight * 100));
+        mVerticalLedStepDisplay.setText(String.format(formatString, verticalLedStep * 100));
+        mVerticalLedPaddingDisplay.setText(String.format(formatString, verticalLedPadding * 100));
+        mVerticalLedOffsetDisplay.setText(String.format(formatString, verticalLedOffset * 100));
+        mBlackborderThresholdDisplay.setText(String.format(formatString, blackborderThreshold * 100));
+
+        if (onlyDisplay)
+            return;
+
+        if (source != null && source instanceof JSlider) {
+            JSlider slider = (JSlider) source;
+            if (slider.getValueIsAdjusting())
+                return;
+        }
+
+        // Update the processing configuration
+        mProcessConfig.setHorizontalLedWidth(horizontalLedWidth);
+        mProcessConfig.setHorizontalLedHeight(horizontalLedHeight);
+        mProcessConfig.setHorizontalLedStep(horizontalLedStep);
+        mProcessConfig.setHorizontalLedPadding(horizontalLedPadding);
+        mProcessConfig.setHorizontalLedOffset(horizontalLedOffset);
+        mProcessConfig.setVerticalLedWidth(verticalLedWidth);
+        mProcessConfig.setVerticalLedHeight(verticalLedHeight);
+        mProcessConfig.setVerticalLedStep(verticalLedStep);
+        mProcessConfig.setVerticalLedPadding(verticalLedPadding);
+        mProcessConfig.setVerticalLedOffset(verticalLedOffset);
+        mProcessConfig.setBlackborderThreshold(blackborderThreshold);
+
+        // Notify observers
+        mProcessConfig.notifyObservers(this);
+    }
+
     private void initialise() {
         setBorder(BorderFactory.createTitledBorder("Image Process"));
 
-        JLabel mHorizontalLedWidthLabel = new JLabel();
         mHorizontalLedWidthSlider = new JSlider();
-
-        JLabel mHorizontalLedHeightLabel = new JLabel();
         mHorizontalLedHeightSlider = new JSlider();
-
-        JLabel mHorizontalLedStepLabel = new JLabel();
         mHorizontalLedStepSlider = new JSlider();
-
-        JLabel mHorizontalLedPaddingLabel = new JLabel();
         mHorizontalLedPaddingSlider = new JSlider();
-
-        JLabel mHorizontalLedOffsetLabel = new JLabel();
         mHorizontalLedOffsetSlider = new JSlider();
-
-        JLabel mVerticalLedWidthLabel = new JLabel();
         mVerticalLedWidthSlider = new JSlider();
-
-        JLabel mVerticalLedHeightLabel = new JLabel();
         mVerticalLedHeightSlider = new JSlider();
-
-        JLabel mVerticalLedStepLabel = new JLabel();
         mVerticalLedStepSlider = new JSlider();
-
-        JLabel mVerticalLedPaddingLabel = new JLabel();
         mVerticalLedPaddingSlider = new JSlider();
-
-        JLabel mVerticalLedOffsetLabel = new JLabel();
         mVerticalLedOffsetSlider = new JSlider();
 
-        JLabel mBlackborderDetectorLabel = new JLabel();
+        mHorizontalLedWidthDisplay = new JLabel();
+        mHorizontalLedHeightDisplay = new JLabel();
+        mHorizontalLedStepDisplay = new JLabel();
+        mHorizontalLedPaddingDisplay = new JLabel();
+        mHorizontalLedOffsetDisplay = new JLabel();
+        mVerticalLedWidthDisplay = new JLabel();
+        mVerticalLedHeightDisplay = new JLabel();
+        mVerticalLedStepDisplay = new JLabel();
+        mVerticalLedPaddingDisplay = new JLabel();
+        mVerticalLedOffsetDisplay = new JLabel();
+
         mBlackborderDetectorCombo = new JComboBox<>(new String[]{"On", "Off"});
         mBlackborderDetectorCombo.setSelectedItem(mProcessConfig.isBlackBorderRemoval() ? "On" : "Off");
 
         mBlackborderThresholdLabel = new JLabel();
         mBlackborderThresholdSlider = new JSlider();
+        mBlackborderThresholdDisplay = new JLabel();
 
         // set gui state of threshold spinner
         mBlackborderThresholdLabel.setEnabled(mProcessConfig.isBlackBorderRemoval());
@@ -144,30 +182,32 @@ public class ImageProcessPanel extends JPanel {
 
         ArrayList<SettingsInput> inputs = new ArrayList<>();
 
-        inputs.add(new SettingsInput(mHorizontalLedWidthLabel, mHorizontalLedWidthSlider, "Horizontal width [%]:", mChangeListener, mProcessConfig.getHorizontalLedWidth()));
-        inputs.add(new SettingsInput(mHorizontalLedHeightLabel, mHorizontalLedHeightSlider, "Horizontal height [%]:", mChangeListener, mProcessConfig.getHorizontalLedHeight()));
-        inputs.add(new SettingsInput(mHorizontalLedStepLabel, mHorizontalLedStepSlider, "Horizontal step [%]:", mChangeListener, mProcessConfig.getHorizontalLedStep()));
-        inputs.add(new SettingsInput(mHorizontalLedPaddingLabel, mHorizontalLedPaddingSlider, "Horizontal padding [%]:", mChangeListener, mProcessConfig.getHorizontalLedPadding()));
-        inputs.add(new SettingsInput(mHorizontalLedOffsetLabel, mHorizontalLedOffsetSlider, "Horizontal offset [%]:", mChangeListener, mProcessConfig.getHorizontalLedOffset()));
+        inputs.add(new SettingsInput(mHorizontalLedWidthSlider, "Horizontal width:", mHorizontalLedWidthDisplay, mChangeListener, mProcessConfig.getHorizontalLedWidth()));
+        inputs.add(new SettingsInput(mHorizontalLedHeightSlider, "Horizontal height:", mHorizontalLedHeightDisplay, mChangeListener, mProcessConfig.getHorizontalLedHeight()));
+        inputs.add(new SettingsInput(mHorizontalLedStepSlider, "Horizontal step:", mHorizontalLedStepDisplay, mChangeListener, mProcessConfig.getHorizontalLedStep()));
+        inputs.add(new SettingsInput(mHorizontalLedPaddingSlider, "Horizontal padding:", mHorizontalLedPaddingDisplay, mChangeListener, mProcessConfig.getHorizontalLedPadding()));
+        inputs.add(new SettingsInput(mHorizontalLedOffsetSlider, "Horizontal offset:", mHorizontalLedOffsetDisplay, mChangeListener, mProcessConfig.getHorizontalLedOffset()));
 
-        inputs.add(new SettingsInput(mVerticalLedWidthLabel, mVerticalLedWidthSlider, "Vertical width [%]:", mChangeListener, mProcessConfig.getVerticalLedWidth()));
-        inputs.add(new SettingsInput(mVerticalLedHeightLabel, mVerticalLedHeightSlider, "Vertical height [%]:", mChangeListener, mProcessConfig.getVerticalLedHeight()));
-        inputs.add(new SettingsInput(mVerticalLedStepLabel, mVerticalLedStepSlider, "Vertical step [%]:", mChangeListener, mProcessConfig.getVerticalLedStep()));
-        inputs.add(new SettingsInput(mVerticalLedPaddingLabel, mVerticalLedPaddingSlider, "Vertical padding [%]:", mChangeListener, mProcessConfig.getVerticalLedPadding()));
-        inputs.add(new SettingsInput(mVerticalLedOffsetLabel, mVerticalLedOffsetSlider, "Vertical offset [%]:", mChangeListener, mProcessConfig.getVerticalLedOffset()));
+        inputs.add(new SettingsInput(mVerticalLedWidthSlider, "Vertical width:", mVerticalLedWidthDisplay, mChangeListener, mProcessConfig.getVerticalLedWidth()));
+        inputs.add(new SettingsInput(mVerticalLedHeightSlider, "Vertical height:", mVerticalLedHeightDisplay, mChangeListener, mProcessConfig.getVerticalLedHeight()));
+        inputs.add(new SettingsInput(mVerticalLedStepSlider, "Vertical step:", mVerticalLedStepDisplay, mChangeListener, mProcessConfig.getVerticalLedStep()));
+        inputs.add(new SettingsInput(mVerticalLedPaddingSlider, "Vertical padding:", mVerticalLedPaddingDisplay, mChangeListener, mProcessConfig.getVerticalLedPadding()));
+        inputs.add(new SettingsInput(mVerticalLedOffsetSlider, "Vertical offset:", mVerticalLedOffsetDisplay, mChangeListener, mProcessConfig.getVerticalLedOffset()));
 
-        inputs.add(new SettingsInput(mBlackborderDetectorLabel, mBlackborderDetectorCombo, "Blackborder Detector:", mActionListener));
-        inputs.add(new SettingsInput(mBlackborderThresholdLabel, mBlackborderThresholdSlider, "Blackborder Threshold [%]:", mChangeListener, mProcessConfig.getBlackborderThreshold()));
+        inputs.add(new SettingsInput(mBlackborderDetectorCombo, "Blackborder Detector:", mActionListener));
+        inputs.add(new SettingsInput(mBlackborderThresholdSlider, "Blackborder Threshold:", mBlackborderThresholdDisplay, mChangeListener, mProcessConfig.getBlackborderThreshold()));
 
         GroupLayout.ParallelGroup horizontalLabelGroup = layout.createParallelGroup();
+        GroupLayout.ParallelGroup horizontalDisplayGroup = layout.createParallelGroup();
         GroupLayout.ParallelGroup horizontalInputGroup = layout.createParallelGroup();
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
 
         for (SettingsInput input : inputs) {
-            JLabel label = input.getLabel();
+            JLabel label = new JLabel(input.getLabelText());
+            JLabel display = input.getDisplay();
+            display.setMinimumSize(new Dimension(40, 0));
+            display.setHorizontalAlignment(JLabel.RIGHT);
             JComponent component = input.getComponent();
-
-            label.setText(input.getLabelText());
 
             if (component instanceof JSlider) {
                 JSlider slider = (JSlider) component;
@@ -186,19 +226,25 @@ public class ImageProcessPanel extends JPanel {
 
             add(label);
             add(component);
+            add(display);
 
             horizontalLabelGroup.addComponent(label);
             horizontalInputGroup.addComponent(component);
+            horizontalDisplayGroup.addComponent(display);
 
-            GroupLayout.ParallelGroup verticalPairGroup = layout.createParallelGroup();
-            verticalPairGroup.addComponent(label);
-            verticalPairGroup.addComponent(component);
-            verticalGroup.addGroup(verticalPairGroup);
+            GroupLayout.ParallelGroup verticalLineGroup = layout.createParallelGroup();
+            verticalLineGroup.addComponent(label);
+            verticalLineGroup.addComponent(component);
+            verticalLineGroup.addComponent(display);
+            verticalGroup.addGroup(verticalLineGroup);
         }
+
+        valuesChanged(true);
 
         layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addGroup(horizontalLabelGroup)
-                .addGroup(horizontalInputGroup));
+                .addGroup(horizontalInputGroup)
+                .addGroup(horizontalDisplayGroup));
 
         layout.setVerticalGroup(verticalGroup);
     }
@@ -212,32 +258,40 @@ public class ImageProcessPanel extends JPanel {
     }
 
     private class SettingsInput {
-        private final JLabel mLabel;
+        private final JLabel mDisplay;
         private final JComponent mComponent;
         private final String mLabelText;
         private double mValue;
         private ChangeListener mChangeListener;
         private ActionListener mActionListener;
 
-        SettingsInput(JLabel label, JComponent component, String labelText) {
-            mLabel = label;
+        SettingsInput(JComponent component, String labelText, JLabel display) {
+            mDisplay = display;
             mComponent = component;
             mLabelText = labelText;
         }
 
-        SettingsInput(JLabel label, JComponent input, String labelText, ChangeListener changeListener, double value) {
-            this(label, input, labelText);
+        SettingsInput(JComponent component, String labelText, JLabel display, ChangeListener changeListener, double value) {
+            this(component, labelText, display);
             mChangeListener = changeListener;
             mValue = value;
         }
 
-        SettingsInput(JLabel label, JComponent input, String labelText, ActionListener actionListener) {
-            this(label, input, labelText);
+        SettingsInput(JComponent component, String labelText, ChangeListener changeListener, double value) {
+            this(component, labelText, new JLabel(), changeListener, value);
+        }
+
+        SettingsInput(JComponent component, String labelText, JLabel display, ActionListener actionListener) {
+            this(component, labelText, display);
             mActionListener = actionListener;
         }
 
-        JLabel getLabel() {
-            return mLabel;
+        SettingsInput(JComponent component, String labelText, ActionListener actionListener) {
+            this(component, labelText, new JLabel(), actionListener);
+        }
+
+        public JLabel getDisplay() {
+            return mDisplay;
         }
 
         JComponent getComponent() {

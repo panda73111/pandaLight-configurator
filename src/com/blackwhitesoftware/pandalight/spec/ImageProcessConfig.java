@@ -21,7 +21,7 @@ public class ImageProcessConfig extends Observable {
 
     // Blackborder detection
     public boolean mBlackBorderRemoval = true;
-    public int mBlackBorderThreshold = 10;
+    public double mBlackBorderThreshold = 0.01;
 
     public double getHorizontalLedWidth() {
         return mHorizontalLedWidth;
@@ -67,7 +67,7 @@ public class ImageProcessConfig extends Observable {
         return mBlackBorderRemoval;
     }
 
-    public int getBlackborderThreshold() {
+    public double getBlackborderThreshold() {
         return mBlackBorderThreshold;
     }
 
@@ -148,7 +148,7 @@ public class ImageProcessConfig extends Observable {
         }
     }
 
-    public void setBlackborderThreshold(int pThreshold) {
+    public void setBlackborderThreshold(double pThreshold) {
         if (mBlackBorderThreshold != pThreshold) {
             mBlackBorderThreshold = pThreshold;
             setChanged();
