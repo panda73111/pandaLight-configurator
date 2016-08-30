@@ -24,6 +24,11 @@ public class ConfigurationContainer {
     public final ImageProcessConfig mProcessConfig = new ImageProcessConfig();
 
     /**
+     * The configuration of LED color correction
+     */
+    public final ColorCorrectionConfig mColorCorrectionConfig = new ColorCorrectionConfig();
+
+    /**
      * The miscellaneous configuration (bootsequence, blackborder detector, etc)
      */
     public final MiscConfig mMiscConfig = new MiscConfig();
