@@ -11,7 +11,9 @@ public class ColorCorrectionConfig extends Observable {
     public double gammaCorrection = 2.0;
     public Color minChannelValues = new Color(0, 0, 0);
     public Color maxChannelValues = new Color(255, 255, 255);
-    public byte[][] channelLookupTables = new byte[3][256];
+    public byte[] redLookupTable = new byte[256];
+    public byte[] greenLookupTable = new byte[256];
+    public byte[] blueLookupTable = new byte[256];
 
     public boolean isInExpertMode() {
         return inExpertMode;
@@ -29,8 +31,16 @@ public class ColorCorrectionConfig extends Observable {
         return maxChannelValues;
     }
 
-    public byte[][] getChannelLookupTables() {
-        return channelLookupTables;
+    public byte[] getRedLookupTable() {
+        return redLookupTable;
+    }
+
+    public byte[] getGreenLookupTable() {
+        return greenLookupTable;
+    }
+
+    public byte[] getBlueLookupTable() {
+        return blueLookupTable;
     }
 
     public void setGammaCorrection(double gammaCorrection) {
@@ -54,18 +64,33 @@ public class ColorCorrectionConfig extends Observable {
         }
     }
 
-    public void setChannelLookupTables(byte[][] channelLookupTables) {
-        this.channelLookupTables = channelLookupTables;
+    public void setRedLookupTable(byte[] redLookupTable) {
+        this.redLookupTable = redLookupTable;
         setChanged();
     }
 
-    public void setChannelLookupTable(int channel, byte[] channelLookupTable) {
-        this.channelLookupTables[channel] = channelLookupTable;
+    public void setRedLookupTable(int from, int to) {
+        redLookupTable[from] = (byte) to;
         setChanged();
     }
 
-    public void setChannelLookupTable(int channel, byte from, byte to) {
-        this.channelLookupTables[channel][from & 0xFF] = to;
+    public void setGreenLookupTable(byte[] greenLookupTable) {
+        this.greenLookupTable = greenLookupTable;
+        setChanged();
+    }
+
+    public void setGreenLookupTable(int from, int to) {
+        greenLookupTable[from] = (byte) to;
+        setChanged();
+    }
+
+    public void setBlueLookupTable(byte[] blueLookupTable) {
+        this.blueLookupTable = blueLookupTable;
+        setChanged();
+    }
+
+    public void setBlueLookupTable(int from, int to) {
+        blueLookupTable[from] = (byte) to;
         setChanged();
     }
 }
