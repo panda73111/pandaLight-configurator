@@ -1,7 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.led_simulation;
 
 import com.blackwhitesoftware.pandalight.ErrorHandling;
-import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
+import com.blackwhitesoftware.pandalight.ConfigurationContainer;
 import com.blackwhitesoftware.pandalight.gui.LedFrameFactory;
 import com.blackwhitesoftware.pandalight.spec.Led;
 
@@ -103,7 +103,7 @@ public class LedSimulationComponent extends JPanel {
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(800, 600);
 
-        PandaLightConfigurationContainer config = new PandaLightConfigurationContainer();
+        ConfigurationContainer config = new ConfigurationContainer();
         Vector<Led> leds = LedFrameFactory.construct(config);
 
         LedSimulationComponent ledSimComp = new LedSimulationComponent(leds);

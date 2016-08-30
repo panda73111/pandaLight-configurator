@@ -7,7 +7,7 @@ import java.util.Vector;
 /**
  * The full configuration with sub-items for device, color, grabber-v4l2 and miscelanuous items.
  */
-public class PandaLightConfigurationContainer {
+public class ConfigurationContainer {
     /**
      * The configuration of the output device
      */

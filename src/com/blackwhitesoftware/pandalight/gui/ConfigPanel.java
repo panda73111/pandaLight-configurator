@@ -1,6 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui;
 
-import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
+import com.blackwhitesoftware.pandalight.ConfigurationContainer;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
@@ -25,7 +25,7 @@ public class ConfigPanel extends JPanel {
     /**
      * The LED configuration information
      */
-    private final PandaLightConfigurationContainer pandaLightConfig;
+    private final ConfigurationContainer pandaLightConfig;
     private final PandaLightSerialConnection serialConnection;
 
     /**
@@ -48,7 +48,7 @@ public class ConfigPanel extends JPanel {
      * Constructs the configuration panel with a default initialised led-frame and configuration
      */
     public ConfigPanel(
-            PandaLightConfigurationContainer pandaLightConfig,
+            ConfigurationContainer pandaLightConfig,
             PandaLightSerialConnection serialConnection) {
         super();
 

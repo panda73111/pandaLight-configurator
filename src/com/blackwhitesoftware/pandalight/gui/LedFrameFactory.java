@@ -1,6 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui;
 
-import com.blackwhitesoftware.pandalight.PandaLightConfigurationContainer;
+import com.blackwhitesoftware.pandalight.ConfigurationContainer;
 import com.blackwhitesoftware.pandalight.spec.BorderSide;
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
 import com.blackwhitesoftware.pandalight.spec.Led;
@@ -44,7 +44,7 @@ public class LedFrameFactory {
      * @param config     The configuration
      * @return The per-led specification
      */
-    public static Vector<Led> construct(PandaLightConfigurationContainer config) {
+    public static Vector<Led> construct(ConfigurationContainer config) {
         Vector<Led> mLeds = new Vector<>();
         LedFrameConstruction frameSpec = config.mLedFrameConfig;
 
@@ -114,7 +114,7 @@ public class LedFrameFactory {
      */
     private static Led createLed(
             int totalLedIndex, int borderLedIndex,
-            BorderSide borderSide, PandaLightConfigurationContainer config) {
+            BorderSide borderSide, ConfigurationContainer config) {
         Led led = new Led();
 
         double width, height, offset, padding, step;

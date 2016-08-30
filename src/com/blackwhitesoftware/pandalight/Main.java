@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] pArgs) {
         final String versionStr = Main.class.getPackage().getSpecificationVersion();
         final String appTitleStr = Main.class.getPackage().getSpecificationTitle();
-        final PandaLightConfigurationContainer pandaLightConfig = new PandaLightConfigurationContainer();
+        final ConfigurationContainer pandaLightConfig = new ConfigurationContainer();
         final SerialAndColorPickerConfig serialConfig = new SerialAndColorPickerConfig();
         final PandaLightSerialConnection serialConnection = new PandaLightSerialConnection();
 
