@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -80,34 +81,26 @@ public class ConfigurationFile {
             String key = preamble + "." + field.getName();
             try {
                 Object value = field.get(pObj);
+                Class<?> fieldType = field.getType();
 
-                if (field.getType() == boolean.class) {
+                if (fieldType == boolean.class) {
                     mProps.setProperty(key, Boolean.toString((boolean) value));
-                } else if (field.getType() == int.class) {
+                } else if (fieldType == int.class) {
                     mProps.setProperty(key, Integer.toString((int) value));
-                } else if (field.getType() == double.class) {
+                } else if (fieldType == double.class) {
                     mProps.setProperty(key, Double.toString((double) value));
-                } else if (field.getType() == String.class) {
+                } else if (fieldType == String.class) {
                     mProps.setProperty(key, (String) value);
-                } else if (field.getType() == Color.class) {
+                } else if (fieldType == Color.class) {
                     Color color = (Color) value;
-                    mProps.setProperty(key, String.format("[%d; %d; %d]", color.getRed(), color.getGreen(), color.getBlue()));
-                } else if (value.getClass().isEnum()) {
+                    mProps.setProperty(key, String.format("[%d, %d, %d]",
+                            color.getRed(),
+                            color.getGreen(),
+                            color.getBlue()));
+                } else if (fieldType.isEnum()) {
                     mProps.setProperty(key, ((Enum<?>) value).name());
-                } else if (field.getType() == Object.class) {
-                    if (value instanceof Boolean) {
-                        mProps.setProperty(key, Boolean.toString((boolean) value));
-                    }
-                    if (value instanceof Integer) {
-                        mProps.setProperty(key, Integer.toString((int) value));
-                    } else if (value instanceof Double) {
-                        mProps.setProperty(key, Double.toString((double) value));
-                    } else if (value instanceof Color) {
-                        Color color = (Color) value;
-                        mProps.setProperty(key, String.format("[%d; %d; %d]", color.getRed(), color.getGreen(), color.getBlue()));
-                    } else if (value instanceof String) {
-                        mProps.setProperty(key, '"' + (String) value + '"');
-                    }
+                } else if (fieldType == byte[].class) {
+                    mProps.setProperty(key, Arrays.toString((byte[]) value));
                 } else {
                     store(value, preamble + "." + field.getName());
                 }
@@ -177,49 +170,36 @@ public class ConfigurationFile {
             return;
         }
 
+        Class<?> fieldType = field.getType();
+
         try {
-            if (field.getType() == boolean.class) {
+            if (fieldType == boolean.class) {
                 field.set(pObj, Boolean.parseBoolean(value));
-            } else if (field.getType() == int.class) {
+            } else if (fieldType == int.class) {
                 field.set(pObj, Integer.parseInt(value));
-            } else if (field.getType() == double.class) {
+            } else if (fieldType == double.class) {
                 field.set(pObj, Double.parseDouble(value));
-            } else if (field.getType() == Color.class) {
-                String[] channelValues = value.substring(1, value.length() - 1).split(";");
-                field.set(pObj, new Color(Integer.parseInt(channelValues[0].trim()), Integer.parseInt(channelValues[1].trim()), Integer.parseInt(channelValues[2].trim())));
-            } else if (field.getType() == String.class) {
+            } else if (fieldType == Color.class) {
+                String[] channelValues = value.substring(1, value.length() - 1).split(", ");
+                field.set(pObj, new Color(
+                        Integer.parseInt(channelValues[0]),
+                        Integer.parseInt(channelValues[1]),
+                        Integer.parseInt(channelValues[2])));
+            } else if (fieldType == String.class) {
                 field.set(pObj, value);
-            } else if (field.getType().isEnum()) {
-                Method valMet = field.getType().getMethod("valueOf", String.class);
+            } else if (fieldType.isEnum()) {
+                Method valMet = fieldType.getMethod("valueOf", String.class);
                 Object enumVal = valMet.invoke(null, value);
                 field.set(pObj, enumVal);
-            } else if (field.getType() == Object.class) {
-                // We can not infer from the type of the field, let's try the actual stored value
-                if (value.isEmpty()) {
-                    // We will never known ...
-                } else if (value.startsWith("[") && value.endsWith("]")) {
-                    String[] channelValues = value.substring(1, value.length() - 1).split(";");
-                    field.set(pObj, new Color(Integer.parseInt(channelValues[0].trim()), Integer.parseInt(channelValues[1].trim()), Integer.parseInt(channelValues[2].trim())));
-                } else if (value.startsWith("\"") && value.endsWith("\"")) {
-                    field.set(pObj, value.substring(1, value.length() - 1));
-                } else {
-                    try {
-                        int i = Integer.parseInt(value);
-                        field.set(pObj, i);
-                    } catch (Throwable t1) {
-                        try {
-                            double d = Double.parseDouble(value);
-                            field.set(pObj, d);
-                        } catch (Throwable t2) {
-                            try {
-                                boolean bool = Boolean.parseBoolean(value);
-                                field.set(pObj, bool);
-                            } catch (Throwable t3) {
-
-                            }
-                        }
-                    }
+            } else if (fieldType == byte[].class) {
+                String[] byteValues = value.substring(1, value.length() - 1).split(", ");
+                byte[] bytes = new byte[byteValues.length];
+                for (int i=0, len=bytes.length; i<len; i++) {
+                    bytes[i] = Byte.parseByte(byteValues[i].trim());
                 }
+                field.set(pObj, bytes);
+            } else {
+                System.out.println("Failed to parse value(" + value + ") for " + key);
             }
         } catch (Throwable t) {
             System.out.println("Failed to parse value(" + value + ") for " + key);
