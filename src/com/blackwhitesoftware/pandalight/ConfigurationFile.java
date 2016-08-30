@@ -57,7 +57,7 @@ public class ConfigurationFile {
      * @param pObj The object to store
      */
     public void store(Object pObj) {
-        store(pObj, pObj.getClass().getSimpleName(), "");
+        store(pObj, pObj.getClass().getSimpleName());
     }
 
     /**
@@ -65,9 +65,8 @@ public class ConfigurationFile {
      *
      * @param pObj      The object to store
      * @param preamble  The preamble prepended to the key of the object members
-     * @param postamble The postamble appended to the key of the object members
      */
-    public void store(Object pObj, String preamble, String postamble) {
+    public void store(Object pObj, String preamble) {
         String className = pObj.getClass().getSimpleName();
         // Retrieve the member variables
         Field[] fields = pObj.getClass().getDeclaredFields();
@@ -78,7 +77,7 @@ public class ConfigurationFile {
                 continue;
             }
 
-            String key = preamble + "." + field.getName() + postamble;
+            String key = preamble + "." + field.getName();
             try {
                 Object value = field.get(pObj);
 
@@ -99,7 +98,7 @@ public class ConfigurationFile {
                     @SuppressWarnings("unchecked")
                     Vector<Object> v = (Vector<Object>) value;
                     for (int i = 0; i < v.size(); ++i) {
-                        store(v.get(i), key + "[" + i + "]", "");
+                        store(v.get(i), key + "[" + i + "]");
                     }
                 } else if (field.getType() == Object.class) {
                     if (value instanceof Boolean) {
@@ -116,8 +115,7 @@ public class ConfigurationFile {
                         mProps.setProperty(key, '"' + (String) value + '"');
                     }
                 } else {
-                    System.out.println("Might not be able to load: " + key + " = " + value.toString());
-                    mProps.setProperty(key, value.toString());
+                    store(value, preamble + "." + field.getName());
                 }
             } catch (Throwable t) {
             }
@@ -157,119 +155,145 @@ public class ConfigurationFile {
         Field[] fields = pObj.getClass().getDeclaredFields();
         // Iterate each variable
         for (Field field : fields) {
-            if (field.getType().equals(Vector.class)) {
-                // Obtain the Vector
-                Vector<Object> vector;
-                try {
-                    vector = (Vector<Object>) field.get(pObj);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    break;
-                }
-                // Clear existing elements from the vector
-                vector.clear();
-
-                // Iterate through the properties to find the indices of the vector
-                int i = 0;
-                while (true) {
-                    String curIndexKey = pPreamble + field.getName() + "[" + i + "]";
-                    Properties elemProps = new Properties();
-                    // Find all the elements for the current vector index
-                    for (Object keyObj : pProps.keySet()) {
-                        String keyStr = (String) keyObj;
-                        if (keyStr.startsWith(curIndexKey)) {
-                            // Remove the name and dot
-                            elemProps.put(keyStr.substring(curIndexKey.length() + 1), pProps.get(keyStr));
-                        }
-                    }
-                    if (elemProps.isEmpty()) {
-                        // Found no more elements for the vector
-                        break;
-                    }
-
-                    // Construct new instance of vectors generic type
-                    ParameterizedType vectorElementType = (ParameterizedType) field.getGenericType();
-                    Class<?> vectorElementClass = (Class<?>) vectorElementType.getActualTypeArguments()[0];
-                    // Find the constructor with no arguments and create a new instance
-                    Object newElement = null;
-                    try {
-                        newElement = vectorElementClass.getConstructor().newInstance();
-                    } catch (Throwable t) {
-                        System.err.println("Failed to find empty default constructor for " + vectorElementClass.getName());
-                        break;
-                    }
-                    if (newElement == null) {
-                        System.err.println("Failed to construct instance for " + vectorElementClass.getName());
-                        break;
-                    }
-
-                    // Restore the instance members from the collected properties
-                    restore(newElement, elemProps, "");
-
-                    // Add the instance to the vector
-                    vector.addElement(newElement);
-
-                    ++i;
-                }
-
-                continue;
-            }
-
-            String key = pPreamble + field.getName();
-            String value = pProps.getProperty(key);
-            if (value == null) {
-                System.out.println("Persistent settings does not contain value for " + key);
-                continue;
-            }
-
             try {
-                if (field.getType() == boolean.class) {
-                    field.set(pObj, Boolean.parseBoolean(value));
-                } else if (field.getType() == int.class) {
-                    field.set(pObj, Integer.parseInt(value));
-                } else if (field.getType() == double.class) {
-                    field.set(pObj, Double.parseDouble(value));
-                } else if (field.getType() == Color.class) {
+                restoreField(field, pObj, pProps, pPreamble);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                break;
+            }
+        }
+    }
+
+    private void restoreField(Field field, Object pObj, Properties pProps, String pPreamble) throws IllegalAccessException {
+        if (field.getType().equals(Vector.class)) {
+            restoreVectorField(field, pObj, pProps, pPreamble);
+            return;
+        }
+
+        String key = pPreamble + field.getName();
+        String value = pProps.getProperty(key);
+        if (value == null) {
+            Field[] subFields = field.getType().getDeclaredFields();
+            if (subFields.length == 0) {
+                System.out.println("Persistent settings does not contain value for " + key);
+                return;
+            }
+
+            Object instance = field.get(pObj);
+
+            for (Field subField : subFields) {
+                restoreField(subField, instance, pProps, pPreamble + field.getName() + ".");
+            }
+
+            return;
+        }
+
+        try {
+            if (field.getType() == boolean.class) {
+                field.set(pObj, Boolean.parseBoolean(value));
+            } else if (field.getType() == int.class) {
+                field.set(pObj, Integer.parseInt(value));
+            } else if (field.getType() == double.class) {
+                field.set(pObj, Double.parseDouble(value));
+            } else if (field.getType() == Color.class) {
+                String[] channelValues = value.substring(1, value.length() - 1).split(";");
+                field.set(pObj, new Color(Integer.parseInt(channelValues[0].trim()), Integer.parseInt(channelValues[1].trim()), Integer.parseInt(channelValues[2].trim())));
+            } else if (field.getType() == String.class) {
+                field.set(pObj, value);
+            } else if (field.getType().isEnum()) {
+                Method valMet = field.getType().getMethod("valueOf", String.class);
+                Object enumVal = valMet.invoke(null, value);
+                field.set(pObj, enumVal);
+            } else if (field.getType() == Object.class) {
+                // We can not infer from the type of the field, let's try the actual stored value
+                if (value.isEmpty()) {
+                    // We will never known ...
+                } else if (value.startsWith("[") && value.endsWith("]")) {
                     String[] channelValues = value.substring(1, value.length() - 1).split(";");
                     field.set(pObj, new Color(Integer.parseInt(channelValues[0].trim()), Integer.parseInt(channelValues[1].trim()), Integer.parseInt(channelValues[2].trim())));
-                } else if (field.getType() == String.class) {
-                    field.set(pObj, value);
-                } else if (field.getType().isEnum()) {
-                    Method valMet = field.getType().getMethod("valueOf", String.class);
-                    Object enumVal = valMet.invoke(null, value);
-                    field.set(pObj, enumVal);
-                } else if (field.getType() == Object.class) {
-                    // We can not infer from the type of the field, let's try the actual stored value
-                    if (value.isEmpty()) {
-                        // We will never known ...
-                    } else if (value.startsWith("[") && value.endsWith("]")) {
-                        String[] channelValues = value.substring(1, value.length() - 1).split(";");
-                        field.set(pObj, new Color(Integer.parseInt(channelValues[0].trim()), Integer.parseInt(channelValues[1].trim()), Integer.parseInt(channelValues[2].trim())));
-                    } else if (value.startsWith("\"") && value.endsWith("\"")) {
-                        field.set(pObj, value.substring(1, value.length() - 1));
-                    } else {
+                } else if (value.startsWith("\"") && value.endsWith("\"")) {
+                    field.set(pObj, value.substring(1, value.length() - 1));
+                } else {
+                    try {
+                        int i = Integer.parseInt(value);
+                        field.set(pObj, i);
+                    } catch (Throwable t1) {
                         try {
-                            int i = Integer.parseInt(value);
-                            field.set(pObj, i);
-                        } catch (Throwable t1) {
+                            double d = Double.parseDouble(value);
+                            field.set(pObj, d);
+                        } catch (Throwable t2) {
                             try {
-                                double d = Double.parseDouble(value);
-                                field.set(pObj, d);
-                            } catch (Throwable t2) {
-                                try {
-                                    boolean bool = Boolean.parseBoolean(value);
-                                    field.set(pObj, bool);
-                                } catch (Throwable t3) {
+                                boolean bool = Boolean.parseBoolean(value);
+                                field.set(pObj, bool);
+                            } catch (Throwable t3) {
 
-                                }
                             }
                         }
                     }
                 }
-            } catch (Throwable t) {
-                System.out.println("Failed to parse value(" + value + ") for " + key);
-                t.printStackTrace();
             }
+        } catch (Throwable t) {
+            System.out.println("Failed to parse value(" + value + ") for " + key);
+            t.printStackTrace();
+        }
+    }
+
+    private void restoreVectorField(Field field, Object pObj, Properties pProps, String pPreamble) throws IllegalAccessException {
+        // Obtain the Vector
+        Vector<Object> vector = (Vector<Object>) field.get(pObj);
+
+        // Clear existing elements from the vector
+        vector.clear();
+
+        // Iterate through the properties to find the indices of the vector
+        int i = 0;
+        while (true) {
+            String curIndexKey = pPreamble + field.getName() + "[" + i + "]";
+            Properties elemProps = new Properties();
+            // Find all the elements for the current vector index
+            for (Object keyObj : pProps.keySet()) {
+                String keyStr = (String) keyObj;
+                if (keyStr.startsWith(curIndexKey)) {
+                    // Remove the name and dot
+                    elemProps.put(keyStr.substring(curIndexKey.length() + 1), pProps.get(keyStr));
+                }
+            }
+
+            if (elemProps.isEmpty()) {
+                // Found no more elements for the vector
+                return;
+            }
+
+            Object newElement = instanciateField(field);
+            if (newElement == null) {
+                return;
+            }
+
+            // Restore the instance members from the collected properties
+            restore(newElement, elemProps, "");
+
+            // Add the instance to the vector
+            vector.addElement(newElement);
+
+            ++i;
+        }
+    }
+
+    private Object instanciateField(Field field) {
+        // Construct new instance of vectors generic type
+        Class<?> fieldType = field.getType();
+
+        // Find the constructor with no arguments and create a new instance
+        try {
+            Object newElement = fieldType.getConstructor().newInstance();
+
+            if (newElement == null)
+                System.err.println("Failed to construct instance for " + fieldType.getName());
+
+            return newElement;
+        } catch (Throwable t) {
+            System.err.println("Failed to find empty default constructor for " + fieldType.getName());
+            return null;
         }
     }
 
