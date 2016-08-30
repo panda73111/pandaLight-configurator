@@ -17,6 +17,17 @@ public class ImageProcessConfig extends Observable implements Observer {
     public ImageProcessConfig() {
         horizontal.addObserver(this);
         vertical.addObserver(this);
+
+        horizontal.mLedWidth = 4;
+        horizontal.mLedHeight = 7;
+        horizontal.mLedStep = 6.267;
+        horizontal.mLedPadding = 2;
+        horizontal.mLedOffset = 1;
+        vertical.mLedWidth = 4;
+        vertical.mLedHeight = 7;
+        vertical.mLedStep = 11.125;
+        vertical.mLedPadding = 1;
+        vertical.mLedOffset = 2;
     }
 
     public boolean isBlackBorderRemoval() {

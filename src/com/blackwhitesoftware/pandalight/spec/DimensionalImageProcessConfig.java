@@ -7,11 +7,11 @@ import java.util.Observable;
  */
 public class DimensionalImageProcessConfig extends Observable {
     // Screen percentages
-    public double mLedWidth = 0.1;
-    public double mLedHeight = 0.1;
-    public double mLedStep = 0.1;
-    public double mLedPadding = 0.1;
-    public double mLedOffset = 0.1;
+    public double mLedWidth = 0;
+    public double mLedHeight = 0;
+    public double mLedStep = 0;
+    public double mLedPadding = 0;
+    public double mLedOffset = 0;
 
     public double getLedWidth() {
         return mLedWidth;
