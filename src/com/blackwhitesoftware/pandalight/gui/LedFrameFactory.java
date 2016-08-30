@@ -2,14 +2,13 @@ package com.blackwhitesoftware.pandalight.gui;
 
 import com.blackwhitesoftware.pandalight.ConfigurationContainer;
 import com.blackwhitesoftware.pandalight.spec.BorderSide;
-import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
+import com.blackwhitesoftware.pandalight.spec.DimensionalImageProcessConfig;
 import com.blackwhitesoftware.pandalight.spec.Led;
 import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Vector;
 
 /**
@@ -119,24 +118,26 @@ public class LedFrameFactory {
 
         double width, height, offset, padding, step;
         double x, y;
+        DimensionalImageProcessConfig dimension;
+
+        if (borderSide.isHorizontal())
+            dimension = config.mProcessConfig.horizontal;
+        else
+            dimension = config.mProcessConfig.vertical;
+
+        width = dimension.getLedWidth();
+        height = dimension.getLedHeight();
+        offset = dimension.getLedOffset();
+        padding = dimension.getLedPadding();
+        step = dimension.getLedStep();
 
         if (borderSide.isHorizontal()) {
-            width = config.mProcessConfig.getHorizontalLedWidth();
-            height = config.mProcessConfig.getHorizontalLedHeight();
-            offset = config.mProcessConfig.getHorizontalLedOffset();
-            padding = config.mProcessConfig.getHorizontalLedPadding();
-            step = config.mProcessConfig.getHorizontalLedStep();
             x = offset + borderLedIndex * step;
             y = padding;
 
             if (borderSide == BorderSide.bottom)
                 y = 1.0 - height - padding;
         } else {
-            width = config.mProcessConfig.getVerticalLedWidth();
-            height = config.mProcessConfig.getVerticalLedHeight();
-            offset = config.mProcessConfig.getVerticalLedOffset();
-            padding = config.mProcessConfig.getVerticalLedPadding();
-            step = config.mProcessConfig.getVerticalLedStep();
             x = padding;
             y = offset + borderLedIndex * step;
 

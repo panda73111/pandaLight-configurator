@@ -1,67 +1,18 @@
 package com.blackwhitesoftware.pandalight.spec;
 
 import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Configuration parameters for the image processing.
  */
 public class ImageProcessConfig extends Observable {
-
-    // Screen percentages
-    public double mHorizontalLedWidth = 0.1;
-    public double mHorizontalLedHeight = 0.1;
-    public double mHorizontalLedStep = 0.1;
-    public double mHorizontalLedPadding = 0.1;
-    public double mHorizontalLedOffset = 0.1;
-    public double mVerticalLedWidth = 0.1;
-    public double mVerticalLedHeight = 0.1;
-    public double mVerticalLedStep = 0.1;
-    public double mVerticalLedPadding = 0.1;
-    public double mVerticalLedOffset = 0.1;
+    public DimensionalImageProcessConfig horizontal = new DimensionalImageProcessConfig();
+    public DimensionalImageProcessConfig vertical = new DimensionalImageProcessConfig();
 
     // Blackborder detection
     public boolean mBlackBorderRemoval = true;
     public double mBlackBorderThreshold = 0.01;
-
-    public double getHorizontalLedWidth() {
-        return mHorizontalLedWidth;
-    }
-
-    public double getHorizontalLedHeight() {
-        return mHorizontalLedHeight;
-    }
-
-    public double getVerticalLedWidth() {
-        return mVerticalLedWidth;
-    }
-
-    public double getVerticalLedHeight() {
-        return mVerticalLedHeight;
-    }
-
-    public double getHorizontalLedStep() {
-        return mHorizontalLedStep;
-    }
-
-    public double getHorizontalLedPadding() {
-        return mHorizontalLedPadding;
-    }
-
-    public double getHorizontalLedOffset() {
-        return mHorizontalLedOffset;
-    }
-
-    public double getVerticalLedStep() {
-        return mVerticalLedStep;
-    }
-
-    public double getVerticalLedPadding() {
-        return mVerticalLedPadding;
-    }
-
-    public double getVerticalLedOffset() {
-        return mVerticalLedOffset;
-    }
 
     public boolean isBlackBorderRemoval() {
         return mBlackBorderRemoval;
@@ -69,76 +20,6 @@ public class ImageProcessConfig extends Observable {
 
     public double getBlackborderThreshold() {
         return mBlackBorderThreshold;
-    }
-
-    public void setHorizontalLedWidth(double horizontalLedWidth) {
-        if (mHorizontalLedWidth != horizontalLedWidth) {
-            mHorizontalLedWidth = horizontalLedWidth;
-            setChanged();
-        }
-    }
-
-    public void setHorizontalLedHeight(double horizontalLedHeight) {
-        if (mHorizontalLedHeight != horizontalLedHeight) {
-            mHorizontalLedHeight = horizontalLedHeight;
-            setChanged();
-        }
-    }
-
-    public void setVerticalLedWidth(double verticalLedWidth) {
-        if (mVerticalLedWidth != verticalLedWidth) {
-            mVerticalLedWidth = verticalLedWidth;
-            setChanged();
-        }
-    }
-
-    public void setVerticalLedHeight(double verticalLedHeight) {
-        if (mVerticalLedHeight != verticalLedHeight) {
-            mVerticalLedHeight = verticalLedHeight;
-            setChanged();
-        }
-    }
-
-    public void setHorizontalLedStep(double horizontalLedStep) {
-        if (mHorizontalLedStep != horizontalLedStep) {
-            mHorizontalLedStep = horizontalLedStep;
-            setChanged();
-        }
-    }
-
-    public void setHorizontalLedPadding(double horizontalLedPadding) {
-        if (mHorizontalLedPadding != horizontalLedPadding) {
-            mHorizontalLedPadding = horizontalLedPadding;
-            setChanged();
-        }
-    }
-
-    public void setHorizontalLedOffset(double horizontalLedOffset) {
-        if (mHorizontalLedOffset != horizontalLedOffset) {
-            mHorizontalLedOffset = horizontalLedOffset;
-            setChanged();
-        }
-    }
-
-    public void setVerticalLedStep(double verticalLedStep) {
-        if (mVerticalLedStep != verticalLedStep) {
-            mVerticalLedStep = verticalLedStep;
-            setChanged();
-        }
-    }
-
-    public void setVerticalLedPadding(double verticalLedPadding) {
-        if (mVerticalLedPadding != verticalLedPadding) {
-            mVerticalLedPadding = verticalLedPadding;
-            setChanged();
-        }
-    }
-
-    public void setVerticalLedOffset(double verticalLedOffset) {
-        if (mVerticalLedOffset != verticalLedOffset) {
-            mVerticalLedOffset = verticalLedOffset;
-            setChanged();
-        }
     }
 
     public void setBlackBorderRemoval(boolean pBlackBorderRemoval) {
@@ -155,4 +36,34 @@ public class ImageProcessConfig extends Observable {
         }
     }
 
+    @Override
+    public synchronized void addObserver(Observer observer) {
+        super.addObserver(observer);
+        horizontal.addObserver(observer);
+        vertical.addObserver(observer);
+    }
+
+    @Override
+    public synchronized void deleteObserver(Observer observer) {
+        super.deleteObserver(observer);
+        horizontal.deleteObserver(observer);
+        vertical.deleteObserver(observer);
+    }
+
+    @Override
+    public synchronized void deleteObservers() {
+        super.deleteObservers();
+        horizontal.deleteObservers();
+        vertical.deleteObservers();
+    }
+
+    @Override
+    public synchronized int countObservers() {
+        return super.countObservers() + horizontal.countObservers() + vertical.countObservers();
+    }
+
+    @Override
+    public synchronized boolean hasChanged() {
+        return super.hasChanged() || horizontal.hasChanged() || vertical.hasChanged();
+    }
 }

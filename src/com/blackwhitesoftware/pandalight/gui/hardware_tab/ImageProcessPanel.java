@@ -1,7 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui.hardware_tab;
 
 import com.blackwhitesoftware.pandalight.spec.ImageProcessConfig;
-import sun.swing.SwingAccessor;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -124,16 +123,16 @@ public class ImageProcessPanel extends JPanel {
         }
 
         // Update the processing configuration
-        mProcessConfig.setHorizontalLedWidth(horizontalLedWidth);
-        mProcessConfig.setHorizontalLedHeight(horizontalLedHeight);
-        mProcessConfig.setHorizontalLedStep(horizontalLedStep);
-        mProcessConfig.setHorizontalLedPadding(horizontalLedPadding);
-        mProcessConfig.setHorizontalLedOffset(horizontalLedOffset);
-        mProcessConfig.setVerticalLedWidth(verticalLedWidth);
-        mProcessConfig.setVerticalLedHeight(verticalLedHeight);
-        mProcessConfig.setVerticalLedStep(verticalLedStep);
-        mProcessConfig.setVerticalLedPadding(verticalLedPadding);
-        mProcessConfig.setVerticalLedOffset(verticalLedOffset);
+        mProcessConfig.horizontal.setLedWidth(horizontalLedWidth);
+        mProcessConfig.horizontal.setLedHeight(horizontalLedHeight);
+        mProcessConfig.horizontal.setLedStep(horizontalLedStep);
+        mProcessConfig.horizontal.setLedPadding(horizontalLedPadding);
+        mProcessConfig.horizontal.setLedOffset(horizontalLedOffset);
+        mProcessConfig.vertical.setLedWidth(verticalLedWidth);
+        mProcessConfig.vertical.setLedHeight(verticalLedHeight);
+        mProcessConfig.vertical.setLedStep(verticalLedStep);
+        mProcessConfig.vertical.setLedPadding(verticalLedPadding);
+        mProcessConfig.vertical.setLedOffset(verticalLedOffset);
         mProcessConfig.setBlackborderThreshold(blackborderThreshold);
 
         // Notify observers
@@ -182,17 +181,17 @@ public class ImageProcessPanel extends JPanel {
 
         ArrayList<SettingsInput> inputs = new ArrayList<>();
 
-        inputs.add(new SettingsInput(mHorizontalLedWidthSlider, "Horizontal width:", mHorizontalLedWidthDisplay, mChangeListener, mProcessConfig.getHorizontalLedWidth()));
-        inputs.add(new SettingsInput(mHorizontalLedHeightSlider, "Horizontal height:", mHorizontalLedHeightDisplay, mChangeListener, mProcessConfig.getHorizontalLedHeight()));
-        inputs.add(new SettingsInput(mHorizontalLedStepSlider, "Horizontal step:", mHorizontalLedStepDisplay, mChangeListener, mProcessConfig.getHorizontalLedStep()));
-        inputs.add(new SettingsInput(mHorizontalLedPaddingSlider, "Horizontal padding:", mHorizontalLedPaddingDisplay, mChangeListener, mProcessConfig.getHorizontalLedPadding()));
-        inputs.add(new SettingsInput(mHorizontalLedOffsetSlider, "Horizontal offset:", mHorizontalLedOffsetDisplay, mChangeListener, mProcessConfig.getHorizontalLedOffset()));
+        inputs.add(new SettingsInput(mHorizontalLedWidthSlider, "Horizontal width:", mHorizontalLedWidthDisplay, mChangeListener, mProcessConfig.horizontal.getLedWidth()));
+        inputs.add(new SettingsInput(mHorizontalLedHeightSlider, "Horizontal height:", mHorizontalLedHeightDisplay, mChangeListener, mProcessConfig.horizontal.getLedHeight()));
+        inputs.add(new SettingsInput(mHorizontalLedStepSlider, "Horizontal step:", mHorizontalLedStepDisplay, mChangeListener, mProcessConfig.horizontal.getLedStep()));
+        inputs.add(new SettingsInput(mHorizontalLedPaddingSlider, "Horizontal padding:", mHorizontalLedPaddingDisplay, mChangeListener, mProcessConfig.horizontal.getLedPadding()));
+        inputs.add(new SettingsInput(mHorizontalLedOffsetSlider, "Horizontal offset:", mHorizontalLedOffsetDisplay, mChangeListener, mProcessConfig.horizontal.getLedOffset()));
 
-        inputs.add(new SettingsInput(mVerticalLedWidthSlider, "Vertical width:", mVerticalLedWidthDisplay, mChangeListener, mProcessConfig.getVerticalLedWidth()));
-        inputs.add(new SettingsInput(mVerticalLedHeightSlider, "Vertical height:", mVerticalLedHeightDisplay, mChangeListener, mProcessConfig.getVerticalLedHeight()));
-        inputs.add(new SettingsInput(mVerticalLedStepSlider, "Vertical step:", mVerticalLedStepDisplay, mChangeListener, mProcessConfig.getVerticalLedStep()));
-        inputs.add(new SettingsInput(mVerticalLedPaddingSlider, "Vertical padding:", mVerticalLedPaddingDisplay, mChangeListener, mProcessConfig.getVerticalLedPadding()));
-        inputs.add(new SettingsInput(mVerticalLedOffsetSlider, "Vertical offset:", mVerticalLedOffsetDisplay, mChangeListener, mProcessConfig.getVerticalLedOffset()));
+        inputs.add(new SettingsInput(mVerticalLedWidthSlider, "Vertical width:", mVerticalLedWidthDisplay, mChangeListener, mProcessConfig.vertical.getLedWidth()));
+        inputs.add(new SettingsInput(mVerticalLedHeightSlider, "Vertical height:", mVerticalLedHeightDisplay, mChangeListener, mProcessConfig.vertical.getLedHeight()));
+        inputs.add(new SettingsInput(mVerticalLedStepSlider, "Vertical step:", mVerticalLedStepDisplay, mChangeListener, mProcessConfig.vertical.getLedStep()));
+        inputs.add(new SettingsInput(mVerticalLedPaddingSlider, "Vertical padding:", mVerticalLedPaddingDisplay, mChangeListener, mProcessConfig.vertical.getLedPadding()));
+        inputs.add(new SettingsInput(mVerticalLedOffsetSlider, "Vertical offset:", mVerticalLedOffsetDisplay, mChangeListener, mProcessConfig.vertical.getLedOffset()));
 
         inputs.add(new SettingsInput(mBlackborderDetectorCombo, "Blackborder Detector:", mActionListener));
         inputs.add(new SettingsInput(mBlackborderThresholdSlider, "Blackborder Threshold:", mBlackborderThresholdDisplay, mChangeListener, mProcessConfig.getBlackborderThreshold()));
