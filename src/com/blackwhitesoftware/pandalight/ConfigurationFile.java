@@ -94,12 +94,6 @@ public class ConfigurationFile {
                     mProps.setProperty(key, String.format("[%d; %d; %d]", color.getRed(), color.getGreen(), color.getBlue()));
                 } else if (value.getClass().isEnum()) {
                     mProps.setProperty(key, ((Enum<?>) value).name());
-                } else if (value instanceof Vector) {
-                    @SuppressWarnings("unchecked")
-                    Vector<Object> v = (Vector<Object>) value;
-                    for (int i = 0; i < v.size(); ++i) {
-                        store(v.get(i), key + "[" + i + "]");
-                    }
                 } else if (field.getType() == Object.class) {
                     if (value instanceof Boolean) {
                         mProps.setProperty(key, Boolean.toString((boolean) value));
@@ -165,11 +159,6 @@ public class ConfigurationFile {
     }
 
     private void restoreField(Field field, Object pObj, Properties pProps, String pPreamble) throws IllegalAccessException {
-        if (field.getType().equals(Vector.class)) {
-            restoreVectorField(field, pObj, pProps, pPreamble);
-            return;
-        }
-
         String key = pPreamble + field.getName();
         String value = pProps.getProperty(key);
         if (value == null) {
@@ -235,65 +224,6 @@ public class ConfigurationFile {
         } catch (Throwable t) {
             System.out.println("Failed to parse value(" + value + ") for " + key);
             t.printStackTrace();
-        }
-    }
-
-    private void restoreVectorField(Field field, Object pObj, Properties pProps, String pPreamble) throws IllegalAccessException {
-        // Obtain the Vector
-        Vector<Object> vector = (Vector<Object>) field.get(pObj);
-
-        // Clear existing elements from the vector
-        vector.clear();
-
-        // Iterate through the properties to find the indices of the vector
-        int i = 0;
-        while (true) {
-            String curIndexKey = pPreamble + field.getName() + "[" + i + "]";
-            Properties elemProps = new Properties();
-            // Find all the elements for the current vector index
-            for (Object keyObj : pProps.keySet()) {
-                String keyStr = (String) keyObj;
-                if (keyStr.startsWith(curIndexKey)) {
-                    // Remove the name and dot
-                    elemProps.put(keyStr.substring(curIndexKey.length() + 1), pProps.get(keyStr));
-                }
-            }
-
-            if (elemProps.isEmpty()) {
-                // Found no more elements for the vector
-                return;
-            }
-
-            Object newElement = instanciateField(field);
-            if (newElement == null) {
-                return;
-            }
-
-            // Restore the instance members from the collected properties
-            restore(newElement, elemProps, "");
-
-            // Add the instance to the vector
-            vector.addElement(newElement);
-
-            ++i;
-        }
-    }
-
-    private Object instanciateField(Field field) {
-        // Construct new instance of vectors generic type
-        Class<?> fieldType = field.getType();
-
-        // Find the constructor with no arguments and create a new instance
-        try {
-            Object newElement = fieldType.getConstructor().newInstance();
-
-            if (newElement == null)
-                System.err.println("Failed to construct instance for " + fieldType.getName());
-
-            return newElement;
-        } catch (Throwable t) {
-            System.err.println("Failed to find empty default constructor for " + fieldType.getName());
-            return null;
         }
     }
 
