@@ -132,20 +132,20 @@ public class ImageProcessPanel extends JPanel {
 
         ArrayList<SettingsInput> inputs = new ArrayList<>();
 
-        inputs.add(new SettingsInput(mHorizontalLedWidthSpinner, "Horizontal width:", mChangeListener, mProcessConfig.horizontal.getLedWidth()));
-        inputs.add(new SettingsInput(mHorizontalLedHeightSpinner, "Horizontal height:", mChangeListener, mProcessConfig.horizontal.getLedHeight()));
-        inputs.add(new SettingsInput(mHorizontalLedStepSpinner, "Horizontal step:", mChangeListener, mProcessConfig.horizontal.getLedStep()));
-        inputs.add(new SettingsInput(mHorizontalLedPaddingSpinner, "Horizontal padding:", mChangeListener, mProcessConfig.horizontal.getLedPadding()));
-        inputs.add(new SettingsInput(mHorizontalLedOffsetSpinner, "Horizontal offset:", mChangeListener, mProcessConfig.horizontal.getLedOffset()));
+        inputs.add(new SettingsInput(mHorizontalLedWidthSpinner, "Horizontal width [%]:", mChangeListener, mProcessConfig.horizontal.getLedWidth()));
+        inputs.add(new SettingsInput(mHorizontalLedHeightSpinner, "Horizontal height [%]:", mChangeListener, mProcessConfig.horizontal.getLedHeight()));
+        inputs.add(new SettingsInput(mHorizontalLedStepSpinner, "Horizontal step [%]:", mChangeListener, mProcessConfig.horizontal.getLedStep()));
+        inputs.add(new SettingsInput(mHorizontalLedPaddingSpinner, "Horizontal padding [%]:", mChangeListener, mProcessConfig.horizontal.getLedPadding()));
+        inputs.add(new SettingsInput(mHorizontalLedOffsetSpinner, "Horizontal offset [%]:", mChangeListener, mProcessConfig.horizontal.getLedOffset()));
 
-        inputs.add(new SettingsInput(mVerticalLedWidthSpinner, "Vertical width:", mChangeListener, mProcessConfig.vertical.getLedWidth()));
-        inputs.add(new SettingsInput(mVerticalLedHeightSpinner, "Vertical height:", mChangeListener, mProcessConfig.vertical.getLedHeight()));
-        inputs.add(new SettingsInput(mVerticalLedStepSpinner, "Vertical step:", mChangeListener, mProcessConfig.vertical.getLedStep()));
-        inputs.add(new SettingsInput(mVerticalLedPaddingSpinner, "Vertical padding:", mChangeListener, mProcessConfig.vertical.getLedPadding()));
-        inputs.add(new SettingsInput(mVerticalLedOffsetSpinner, "Vertical offset:", mChangeListener, mProcessConfig.vertical.getLedOffset()));
+        inputs.add(new SettingsInput(mVerticalLedWidthSpinner, "Vertical width [%]:", mChangeListener, mProcessConfig.vertical.getLedWidth()));
+        inputs.add(new SettingsInput(mVerticalLedHeightSpinner, "Vertical height [%]:", mChangeListener, mProcessConfig.vertical.getLedHeight()));
+        inputs.add(new SettingsInput(mVerticalLedStepSpinner, "Vertical step [%]:", mChangeListener, mProcessConfig.vertical.getLedStep()));
+        inputs.add(new SettingsInput(mVerticalLedPaddingSpinner, "Vertical padding [%]:", mChangeListener, mProcessConfig.vertical.getLedPadding()));
+        inputs.add(new SettingsInput(mVerticalLedOffsetSpinner, "Vertical offset [%]:", mChangeListener, mProcessConfig.vertical.getLedOffset()));
 
-        inputs.add(new SettingsInput(mBlackborderDetectorCombo, "Blackborder Detector:", mActionListener));
-        inputs.add(new SettingsInput(mBlackborderThresholdSpinner, "Blackborder Threshold:", mChangeListener, mProcessConfig.getBlackborderThreshold()));
+        inputs.add(new SettingsInput(mBlackborderDetectorCombo, "Blackborder detector:", mActionListener));
+        inputs.add(new SettingsInput(mBlackborderThresholdSpinner, "Blackborder threshold [%]:", mChangeListener, mProcessConfig.getBlackborderThreshold()));
 
         GroupLayout.ParallelGroup horizontalLabelGroup = layout.createParallelGroup();
         GroupLayout.ParallelGroup horizontalInputGroup = layout.createParallelGroup();
