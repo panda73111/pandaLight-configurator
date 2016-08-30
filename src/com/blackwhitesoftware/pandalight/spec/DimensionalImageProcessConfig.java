@@ -37,6 +37,7 @@ public class DimensionalImageProcessConfig extends Observable {
         if (mLedWidth != horizontalLedWidth) {
             mLedWidth = horizontalLedWidth;
             setChanged();
+            notifyObservers(mLedWidth);
         }
     }
 
@@ -44,6 +45,7 @@ public class DimensionalImageProcessConfig extends Observable {
         if (mLedHeight != horizontalLedHeight) {
             mLedHeight = horizontalLedHeight;
             setChanged();
+            notifyObservers(mLedHeight);
         }
     }
 
@@ -51,6 +53,7 @@ public class DimensionalImageProcessConfig extends Observable {
         if (mLedStep != horizontalLedStep) {
             mLedStep = horizontalLedStep;
             setChanged();
+            notifyObservers(mLedStep);
         }
     }
 
@@ -58,6 +61,7 @@ public class DimensionalImageProcessConfig extends Observable {
         if (mLedPadding != horizontalLedPadding) {
             mLedPadding = horizontalLedPadding;
             setChanged();
+            notifyObservers(mLedPadding);
         }
     }
 
@@ -65,6 +69,7 @@ public class DimensionalImageProcessConfig extends Observable {
         if (mLedOffset != horizontalLedOffset) {
             mLedOffset = horizontalLedOffset;
             setChanged();
+            notifyObservers(mLedOffset);
         }
     }
 }

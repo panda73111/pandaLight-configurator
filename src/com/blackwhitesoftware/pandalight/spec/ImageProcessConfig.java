@@ -6,13 +6,18 @@ import java.util.Observer;
 /**
  * Configuration parameters for the image processing.
  */
-public class ImageProcessConfig extends Observable {
+public class ImageProcessConfig extends Observable implements Observer {
     public DimensionalImageProcessConfig horizontal = new DimensionalImageProcessConfig();
     public DimensionalImageProcessConfig vertical = new DimensionalImageProcessConfig();
 
     // Blackborder detection
     public boolean mBlackBorderRemoval = true;
     public double mBlackBorderThreshold = 0.01;
+
+    public ImageProcessConfig() {
+        horizontal.addObserver(this);
+        vertical.addObserver(this);
+    }
 
     public boolean isBlackBorderRemoval() {
         return mBlackBorderRemoval;
@@ -23,47 +28,39 @@ public class ImageProcessConfig extends Observable {
     }
 
     public void setBlackBorderRemoval(boolean pBlackBorderRemoval) {
-        if (mBlackBorderRemoval != pBlackBorderRemoval) {
-            mBlackBorderRemoval = pBlackBorderRemoval;
-            setChanged();
-        }
+        mBlackBorderRemoval = pBlackBorderRemoval;
     }
 
     public void setBlackborderThreshold(double pThreshold) {
-        if (mBlackBorderThreshold != pThreshold) {
-            mBlackBorderThreshold = pThreshold;
-            setChanged();
-        }
+        mBlackBorderThreshold = pThreshold;
     }
 
     @Override
     public synchronized void addObserver(Observer observer) {
-        super.addObserver(observer);
         horizontal.addObserver(observer);
         vertical.addObserver(observer);
     }
 
     @Override
     public synchronized void deleteObserver(Observer observer) {
-        super.deleteObserver(observer);
         horizontal.deleteObserver(observer);
         vertical.deleteObserver(observer);
     }
 
     @Override
     public synchronized void deleteObservers() {
-        super.deleteObservers();
         horizontal.deleteObservers();
         vertical.deleteObservers();
     }
 
     @Override
-    public synchronized int countObservers() {
-        return super.countObservers() + horizontal.countObservers() + vertical.countObservers();
+    public synchronized boolean hasChanged() {
+        return horizontal.hasChanged() || vertical.hasChanged();
     }
 
     @Override
-    public synchronized boolean hasChanged() {
-        return super.hasChanged() || horizontal.hasChanged() || vertical.hasChanged();
+    public void update(Observable observable, Object o) {
+        setChanged();
+        notifyObservers(o);
     }
 }
