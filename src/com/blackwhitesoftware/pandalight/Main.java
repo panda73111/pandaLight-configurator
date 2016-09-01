@@ -1,8 +1,7 @@
 package com.blackwhitesoftware.pandalight;
 
 import com.blackwhitesoftware.pandalight.gui.ConfigPanel;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
-import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
+import com.blackwhitesoftware.pandalight.connect.PandaLightSerialConnection;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -24,7 +23,6 @@ public class Main {
         final String versionStr = Main.class.getPackage().getSpecificationVersion();
         final String appTitleStr = Main.class.getPackage().getSpecificationTitle();
         final ConfigurationContainer pandaLightConfig = new ConfigurationContainer();
-        final SerialAndColorPickerConfig serialConfig = new SerialAndColorPickerConfig();
         final PandaLightSerialConnection serialConnection = new PandaLightSerialConnection();
 
         try {
@@ -49,7 +47,7 @@ public class Main {
                     configFile.store(pandaLightConfig.mDeviceConfig);
                     configFile.store(pandaLightConfig.mLedFrameConfig);
                     configFile.store(pandaLightConfig.mProcessConfig);
-                    configFile.store(pandaLightConfig.mColorCorrectionConfig);
+                    configFile.store(pandaLightConfig.mColorConfig);
                     configFile.store(pandaLightConfig.mMiscConfig);
                     configFile.store(pandaLightConfig.mSerialConfig);
                     configFile.save(configFilename);
@@ -67,7 +65,7 @@ public class Main {
                 configFile.restore(pandaLightConfig.mDeviceConfig);
                 configFile.restore(pandaLightConfig.mLedFrameConfig);
                 configFile.restore(pandaLightConfig.mProcessConfig);
-                configFile.restore(pandaLightConfig.mColorCorrectionConfig);
+                configFile.restore(pandaLightConfig.mColorConfig);
                 configFile.restore(pandaLightConfig.mMiscConfig);
                 configFile.restore(pandaLightConfig.mSerialConfig);
             } catch (Throwable t) {

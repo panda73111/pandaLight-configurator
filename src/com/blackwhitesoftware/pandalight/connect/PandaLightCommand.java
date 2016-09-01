@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.remote_control;
+package com.blackwhitesoftware.pandalight.connect;
 
 /**
  * Created by hudini on 25.10.2015.

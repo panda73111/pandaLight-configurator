@@ -1,7 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui;
 
 import com.blackwhitesoftware.pandalight.Main;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.connect.PandaLightSerialConnection;
 import org.pmw.tinylog.*;
 import org.pmw.tinylog.writers.LogEntryValue;
 import org.pmw.tinylog.writers.Writer;

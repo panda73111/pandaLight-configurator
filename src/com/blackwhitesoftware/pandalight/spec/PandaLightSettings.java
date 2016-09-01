@@ -39,14 +39,14 @@ public class PandaLightSettings {
         buffer.put((byte)configuration.mDeviceConfig.mType.getIndex());
 
         // 4 Bit + 12 Bit fixed point
-        double gamma = configuration.mColorCorrectionConfig.gammaCorrection;
+        double gamma = configuration.mColorConfig.gammaCorrection;
         int integerPart = (int)Math.floor(gamma) & 0x000F;
         int fractionPart = (int)(gamma * 0x1000) & 0x0FFF;
         short fixedPoint = (short)((integerPart << 12) | fractionPart);
         buffer.putShort(fixedPoint);
 
-        Color minValues = configuration.mColorCorrectionConfig.getMinChannelValues();
-        Color maxValues = configuration.mColorCorrectionConfig.getMaxChannelValues();
+        Color minValues = configuration.mColorConfig.getMinChannelValues();
+        Color maxValues = configuration.mColorConfig.getMaxChannelValues();
         buffer.put((byte)minValues.getRed());
         buffer.put((byte)maxValues.getRed());
         buffer.put((byte)minValues.getGreen());
@@ -56,9 +56,9 @@ public class PandaLightSettings {
 
         buffer.position(0x100);
 
-        buffer.put(configuration.mColorCorrectionConfig.redLookupTable);
-        buffer.put(configuration.mColorCorrectionConfig.greenLookupTable);
-        buffer.put(configuration.mColorCorrectionConfig.blueLookupTable);
+        buffer.put(configuration.mColorConfig.redLookupTable);
+        buffer.put(configuration.mColorConfig.greenLookupTable);
+        buffer.put(configuration.mColorConfig.blueLookupTable);
 
         mData = buffer.array();
     }

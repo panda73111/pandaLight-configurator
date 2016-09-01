@@ -6,7 +6,7 @@ import java.util.Observable;
 /**
  * Created by Sebastian.Huether on 30.08.2016.
  */
-public class ColorCorrectionConfig extends Observable {
+public class ColorConfig extends Observable {
     public boolean inExpertMode = false;
     public double gammaCorrection = 2.0;
     public Color minChannelValues = new Color(0, 0, 0);

@@ -1,6 +1,6 @@
-package com.blackwhitesoftware.pandalight.gui.remote_control_tab;
+package com.blackwhitesoftware.pandalight.gui.connect_tab;
 
-import com.blackwhitesoftware.pandalight.remote_control.*;
+import com.blackwhitesoftware.pandalight.connect.*;
 import jssc.SerialPortException;
 
 import javax.swing.*;

@@ -26,7 +26,7 @@ public class ConfigurationContainer {
     /**
      * The configuration of LED color correction
      */
-    public final ColorCorrectionConfig mColorCorrectionConfig = new ColorCorrectionConfig();
+    public final ColorConfig mColorConfig = new ColorConfig();
 
     /**
      * The miscellaneous configuration (bootsequence, blackborder detector, etc)

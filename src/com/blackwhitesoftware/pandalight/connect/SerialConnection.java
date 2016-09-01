@@ -1,4 +1,4 @@
-package com.blackwhitesoftware.pandalight.remote_control;
+package com.blackwhitesoftware.pandalight.connect;
 
 import jssc.SerialPort;
 import jssc.SerialPortEvent;

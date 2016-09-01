@@ -5,15 +5,14 @@ import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
 import com.blackwhitesoftware.pandalight.gui.led_simulation.LedSimulationComponent;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.BoardInfoPanel;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.ManualColorPickingPanel;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.SerialConnectionPanel;
-import com.blackwhitesoftware.pandalight.gui.remote_control_tab.UploadBitfilePanel;
-import com.blackwhitesoftware.pandalight.remote_control.PandaLightSerialConnection;
+import com.blackwhitesoftware.pandalight.gui.connect_tab.BoardInfoPanel;
+import com.blackwhitesoftware.pandalight.gui.connect_tab.ManualColorPickingPanel;
+import com.blackwhitesoftware.pandalight.gui.connect_tab.SerialConnectionPanel;
+import com.blackwhitesoftware.pandalight.gui.connect_tab.UploadBitfilePanel;
+import com.blackwhitesoftware.pandalight.connect.PandaLightSerialConnection;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Observable;
 import java.util.Observer;
 
 /**
@@ -42,7 +41,8 @@ public class ConfigPanel extends JPanel {
      * The left (WEST) side panel containing the different configuration panels
      */
     private JPanel mHardwarePanel = null;
-    private JPanel mRemoteControlPanel = null;
+    private JPanel mColorPanel = null;
+    private JPanel mConnectPanel = null;
 
     /**
      * Constructs the configuration panel with a default initialised led-frame and configuration
@@ -74,17 +74,19 @@ public class ConfigPanel extends JPanel {
      * Initialises the config-panel
      */
     private void initialise() {
+        createHardwarePanel();
+        createColorCorrectionPanel();
+        createRemoteControlPanel();
+
         setLayout(new BorderLayout());
 
         add(getTvPanel(), BorderLayout.CENTER);
         add(getWestPanel(), BorderLayout.WEST);
-
     }
 
     private JPanel getWestPanel() {
         JPanel mWestPanel = new JPanel();
         mWestPanel.setLayout(new BorderLayout());
-
         mWestPanel.add(getSpecificationTabs(), BorderLayout.CENTER);
 
         return mWestPanel;
@@ -95,8 +97,9 @@ public class ConfigPanel extends JPanel {
             mSpecificationTabs = new JTabbedPane();
             mSpecificationTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-            mSpecificationTabs.addTab("Hardware", new JScrollPane(getHardwarePanel()));
-            mSpecificationTabs.addTab("Remote Control", new JScrollPane(getRemoteControlPanel()));
+            mSpecificationTabs.addTab("Hardware", new JScrollPane(mHardwarePanel));
+            mSpecificationTabs.addTab("Color", new JScrollPane(mColorPanel));
+            mSpecificationTabs.addTab("Connect", new JScrollPane(mConnectPanel));
         }
         return mSpecificationTabs;
     }
@@ -117,31 +120,31 @@ public class ConfigPanel extends JPanel {
         return mTvPanel;
     }
 
-    private JPanel getHardwarePanel() {
-        if (mHardwarePanel == null) {
-            mHardwarePanel = new JPanel();
-            mHardwarePanel.setLayout(new BoxLayout(mHardwarePanel, BoxLayout.Y_AXIS));
+    private void createHardwarePanel() {
+        mHardwarePanel = new JPanel();
+        mHardwarePanel.setLayout(new BoxLayout(mHardwarePanel, BoxLayout.Y_AXIS));
 
-            mHardwarePanel.add(new DevicePanel(pandaLightConfig.mDeviceConfig));
-            mHardwarePanel.add(new LedFramePanel(pandaLightConfig.mLedFrameConfig));
-            mHardwarePanel.add(new ImageProcessPanel(pandaLightConfig.mProcessConfig));
-            mHardwarePanel.add(Box.createVerticalGlue());
-        }
-        return mHardwarePanel;
+        mHardwarePanel.add(new DevicePanel(pandaLightConfig.mDeviceConfig));
+        mHardwarePanel.add(new LedFramePanel(pandaLightConfig.mLedFrameConfig));
+        mHardwarePanel.add(new ImageProcessPanel(pandaLightConfig.mProcessConfig));
+        mHardwarePanel.add(Box.createVerticalGlue());
     }
 
-    private JPanel getRemoteControlPanel() {
-        if (mRemoteControlPanel == null) {
-            mRemoteControlPanel = new JPanel();
-            mRemoteControlPanel.setLayout(new BoxLayout(mRemoteControlPanel, BoxLayout.Y_AXIS));
-            mRemoteControlPanel.add(new SerialConnectionPanel(pandaLightConfig, serialConnection));
-            mRemoteControlPanel.add(new BoardInfoPanel(serialConnection));
-            mRemoteControlPanel.add(new UploadBitfilePanel(pandaLightConfig.mMiscConfig, serialConnection));
-            mRemoteControlPanel.add(new ManualColorPickingPanel(pandaLightConfig.mSerialConfig, serialConnection));
-            mRemoteControlPanel.add(Box.createVerticalGlue());
-        }
+    private void createColorCorrectionPanel() {
+        mColorPanel = new JPanel();
+        mColorPanel.setLayout(new BoxLayout(mColorPanel, BoxLayout.Y_AXIS));
 
-        return mRemoteControlPanel;
+        mColorPanel.add(Box.createVerticalGlue());
+    }
+
+    private void createRemoteControlPanel() {
+        mConnectPanel = new JPanel();
+        mConnectPanel.setLayout(new BoxLayout(mConnectPanel, BoxLayout.Y_AXIS));
+        mConnectPanel.add(new SerialConnectionPanel(pandaLightConfig, serialConnection));
+        mConnectPanel.add(new BoardInfoPanel(serialConnection));
+        mConnectPanel.add(new UploadBitfilePanel(pandaLightConfig.mMiscConfig, serialConnection));
+        mConnectPanel.add(new ManualColorPickingPanel(pandaLightConfig.mSerialConfig, serialConnection));
+        mConnectPanel.add(Box.createVerticalGlue());
     }
 }
 
