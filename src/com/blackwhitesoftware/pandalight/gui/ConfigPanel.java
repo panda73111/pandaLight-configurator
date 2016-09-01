@@ -1,6 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui;
 
 import com.blackwhitesoftware.pandalight.ConfigurationContainer;
+import com.blackwhitesoftware.pandalight.gui.color_tab.ColorPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.DevicePanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.ImageProcessPanel;
 import com.blackwhitesoftware.pandalight.gui.hardware_tab.LedFramePanel;
@@ -134,6 +135,7 @@ public class ConfigPanel extends JPanel {
         mColorPanel = new JPanel();
         mColorPanel.setLayout(new BoxLayout(mColorPanel, BoxLayout.Y_AXIS));
 
+        mColorPanel.add(new ColorPanel(pandaLightConfig.mColorConfig));
         mColorPanel.add(Box.createVerticalGlue());
     }
 
