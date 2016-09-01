@@ -1,5 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui.led_simulation;
 
+import com.blackwhitesoftware.pandalight.spec.BorderSide;
 import com.blackwhitesoftware.pandalight.spec.Led;
 
 import javax.swing.*;
@@ -27,7 +28,8 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
     @Override
     protected BufferedImage doInBackground() throws Exception {
         Dimension imageDim = new Dimension(1280, 720);
-        BufferedImage backgroundImage = new BufferedImage(imageDim.width, imageDim.height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage backgroundImage = new BufferedImage(
+                imageDim.width, imageDim.height, BufferedImage.TYPE_INT_ARGB);
 
         if (mLeds == null) {
             return backgroundImage;
@@ -41,7 +43,7 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
             LedPaint ledPaint = new LedPaint();
 
             // Determine the location and orientation of the led on the image
-            ledPaint.point = tv2image(imageDim, led.mLocation);
+            ledPaint.areaOrigin = tv2image(imageDim, led.mLocation);
             ledPaint.angle_rad = led.mSide.getAngle_rad();
 
             // Determine the color of the led
@@ -62,8 +64,38 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
             int xMin = (int) (xMinFrac * (imageWidth - 1));
             int xMax = (int) (xMaxFrac * (imageWidth - 1));
             int yMin = (int) (yMinFrac * (imageHeight - 1));
-            int yMax = (int) (yMaxFrac* (imageHeight - 1));
+            int yMax = (int) (yMaxFrac * (imageHeight - 1));
             ledPaint.rgb = determineRGB(xMin, xMax, yMin, yMax);
+
+            switch (led.mSide) {
+                case top:
+                    ledPaint.beamOrigin = new Point(
+                            (int) ledPaint.areaOrigin.getX() + (xMax - 24 - xMin) / 2,
+                            (int) (imageHeight * 0.2)
+                    );
+                    break;
+
+                case right:
+                    ledPaint.beamOrigin = new Point(
+                            (int) (imageWidth * 0.9),
+                            (int) ledPaint.areaOrigin.getY() + (yMax - 24 - yMin) / 2
+                    );
+                    break;
+
+                case bottom:
+                    ledPaint.beamOrigin = new Point(
+                            (int) ledPaint.areaOrigin.getX() + (xMax - 24 - xMin) / 2,
+                            (int) (imageHeight * 0.8)
+                    );
+                    break;
+
+                case left:
+                    ledPaint.beamOrigin = new Point(
+                            (int) (imageWidth * 0.1),
+                            (int) ledPaint.areaOrigin.getY() + (yMax - 24 - yMin) / 2
+                    );
+                    break;
+            }
 
             ledPaints.add(ledPaint);
         }
@@ -132,25 +164,27 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
             double xFactor = Math.sin(led.angle_rad);
             double yFactor = Math.cos(led.angle_rad);
 
-            Point directionPoint = new Point(led.point);
+            Point directionPoint = new Point(led.beamOrigin);
             directionPoint.translate(
                     (int) (-1.0 * xFactor * (directionDistance + ledOffset)),
                     (int) (-1.0 * yFactor * (directionDistance + ledOffset)));
 
-            Point virtualLedPoint = new Point(led.point);
+            Point virtualLedPoint = new Point(led.beamOrigin);
             virtualLedPoint.translate(
                     (int) (-1.0 * xFactor * ledOffset),
                     (int) (-1.0 * yFactor * ledOffset));
 
             RadialGradientPaint paint = new RadialGradientPaint(
-                    directionPoint, ledSize / 2.0f, virtualLedPoint,
-                    new float[]{
-                            0.1f,
-                            1.0f
+                    directionPoint,
+                    ledSize / 2.0f,
+                    virtualLedPoint,
+                    new float[] {
+                        0.1f,
+                        1.0f
                     },
-                    new Color[]{
-                            new Color(led.rgb),
-                            Color.BLACK
+                    new Color[] {
+                        new Color(led.rgb),
+                        Color.BLACK
                     },
                     MultipleGradientPaint.CycleMethod.NO_CYCLE
             );
@@ -166,8 +200,7 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
         final float[] matrix = new float[3 * 3];
         Arrays.fill(matrix, 1 / 9f);
         Kernel kernel = new Kernel(3, 3, matrix);
-        ConvolveOp convolve = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP,
-                null);
+        ConvolveOp convolve = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         return convolve.filter(img, null);
     }
 
@@ -181,7 +214,8 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 
     class LedPaint {
         int rgb;
-        Point point;
+        Point areaOrigin;
+        Point beamOrigin;
         double angle_rad;
     }
 }

@@ -25,7 +25,7 @@ public class LedSimulationComponent extends JPanel {
 
     LedTvComponent mTvComponent;
     LedSimulationWorker mWorker = null;
-    private BufferedImage mTvImage = new BufferedImage(640, 480, BufferedImage.TYPE_INT_ARGB);
+    private BufferedImage mTvImage = new BufferedImage(1280, 720, BufferedImage.TYPE_INT_ARGB);
     private JPanel mTopPanel;
     private ImageComponent mTopLeftImage;
     private ImageComponent mTopImage;
@@ -127,6 +127,7 @@ public class LedSimulationComponent extends JPanel {
         mLeftImage = new ImageComponent();
         mLeftImage.setPreferredSize(new Dimension(100, 100));
         add(mLeftImage, BorderLayout.WEST);
+
         mRightImage = new ImageComponent();
         mRightImage.setPreferredSize(new Dimension(100, 100));
         add(mRightImage, BorderLayout.EAST);
@@ -138,6 +139,20 @@ public class LedSimulationComponent extends JPanel {
         add(mTvComponent, BorderLayout.CENTER);
 
         mTvComponent.addMouseListener(mPopupListener);
+
+        mPopupMenu = new JPopupMenu();
+        mPopupMenu.add(mLoadAction);
+
+        JMenu selectMenu = new JMenu("Select Image");
+        selectMenu.add(new SelectImageAction("TestImage_01"));
+        selectMenu.add(new SelectImageAction("TestImage_02"));
+        selectMenu.add(new SelectImageAction("TestImage_03"));
+        selectMenu.add(new SelectImageAction("TestImage_04"));
+        selectMenu.add(new SelectImageAction("TestImage_05"));
+        selectMenu.add(new SelectImageAction("TestImageBBB_01"));
+        selectMenu.add(new SelectImageAction("TestImageBBB_02"));
+        selectMenu.add(new SelectImageAction("TestImageBBB_03"));
+        mPopupMenu.add(selectMenu);
     }
 
     private JPanel getTopPanel() {
@@ -224,8 +239,8 @@ public class LedSimulationComponent extends JPanel {
 
                 int width = backgroundImage.getWidth();
                 int height = backgroundImage.getHeight();
-                int borderWidth = (int) (backgroundImage.getWidth() * 0.1);
-                int borderHeight = (int) (backgroundImage.getHeight() * 0.2);
+                int borderWidth = (int) (width * 0.1);
+                int borderHeight = (int) (height * 0.2);
 
                 mTopLeftImage.setImage(backgroundImage.getSubimage(0, 0, borderWidth, borderHeight));
                 mTopImage.setImage(backgroundImage.getSubimage(borderWidth, 0, width - 2 * borderWidth, borderHeight));
@@ -258,22 +273,6 @@ public class LedSimulationComponent extends JPanel {
     }
 
     private synchronized JPopupMenu getPopupMenu() {
-        if (mPopupMenu == null) {
-            mPopupMenu = new JPopupMenu();
-            mPopupMenu.add(mLoadAction);
-
-            JMenu selectMenu = new JMenu("Select Image");
-            selectMenu.add(new SelectImageAction("TestImage_01"));
-            selectMenu.add(new SelectImageAction("TestImage_02"));
-            selectMenu.add(new SelectImageAction("TestImage_03"));
-            selectMenu.add(new SelectImageAction("TestImage_04"));
-            selectMenu.add(new SelectImageAction("TestImage_05"));
-            selectMenu.add(new SelectImageAction("TestImageBBB_01"));
-            selectMenu.add(new SelectImageAction("TestImageBBB_02"));
-            selectMenu.add(new SelectImageAction("TestImageBBB_03"));
-            mPopupMenu.add(selectMenu);
-        }
-
         return mPopupMenu;
     }
 
