@@ -13,9 +13,4 @@ public class DeviceConfig {
      * The order of the color bytes
      */
     public ColorByteOrder mColorByteOrder = ColorByteOrder.RGB;
-
-    /**
-     * The number of frames the LED output is delayed by
-     */
-    public int mFrameDelay = 0;
 }

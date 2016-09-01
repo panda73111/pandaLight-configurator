@@ -34,7 +34,7 @@ public class PandaLightSettings {
         buffer.position(0x40);
 
         buffer.put((byte)configuration.mLedFrameConfig.firstLedOffset);
-        buffer.put((byte)configuration.mDeviceConfig.mFrameDelay);
+        buffer.put((byte)configuration.mProcessConfig.getFrameDelay());
         buffer.put((byte)configuration.mDeviceConfig.mColorByteOrder.getIndex());
         buffer.put((byte)configuration.mDeviceConfig.mType.getIndex());
 

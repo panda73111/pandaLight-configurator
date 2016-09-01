@@ -14,6 +14,11 @@ public class ImageProcessConfig extends Observable implements Observer {
     public boolean mBlackBorderRemoval = true;
     public double mBlackBorderThreshold = 0.01;
 
+    /**
+     * The number of frames the LED output is delayed by
+     */
+    public int mFrameDelay = 0;
+
     public ImageProcessConfig() {
         horizontal.addObserver(this);
         vertical.addObserver(this);
@@ -38,12 +43,20 @@ public class ImageProcessConfig extends Observable implements Observer {
         return mBlackBorderThreshold;
     }
 
+    public int getFrameDelay() {
+        return mFrameDelay;
+    }
+
     public void setBlackBorderRemoval(boolean pBlackBorderRemoval) {
         mBlackBorderRemoval = pBlackBorderRemoval;
     }
 
     public void setBlackborderThreshold(double pThreshold) {
         mBlackBorderThreshold = pThreshold;
+    }
+
+    public void setFrameDelay(int frameDelay) {
+        this.mFrameDelay = frameDelay;
     }
 
     @Override
