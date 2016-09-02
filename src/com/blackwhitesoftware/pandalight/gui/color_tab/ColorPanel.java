@@ -22,11 +22,12 @@ public class ColorPanel extends JPanel {
     private JSpinner mMaxGreenSpinner;
     private JSpinner mMinBlueSpinner;
     private JSpinner mMaxBlueSpinner;
+    private ColorChannelDisplay mColorDisplay;
 
     private ChangeListener changeListener = new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent changeEvent) {
-            mColorConfig.setGammaCorrection((double) mGammaSpinner.getValue());
+            Object source = changeEvent.getSource();
 
             Color minValues = new Color(
                     (int) (double) mMinRedSpinner.getValue(),
@@ -38,8 +39,54 @@ public class ColorPanel extends JPanel {
                     (int) (double) mMaxGreenSpinner.getValue(),
                     (int) (double) mMaxBlueSpinner.getValue());
 
+            if (source == mMinRedSpinner)
+                mMaxRedSpinner.setValue((double) Math.max(minValues.getRed(), maxValues.getRed()));
+            else if (source == mMaxRedSpinner)
+                mMinRedSpinner.setValue((double) Math.min(minValues.getRed(), maxValues.getRed()));
+            else if (source == mMinGreenSpinner)
+                mMaxGreenSpinner.setValue((double) Math.max(minValues.getGreen(), maxValues.getGreen()));
+            else if (source == mMaxGreenSpinner)
+                mMinGreenSpinner.setValue((double) Math.min(minValues.getGreen(), maxValues.getGreen()));
+            else if (source == mMinBlueSpinner)
+                mMaxBlueSpinner.setValue((double) Math.max(minValues.getBlue(), maxValues.getBlue()));
+            else if (source == mMaxBlueSpinner)
+                mMinBlueSpinner.setValue((double) Math.min(minValues.getBlue(), maxValues.getBlue()));
+
+            double gamma = (double) mGammaSpinner.getValue();
+            mColorConfig.setGammaCorrection(gamma);
+
             mColorConfig.setMinChannelValues(minValues);
             mColorConfig.setMaxChannelValues(maxValues);
+
+            byte[] redLookup = mColorConfig.getRedLookupTable();
+            byte[] greenLookup = mColorConfig.getGreenLookupTable();
+            byte[] blueLookup = mColorConfig.getBlueLookupTable();
+
+            for (int i = 0; i < 256; i++) {
+                int value = (int) (Math.pow(i / 255.0, gamma) * 255);
+                int redValue, greenValue, blueValue;
+
+                redValue = Math.max(minValues.getRed(), value);
+                redValue = Math.min(maxValues.getRed(), redValue);
+
+                greenValue = Math.max(minValues.getGreen(), value);
+                greenValue = Math.min(maxValues.getGreen(), greenValue);
+
+                blueValue = Math.max(minValues.getBlue(), value);
+                blueValue = Math.min(maxValues.getBlue(), blueValue);
+
+                redLookup[i] = (byte) redValue;
+                greenLookup[i] = (byte) greenValue;
+                blueLookup[i] = (byte) blueValue;
+            }
+
+            mColorDisplay.setRed(redLookup);
+            mColorDisplay.setGreen(greenLookup);
+            mColorDisplay.setBlue(blueLookup);
+
+            mColorConfig.setRedLookupTable(redLookup);
+            mColorConfig.setGreenLookupTable(greenLookup);
+            mColorConfig.setBlueLookupTable(blueLookup);
 
             mColorConfig.notifyObservers(this);
         }
@@ -81,6 +128,13 @@ public class ColorPanel extends JPanel {
         mMinBlueSpinner = new JSpinner();
         mMaxBlueSpinner = new JSpinner();
 
+        mColorDisplay = new ColorChannelDisplay(
+                mColorConfig.getRedLookupTable(),
+                mColorConfig.getGreenLookupTable(),
+                mColorConfig.getBlueLookupTable()
+        );
+        mColorDisplay.setMinimumSize(new Dimension(0, 150));
+
         inputs.add(new NumberSettingsInput(mGammaSpinner, "Gamma:", mColorConfig.getGammaCorrection(), changeListener, 0, 15, 0.1));
         inputs.add(new ColorChannelSettingsInput(mMinRedSpinner, "Minimum Red:", minColorValues.getRed(), changeListener));
         inputs.add(new ColorChannelSettingsInput(mMaxRedSpinner, "Maximum Red:", maxColorValues.getRed(), changeListener));
@@ -105,11 +159,13 @@ public class ColorPanel extends JPanel {
             verticalGroup.addGroup(verticalLineGroup);
         }
 
-        layout.setHorizontalGroup(layout.createSequentialGroup()
-                .addGroup(horizontalLabelGroup)
-                .addGroup(horizontalInputGroup));
+        layout.setHorizontalGroup(layout.createParallelGroup()
+                .addGroup(layout.createSequentialGroup()
+                        .addGroup(horizontalLabelGroup)
+                        .addGroup(horizontalInputGroup))
+                .addComponent(mColorDisplay));
 
-        layout.setVerticalGroup(verticalGroup);
+        layout.setVerticalGroup(verticalGroup.addComponent(mColorDisplay));
     }
 
     private class NumberSettingsInput {

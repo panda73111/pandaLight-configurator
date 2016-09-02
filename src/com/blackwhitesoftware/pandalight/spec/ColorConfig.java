@@ -15,6 +15,15 @@ public class ColorConfig extends Observable {
     public byte[] greenLookupTable = new byte[256];
     public byte[] blueLookupTable = new byte[256];
 
+    public ColorConfig() {
+        for (int i = 0; i < 256; i++) {
+            byte value = (byte) (Math.pow(i / 255.0, gammaCorrection) * 255);
+            redLookupTable[i] = value;
+            greenLookupTable[i] = value;
+            blueLookupTable[i] = value;
+        }
+    }
+
     public boolean isInExpertMode() {
         return inExpertMode;
     }
