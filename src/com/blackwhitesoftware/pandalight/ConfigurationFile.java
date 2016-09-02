@@ -5,10 +5,8 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * Class for supporting the serialisation and deserialisation of settings.
@@ -151,10 +149,23 @@ public class ConfigurationFile {
         }
     }
 
+    private boolean anySubproperties(Properties props, String preamble) {
+        for (Object key : props.keySet()) {
+            if (((String) key).startsWith(preamble))
+                return true;
+        }
+        return false;
+    }
+
     private void restoreField(Field field, Object pObj, Properties pProps, String pPreamble) throws IllegalAccessException {
         String key = pPreamble + field.getName();
         String value = pProps.getProperty(key);
         if (value == null) {
+            if (!anySubproperties(pProps, pPreamble)) {
+                System.out.println("Persistent settings does not contain value for " + key);
+                return;
+            }
+
             Field[] subFields = field.getType().getDeclaredFields();
             if (subFields.length == 0) {
                 System.out.println("Persistent settings does not contain value for " + key);
