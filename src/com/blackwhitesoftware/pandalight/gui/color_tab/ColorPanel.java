@@ -87,8 +87,6 @@ public class ColorPanel extends JPanel {
             mColorConfig.setRedLookupTable(redLookup);
             mColorConfig.setGreenLookupTable(greenLookup);
             mColorConfig.setBlueLookupTable(blueLookup);
-
-            mColorConfig.notifyObservers(this);
         }
     };
 

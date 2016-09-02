@@ -23,8 +23,9 @@ import java.util.concurrent.ExecutionException;
 
 public class LedSimulationComponent extends JPanel {
 
-    LedTvComponent mTvComponent;
-    LedSimulationWorker mWorker = null;
+    private final ConfigurationContainer configuration;
+    private LedTvComponent mTvComponent;
+    private LedSimulationWorker mWorker = null;
     private BufferedImage mTvImage = new BufferedImage(1280, 720, BufferedImage.TYPE_INT_ARGB);
     private JPanel mTopPanel;
     private ImageComponent mTopLeftImage;
@@ -90,12 +91,13 @@ public class LedSimulationComponent extends JPanel {
         mTvImage.createGraphics().drawImage(image, 0, 0, mTvImage.getWidth(), mTvImage.getHeight(), null);
     }
 
-    public LedSimulationComponent(Vector<Led> pLeds) {
+    public LedSimulationComponent(ConfigurationContainer configuration) {
         super();
+        this.configuration = configuration;
 
-        initialise(pLeds);
+        initialise(configuration.leds);
 
-        setLeds(pLeds);
+        setLeds(configuration.leds);
     }
 
     public static void main(String[] pArgs) {
@@ -104,9 +106,9 @@ public class LedSimulationComponent extends JPanel {
         frame.setSize(800, 600);
 
         ConfigurationContainer config = new ConfigurationContainer();
-        Vector<Led> leds = LedFrameFactory.construct(config);
+        config.leds = LedFrameFactory.construct(config);
 
-        LedSimulationComponent ledSimComp = new LedSimulationComponent(leds);
+        LedSimulationComponent ledSimComp = new LedSimulationComponent(config);
 
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(ledSimComp);
@@ -205,7 +207,7 @@ public class LedSimulationComponent extends JPanel {
             }
             mWorker = null;
         }
-        mWorker = new LedSimulationWorker(mTvImage, pLeds);
+        mWorker = new LedSimulationWorker(configuration, mTvImage, pLeds);
         mWorker.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

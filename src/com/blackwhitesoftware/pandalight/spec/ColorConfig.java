@@ -56,6 +56,7 @@ public class ColorConfig extends Observable {
         if (this.gammaCorrection != gammaCorrection) {
             this.gammaCorrection = gammaCorrection;
             setChanged();
+            notifyObservers(this);
         }
     }
 
@@ -63,6 +64,7 @@ public class ColorConfig extends Observable {
         if (this.minChannelValues != minChannelValues) {
             this.minChannelValues = minChannelValues;
             setChanged();
+            notifyObservers(this);
         }
     }
 
@@ -70,36 +72,43 @@ public class ColorConfig extends Observable {
         if (this.maxChannelValues != maxChannelValues) {
             this.maxChannelValues = maxChannelValues;
             setChanged();
+            notifyObservers(this);
         }
     }
 
     public void setRedLookupTable(byte[] redLookupTable) {
         this.redLookupTable = redLookupTable;
         setChanged();
+        notifyObservers(this);
     }
 
     public void setRedLookupTable(int from, int to) {
         redLookupTable[from] = (byte) to;
         setChanged();
+        notifyObservers(this);
     }
 
     public void setGreenLookupTable(byte[] greenLookupTable) {
         this.greenLookupTable = greenLookupTable;
         setChanged();
+        notifyObservers(this);
     }
 
     public void setGreenLookupTable(int from, int to) {
         greenLookupTable[from] = (byte) to;
         setChanged();
+        notifyObservers(this);
     }
 
     public void setBlueLookupTable(byte[] blueLookupTable) {
         this.blueLookupTable = blueLookupTable;
         setChanged();
+        notifyObservers(this);
     }
 
     public void setBlueLookupTable(int from, int to) {
         blueLookupTable[from] = (byte) to;
         setChanged();
+        notifyObservers(this);
     }
 }

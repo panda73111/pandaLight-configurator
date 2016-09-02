@@ -1,6 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui.led_simulation;
 
-import com.blackwhitesoftware.pandalight.spec.BorderSide;
+import com.blackwhitesoftware.pandalight.ConfigurationContainer;
 import com.blackwhitesoftware.pandalight.spec.Led;
 
 import javax.swing.*;
@@ -13,14 +13,15 @@ import java.util.Vector;
 
 public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 
+    private final ConfigurationContainer configuration;
     private final BufferedImage tvImage;
 
     private final Vector<Led> mLeds;
     private final List<LedPaint> ledPaints = new Vector<>();
 
-    public LedSimulationWorker(BufferedImage pTvImage, Vector<Led> pLeds) {
+    public LedSimulationWorker(ConfigurationContainer configuration, BufferedImage pTvImage, Vector<Led> pLeds) {
         super();
-
+        this.configuration = configuration;
         tvImage = pTvImage;
         mLeds = pLeds;
     }
@@ -54,11 +55,11 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
 
             if (
                     xMinFrac < 0 || xMaxFrac > 1 ||
-                    yMinFrac < 0 || yMinFrac > 1 ||
-                    xMaxFrac < 0 || xMaxFrac > 1 ||
-                    yMaxFrac < 0 || yMaxFrac > 1 ||
-                    xMaxFrac < xMinFrac ||
-                    yMaxFrac < yMinFrac)
+                            yMinFrac < 0 || yMinFrac > 1 ||
+                            xMaxFrac < 0 || xMaxFrac > 1 ||
+                            yMaxFrac < 0 || yMaxFrac > 1 ||
+                            xMaxFrac < xMinFrac ||
+                            yMaxFrac < yMinFrac)
                 continue;
 
             int xMin = (int) (xMinFrac * (imageWidth - 1));
@@ -142,6 +143,10 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
             }
         }
 
+        red = configuration.mColorConfig.getRedLookupTable()[red] & 0xFF;
+        green = configuration.mColorConfig.getGreenLookupTable()[green] & 0xFF;
+        blue = configuration.mColorConfig.getBlueLookupTable()[blue] & 0xFF;
+
         return (red << 16) | (green << 8) | blue;
     }
 
@@ -178,13 +183,13 @@ public class LedSimulationWorker extends SwingWorker<BufferedImage, Object> {
                     directionPoint,
                     ledSize / 2.0f,
                     virtualLedPoint,
-                    new float[] {
-                        0.1f,
-                        1.0f
+                    new float[]{
+                            0.1f,
+                            1.0f
                     },
-                    new Color[] {
-                        new Color(led.rgb),
-                        Color.BLACK
+                    new Color[]{
+                            new Color(led.rgb),
+                            Color.BLACK
                     },
                     MultipleGradientPaint.CycleMethod.NO_CYCLE
             );

@@ -69,6 +69,7 @@ public class ConfigPanel extends JPanel {
         };
         this.pandaLightConfig.mLedFrameConfig.addObserver(observer);
         this.pandaLightConfig.mProcessConfig.addObserver(observer);
+        this.pandaLightConfig.mColorConfig.addObserver(observer);
     }
 
     /**
@@ -115,7 +116,7 @@ public class ConfigPanel extends JPanel {
             mTvPanel = new JPanel();
             mTvPanel.setLayout(new BorderLayout());
 
-            mLightedTV = new LedSimulationComponent(pandaLightConfig.leds);
+            mLightedTV = new LedSimulationComponent(pandaLightConfig);
             mTvPanel.add(mLightedTV, BorderLayout.CENTER);
         }
         return mTvPanel;

@@ -103,9 +103,6 @@ public class ImageProcessPanel extends JPanel {
         mProcessConfig.vertical.setLedOffset(verticalLedOffset);
         mProcessConfig.setBlackborderThreshold(blackborderThreshold);
         mProcessConfig.setFrameDelay(frameDelay);
-
-        // Notify observers
-        mProcessConfig.notifyObservers(this);
     }
 
     private void initialise() {
