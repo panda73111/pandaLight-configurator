@@ -159,7 +159,6 @@ public class PandaLightProtocol {
 
     private boolean tryCombinePayloads() {
         if (expectedPackets.size() == 0) {
-            Logger.error("not expecting a packet, can't combine payloads!");
             return false;
         }
 
@@ -192,7 +191,7 @@ public class PandaLightProtocol {
             data[i] = inDataBuffer.getFirst();
             inDataBuffer.removeFirst();
         }
-        return new PandaLightSettingsPacket(data);
+        return new PandaLightSysinfoPacket(data);
     }
 
     private PandaLightPacket tryReadSettingsPacket() {
@@ -260,8 +259,8 @@ public class PandaLightProtocol {
 
     private synchronized void sendData(byte[] data, int offset, int length) {
         synchronized (sendLock) {
-            for (int i = 0; i < length; i++)
-                outDataBuffer.add(data[offset + i]);
+            for (int i = offset; i < offset + length; i++)
+                outDataBuffer.add(data[i]);
             sendLock.notify();
         }
     }
