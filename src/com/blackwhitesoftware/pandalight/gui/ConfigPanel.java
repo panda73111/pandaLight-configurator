@@ -14,6 +14,7 @@ import com.blackwhitesoftware.pandalight.connect.PandaLightSerialConnection;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Observable;
 import java.util.Observer;
 
 /**
@@ -62,10 +63,13 @@ public class ConfigPanel extends JPanel {
         mLightedTV.setLeds(this.pandaLightConfig.leds);
 
         // Add Observer to update the individual leds if the configuration changes
-        final Observer observer = (o, arg) -> {
-            ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(ConfigPanel.this.pandaLightConfig);
-            mLightedTV.setLeds(ConfigPanel.this.pandaLightConfig.leds);
-            mLightedTV.repaint();
+        final Observer observer = new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                ConfigPanel.this.pandaLightConfig.leds = LedFrameFactory.construct(ConfigPanel.this.pandaLightConfig);
+                mLightedTV.setLeds(ConfigPanel.this.pandaLightConfig.leds);
+                mLightedTV.repaint();
+            }
         };
         this.pandaLightConfig.mLedFrameConfig.addObserver(observer);
         this.pandaLightConfig.mProcessConfig.addObserver(observer);

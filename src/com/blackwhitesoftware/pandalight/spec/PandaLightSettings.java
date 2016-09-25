@@ -15,21 +15,19 @@ public class PandaLightSettings {
     public PandaLightSettings(ConfigurationContainer configuration) {
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
 
-        Consumer<Double> putFraction = (value) -> buffer.putShort((short)(value * 0xFFFF));
-
         buffer.put((byte)configuration.mLedFrameConfig.horizontalLedCount);
-        putFraction.accept(configuration.mProcessConfig.horizontal.getLedWidth());
-        putFraction.accept(configuration.mProcessConfig.horizontal.getLedHeight());
-        putFraction.accept(configuration.mProcessConfig.horizontal.getLedStep());
-        putFraction.accept(configuration.mProcessConfig.horizontal.getLedPadding());
-        putFraction.accept(configuration.mProcessConfig.horizontal.getLedOffset());
+        putFraction(buffer, configuration.mProcessConfig.horizontal.getLedWidth());
+        putFraction(buffer, configuration.mProcessConfig.horizontal.getLedHeight());
+        putFraction(buffer, configuration.mProcessConfig.horizontal.getLedStep());
+        putFraction(buffer, configuration.mProcessConfig.horizontal.getLedPadding());
+        putFraction(buffer, configuration.mProcessConfig.horizontal.getLedOffset());
 
         buffer.put((byte)configuration.mLedFrameConfig.verticalLedCount);
-        putFraction.accept(configuration.mProcessConfig.vertical.getLedWidth());
-        putFraction.accept(configuration.mProcessConfig.vertical.getLedHeight());
-        putFraction.accept(configuration.mProcessConfig.vertical.getLedStep());
-        putFraction.accept(configuration.mProcessConfig.vertical.getLedPadding());
-        putFraction.accept(configuration.mProcessConfig.vertical.getLedOffset());
+        putFraction(buffer, configuration.mProcessConfig.vertical.getLedWidth());
+        putFraction(buffer, configuration.mProcessConfig.vertical.getLedHeight());
+        putFraction(buffer, configuration.mProcessConfig.vertical.getLedStep());
+        putFraction(buffer, configuration.mProcessConfig.vertical.getLedPadding());
+        putFraction(buffer, configuration.mProcessConfig.vertical.getLedOffset());
 
         buffer.position(0x40);
 
@@ -61,6 +59,10 @@ public class PandaLightSettings {
         buffer.put(configuration.mColorConfig.blueLookupTable);
 
         mData = buffer.array();
+    }
+
+    private void putFraction(ByteBuffer buffer, double value) {
+        buffer.putShort((short) (value * 0xFFFF));
     }
 
     public byte[] getData() {

@@ -9,6 +9,7 @@ import com.blackwhitesoftware.pandalight.spec.LedFrameConstruction;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 /**
@@ -98,7 +99,12 @@ public class LedFrameFactory {
             }
         }
 
-        Collections.sort(mLeds, (o1, o2) -> Integer.compare(o1.mTotalLedIndex, o2.mTotalLedIndex));
+        Collections.sort(mLeds, new Comparator<Led>() {
+            @Override
+            public int compare(Led o1, Led o2) {
+                return Integer.compare(o1.mTotalLedIndex, o2.mTotalLedIndex);
+            }
+        });
         return mLeds;
     }
 
