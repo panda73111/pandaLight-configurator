@@ -47,11 +47,7 @@ public class SerialConnectionPanel extends JPanel implements Observer, PropertyC
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            try {
-                mSerialConnection.sendSettings(new PandaLightSettings(mConfiguration));
-            } catch (SerialPortException e1) {
-                ErrorHandling.ShowMessage("Error while sending settings:\n" + e1.getLocalizedMessage());
-            }
+            mSerialConnection.sendSettings(new PandaLightSettings(mConfiguration));
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     };

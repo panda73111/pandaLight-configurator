@@ -1,7 +1,6 @@
 package com.blackwhitesoftware.pandalight.gui.connect_tab;
 
 import com.blackwhitesoftware.pandalight.connect.*;
-import jssc.SerialPortException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,9 +28,7 @@ public class BoardInfoPanel extends JPanel implements Observer {
         ConnectionListener listener = new ConnectionListener() {
             @Override
             public void connected() {
-                try {
-                    serialConnection.sendCommand(PandaLightCommand.SYSINFO);
-                } catch (SerialPortException ignored) { }
+                serialConnection.sendCommand(PandaLightCommand.SYSINFO);
             }
 
             @Override

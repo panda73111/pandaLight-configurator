@@ -89,7 +89,7 @@ public class PandaLightSerialConnection extends Observable {
         serialConnection.disconnect();
     }
 
-    public void sendCommand(PandaLightCommand cmd) throws SerialPortException {
+    public void sendCommand(PandaLightCommand cmd) {
         protocol.sendCommand(cmd);
     }
 
@@ -109,11 +109,11 @@ public class PandaLightSerialConnection extends Observable {
         throw new NotImplementedException();
     }
 
-    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) throws SerialPortException {
+    public void sendBitfile(byte bitfileIndex, Bitfile bitfile) {
         protocol.sendBitfile(bitfileIndex, bitfile);
     }
 
-    public void sendSettings(PandaLightSettings settings) throws SerialPortException {
+    public void sendSettings(PandaLightSettings settings) {
         protocol.sendSettings(settings);
     }
 
