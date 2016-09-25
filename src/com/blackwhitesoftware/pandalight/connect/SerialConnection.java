@@ -18,27 +18,6 @@ public class SerialConnection {
     private SerialPort serialPort = null;
 
     public SerialConnection() {
-        connectionListeners.add(new ConnectionListener() {
-            @Override
-            public void pause() {
-            }
-
-            @Override
-            public void unpause() {
-            }
-
-            @Override
-            public void sendingData(byte[] data, int offset, int length) { }
-
-            @Override
-            public void sendingCommand(PandaLightCommand cmd) { }
-
-            @Override
-            public void gotData(byte[] data, int offset, int length) { }
-
-            @Override
-            public void gotPacket(PandaLightPacket packet) { }
-        });
     }
 
     public static String[] getSerialPorts() {
