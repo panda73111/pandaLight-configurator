@@ -5,8 +5,8 @@ import com.blackwhitesoftware.pandalight.Helpers;
 import com.blackwhitesoftware.pandalight.spec.PandaLightSettings;
 import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.awt.*;
 import java.util.Observable;
 
 /**
@@ -93,20 +93,8 @@ public class PandaLightSerialConnection extends Observable {
         protocol.sendCommand(cmd);
     }
 
-    /**
-     * Sends the command to set the led color
-     *
-     * @param red   value between 0 and 255
-     * @param green value between 0 and 255
-     * @param blue  value between 0 and 255
-     * @return false if there is no connection, true after the command was sent
-     * @throws IllegalArgumentException when the parameters don't fit
-     */
-    public boolean sendLedColor(int red, int green, int blue) throws IllegalArgumentException {
-        if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
-            throw new IllegalArgumentException();
-
-        throw new NotImplementedException();
+    public void sendLedColors(Color[] leds) {
+        protocol.sendLedColors(leds);
     }
 
     public void sendBitfile(byte bitfileIndex, Bitfile bitfile) {

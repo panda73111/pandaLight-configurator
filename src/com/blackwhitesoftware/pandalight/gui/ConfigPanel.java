@@ -150,7 +150,7 @@ public class ConfigPanel extends JPanel {
         mConnectPanel.add(new SerialConnectionPanel(pandaLightConfig, serialConnection));
         mConnectPanel.add(new BoardInfoPanel(serialConnection));
         mConnectPanel.add(new UploadBitfilePanel(pandaLightConfig.mMiscConfig, serialConnection));
-        mConnectPanel.add(new ManualColorPickingPanel(pandaLightConfig.mSerialConfig, serialConnection));
+        mConnectPanel.add(new ManualColorPickingPanel(pandaLightConfig, serialConnection));
         mConnectPanel.add(Box.createVerticalGlue());
     }
 }

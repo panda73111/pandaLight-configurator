@@ -5,6 +5,7 @@ import com.blackwhitesoftware.pandalight.spec.PandaLightSettings;
 import jssc.SerialPortException;
 import org.pmw.tinylog.Logger;
 
+import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -22,12 +23,11 @@ public class PandaLightProtocol {
     private final LinkedList<Byte> outDataBuffer = new LinkedList<>();
     private final List<Class<? extends PandaLightPacket>> expectedPackets = new Vector<>();
     private final List<ConnectionListener> connectionListeners = new Vector<>();
-
+    private final Object receiveLock = new Object();
+    private final Object sendLock = new Object();
     private volatile boolean newDataReceived = false;
     private volatile boolean paused = false;
     private volatile boolean serialPaused = false;
-    private final Object receiveLock = new Object();
-    private final Object sendLock = new Object();
     private Thread receiveThread;
     private Thread sendThread;
 
@@ -124,7 +124,8 @@ public class PandaLightProtocol {
 
             try {
                 receiveThread.join();
-            } catch (InterruptedException ignored) { }
+            } catch (InterruptedException ignored) {
+            }
 
             receiveThread = null;
         }
@@ -138,57 +139,6 @@ public class PandaLightProtocol {
             }
 
             sendThread = null;
-        }
-    }
-
-    private class ReceiveThread implements Runnable {
-        @Override
-        public void run() {
-            Logger.debug("receive thread started");
-            while (true) {
-                try {
-                    synchronized (receiveLock) {
-                        while (!newDataReceived)
-                            receiveLock.wait();
-                        while (tryCombinePayloads()) { }
-                        newDataReceived = false;
-                    }
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-            Logger.debug("receive thread ended");
-        }
-    }
-
-    private class SendThread implements Runnable {
-        @Override
-        public void run() {
-            Logger.debug("send thread started");
-
-            while (true) {
-                try {
-                    synchronized (sendLock) {
-                        int length;
-
-                        while ((length = outDataBuffer.size()) == 0 || paused || serialPaused)
-                            sendLock.wait();
-
-                        byte[] data = new byte[length];
-                        for (int i = 0; i < length; i++) {
-                            data[i] = outDataBuffer.getFirst();
-                            outDataBuffer.removeFirst();
-                        }
-
-                        serialConnection.sendData(data);
-                    }
-                } catch (SerialPortException e) {
-                    Logger.error("Sending data failed: {}", e.getLocalizedMessage());
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-            Logger.debug("send thread ended");
         }
     }
 
@@ -208,8 +158,7 @@ public class PandaLightProtocol {
     }
 
     private boolean tryCombinePayloads() {
-        if (expectedPackets.size() == 0)
-        {
+        if (expectedPackets.size() == 0) {
             Logger.error("not expecting a packet, can't combine payloads!");
             return false;
         }
@@ -271,14 +220,14 @@ public class PandaLightProtocol {
         for (ConnectionListener l : connectionListeners)
             l.sendingCommand(cmd);
 
-        sendData(new byte[] {cmd.getByteCommand()});
+        sendData(new byte[]{cmd.getByteCommand()});
     }
 
     public void sendBitfile(byte bitfileIndex, Bitfile bitfile) {
         sendCommand(PandaLightCommand.LOAD_BITFILE_FROM_UART);
 
         int length = bitfile.getLength();
-        sendData(new byte[] {
+        sendData(new byte[]{
                 bitfileIndex,
                 (byte) ((length & 0xFF0000) >> 16),
                 (byte) ((length & 0xFF00) >> 8),
@@ -287,9 +236,22 @@ public class PandaLightProtocol {
         sendData(bitfile.getData());
     }
 
-    public void sendSettings(PandaLightSettings settings) throws SerialPortException {
+    public void sendSettings(PandaLightSettings settings) {
         sendCommand(PandaLightCommand.LOAD_SETTINGS_FROM_UART);
         sendData(settings.getData());
+    }
+
+    public void sendLedColors(Color[] leds) {
+        sendCommand(PandaLightCommand.RECEIVE_LED_COLORS_FROM_UART);
+        sendData(new byte[]{(byte) leds.length});
+        for (Color color : leds) {
+            byte[] rgb = new byte[]{
+                    (byte) color.getRed(),
+                    (byte) color.getGreen(),
+                    (byte) color.getBlue()
+            };
+            sendData(rgb);
+        }
     }
 
     private void sendData(byte[] data) {
@@ -310,5 +272,57 @@ public class PandaLightProtocol {
 
     public void removeConnectionListener(ConnectionListener listener) {
         connectionListeners.remove(listener);
+    }
+
+    private class ReceiveThread implements Runnable {
+        @Override
+        public void run() {
+            Logger.debug("receive thread started");
+            while (true) {
+                try {
+                    synchronized (receiveLock) {
+                        while (!newDataReceived)
+                            receiveLock.wait();
+                        while (tryCombinePayloads()) {
+                        }
+                        newDataReceived = false;
+                    }
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            Logger.debug("receive thread ended");
+        }
+    }
+
+    private class SendThread implements Runnable {
+        @Override
+        public void run() {
+            Logger.debug("send thread started");
+
+            while (true) {
+                try {
+                    synchronized (sendLock) {
+                        int length;
+
+                        while ((length = outDataBuffer.size()) == 0 || paused || serialPaused)
+                            sendLock.wait();
+
+                        byte[] data = new byte[length];
+                        for (int i = 0; i < length; i++) {
+                            data[i] = outDataBuffer.getFirst();
+                            outDataBuffer.removeFirst();
+                        }
+
+                        serialConnection.sendData(data);
+                    }
+                } catch (SerialPortException e) {
+                    Logger.error("Sending data failed: {}", e.getLocalizedMessage());
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            Logger.debug("send thread ended");
+        }
     }
 }

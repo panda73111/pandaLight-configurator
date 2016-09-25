@@ -1,7 +1,7 @@
 package com.blackwhitesoftware.pandalight.gui.connect_tab;
 
+import com.blackwhitesoftware.pandalight.ConfigurationContainer;
 import com.blackwhitesoftware.pandalight.connect.PandaLightSerialConnection;
-import com.blackwhitesoftware.pandalight.spec.SerialAndColorPickerConfig;
 import com.bric.swing.ColorPicker;
 
 import javax.swing.*;
@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.Transient;
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -26,7 +27,7 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
     private JCheckBox autoUpdateCheckbox;
     private JCheckBox expertViewCheckBox;
     private JCheckBox showColorWheelCheckbox;
-    private SerialAndColorPickerConfig serialConfig;
+    private ConfigurationContainer config;
     /**
      * Listener for the buttons and checkboxes
      */
@@ -35,13 +36,13 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == setLedColorButton) {
                 int[] chosenColor = colorPicker.getRGB();
-                serialConnection.sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
+                sendLedColor(chosenColor);
             } else if (e.getSource() == expertViewCheckBox) {
                 colorPicker.setExpertControlsVisible(expertViewCheckBox.isSelected());
-                serialConfig.colorPickerInExpertmode = expertViewCheckBox.isSelected();
+                config.mSerialConfig.colorPickerInExpertmode = expertViewCheckBox.isSelected();
 
             } else if (e.getSource() == showColorWheelCheckbox) {
-                serialConfig.colorPickerShowColorWheel = showColorWheelCheckbox.isSelected();
+                config.mSerialConfig.colorPickerShowColorWheel = showColorWheelCheckbox.isSelected();
                 if (!showColorWheelCheckbox.isSelected()) {
                     colorPicker.setMode(ColorPicker.HUE);
                 } else {
@@ -56,12 +57,12 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
     /**
      * Constructor
      *
-     * @param serialConfig
+     * @param config
      * @param serialConnection
      */
-    public ManualColorPickingPanel(SerialAndColorPickerConfig serialConfig, PandaLightSerialConnection serialConnection) {
+    public ManualColorPickingPanel(ConfigurationContainer config, PandaLightSerialConnection serialConnection) {
         super();
-        this.serialConfig = serialConfig;
+        this.config = config;
         this.serialConnection = serialConnection;
         this.serialConnection.addObserver(this);
         initialise();
@@ -87,12 +88,12 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
         setBorder(BorderFactory.createTitledBorder("Set Led Color"));
 
         expertViewCheckBox = new JCheckBox("Expertview");
-        expertViewCheckBox.setSelected(serialConfig.colorPickerInExpertmode);
+        expertViewCheckBox.setSelected(config.mSerialConfig.colorPickerInExpertmode);
         expertViewCheckBox.addActionListener(mActionListener);
         add(expertViewCheckBox);
 
         showColorWheelCheckbox = new JCheckBox("Colorwheel");
-        showColorWheelCheckbox.setSelected(serialConfig.colorPickerShowColorWheel);
+        showColorWheelCheckbox.setSelected(config.mSerialConfig.colorPickerShowColorWheel);
         showColorWheelCheckbox.addActionListener(mActionListener);
         add(showColorWheelCheckbox);
 
@@ -168,7 +169,7 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
     public void propertyChange(PropertyChangeEvent evt) {
         if (autoUpdateCheckbox != null && autoUpdateCheckbox.isSelected() && evt.getPropertyName().equals("selected color")) {
             int[] chosenColor = colorPicker.getRGB();
-            serialConnection.sendLedColor(chosenColor[0], chosenColor[1], chosenColor[2]);
+            sendLedColor(chosenColor);
         }
     }
 
@@ -183,4 +184,10 @@ public class ManualColorPickingPanel extends JPanel implements Observer, Propert
 
     }
 
+    private void sendLedColor(int[] color) {
+        int ledCount = config.mLedFrameConfig.getTotalLedCount();
+        Color[] leds = new Color[ledCount];
+        Arrays.fill(leds, new Color(color[0], color[1], color[2]));
+        serialConnection.sendLedColors(leds);
+    }
 }
